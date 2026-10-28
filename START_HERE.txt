@@ -1,0 +1,19 @@
+KASPARRO FRESHER AI ENGINEER ASSIGNMENT
+Pack version 1.0.0 - prepared 27 October 2026
+
+This is one complete independent assignment. Everything required as input is inside this extracted folder. External links are optional reference reading. No other assignment pack or paid account is required.
+
+1. Read reference/Brand_and_domain_brief.txt, then Assignment.pdf. Assignment.docx is the editable version of the same brief.
+2. Run the optional offline input checker from this folder:
+     python3 tools/check_pack.py
+   Windows: py -3 tools/check_pack.py
+   Python 3.10+ is sufficient; no packages need installing for the checker.
+3. Read data/READ_ME.txt and schemas/input_contract.json.
+4. Choose your own implementation environment and record its dependencies. Python and SQLite are sufficient, but another justified language is acceptable.
+5. Use a local model when available. Hosted models require access provided or approved by the hiring team. Do not buy credits. An explicit keyless replay/stub path is permitted, with a real-model adapter and prompts. Replay demonstrates mechanics, not live-model quality.
+6. Stop at six active hours and disclose unfinished work. Submit within five calendar days of receiving the complete pack unless the invitation sets another calendar deadline.
+7. Reply to the email that supplied the pack with your private archive/repository, results and decision note. Grant access to the sender and named reviewers; attach an archive if private links are inconvenient. Use the same email for missing-file or access blockers. Never include credentials.
+
+The data is historical: engine captures date to 31 July 2026. Current website or live AI checks may differ. Keep supplemental observations separate. Real company answers remain unchanged; controlled test fixtures are explicitly marked.
+
+PACK_MANIFEST.json lists counts and SHA-256 checksums. A checker failure signals a damaged or edited input pack; contact the sender or re-extract the original ZIP. Work in your own project directory, keeping original inputs intact. The checker is a data-integrity aid, not an answer key or solution test.

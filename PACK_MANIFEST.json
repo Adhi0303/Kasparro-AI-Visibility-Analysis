@@ -1,0 +1,35 @@
+{
+  "pack_name": "Kasparro Fresher AI Engineer assignment",
+  "track": "fresher",
+  "version": "1.0.0",
+  "prepared_date": "2026-10-27",
+  "source_run_id": "4a4b71d9-9b0d-4497-85f1-7db5c4e21472",
+  "counts": {
+    "prompts": 50,
+    "responses": 150,
+    "citations": 2439
+  },
+  "access_policy": {
+    "local_models_allowed": true,
+    "keyless_replay_allowed": true,
+    "paid_account_required": false,
+    "hosted_access": "Only if provided or approved by hiring team; do not buy credits."
+  },
+  "sha256": {
+    "Assignment.docx": "9d557e4258cafbb186135286f0cc7328af7da44acbcfbd1be6044a6629f32fb7",
+    "Assignment.pdf": "8a841948d053f116ec384fae7f7ae477779e3bfc04d2d541842cc9366157e19f",
+    "START_HERE.txt": "54b9bc5a76a00f0bba6520c347e0cda7e4129c118b344b98af5859e8671ea343",
+    "data/READ_ME.txt": "e763c02f5f9f243ce46c0f6c4603a442e9cb3be2e4f0418373a7e82388204ce1",
+    "data/citations.jsonl": "92a27347d4b97db1ef3a232bcf59b6d972e1d9d643b7efde52b9cea6edeeffbd",
+    "data/prompts.jsonl": "754cd7439291669fb50bd9a9b111548fd24b3cf032c8251a2814a7544b83cea6",
+    "data/responses.jsonl": "aec412c7eb97154c891006724e9c5ecf068a89ef6c3376a858261b30424c8c33",
+    "data/run.json": "5abef372517877c37f0df63986f7fe306741b699e3b70363a572ae7558d32c51",
+    "fixtures/failure_scenarios.json": "b3969f954606d5d50c1213d5635b106adc766c7d5a07f4afcabffad5c4a6a65b",
+    "provenance/provider_payloads.jsonl": "192412c3c156fb15fca0b72194504dee9306da6edabd901be21134a33a8dd7ef",
+    "reference/Brand_and_domain_brief.txt": "106eb427dfd9f5cf35951dc94a264057f55008a27625aef351715d2eb8761eae",
+    "reference/brand_snapshot.json": "43a8c705de90ca18482688e58e1107a82e51aee034c575b1ab568fb64860784b",
+    "reference/domain_guidance.jsonl": "afb73cdf316782137ea02eeaf0efccb1a4ad9dcbe2fe1f050d2d4669dfdaf7a3",
+    "schemas/input_contract.json": "d8291a18affc9ae82a712b87fe10cb42c8dcb87d74a064e84419a3d3d2358177",
+    "tools/check_pack.py": "dd504c037448ba0f8bcd2bd12f6c30a3c38eb4b273ddd028b1d6d4d23e40eca7"
+  }
+}
