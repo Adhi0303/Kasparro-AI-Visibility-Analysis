@@ -1,7 +1,8 @@
 # Kasparro AI Visibility Analysis & Human Review Backend
 
 **Pack Version:** 1.0.0  
-**Role:** AI Software Engineer I (Fresher Assignment)  
+**Creator:** ADARSH S  
+**Role:** AI Software Engineer I (Assignment)  
 **Execution Modes:** Keyless Replay (Default) & Real-Model Adapter  
 **Persistence:** SQLite (`kasparro.db`)  
 **API Framework:** FastAPI + Uvicorn  
