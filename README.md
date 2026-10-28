@@ -18,6 +18,35 @@ The system ingests a historical snapshot of **50 prompts**, **150 archived respo
 
 ## 2. Architecture & Design Principles
 
+```mermaid
+flowchart TD
+    subgraph INGEST ["1. Data Ingestion & Provenance"]
+        D1["50 Prompts"] & D2["150 Responses"] & D3["2,439 Citations"] --> HASH["SHA-256 Checksum & Schema Validation"]
+        HASH --> DB[("SQLite Storage (kasparro.db)\n8 Relational Tables & Foreign Keys")]
+    end
+
+    subgraph CLASSIFY ["2. Dual Classifier & Scoring Engine"]
+        DB --> ROUTE{"Execution Mode"}
+        ROUTE -->|"Keyless Replay (Default)"| REPLAY["Deterministic Replay Classifier\n(Fast, offline, zero API keys)"]
+        ROUTE -->|"Real Model Adapter"| PROV["LLM Provider Adapter\n(OpenAI / Google API + Retries)"]
+        REPLAY & PROV --> SCORE["Visibility Scoring Engine (Formula v1)\n30% Inclusion + 40% Recommendation\n+ 20% Prominence + 10% Non-Negative"]
+    end
+
+    subgraph GOVERN ["3. Governance & Human Review"]
+        SCORE --> DRAFT["Version 1: DRAFT\nAnalyst creates & edits findings"]
+        DRAFT --> SUBMIT["Version 1: SUBMITTED\nAnalyst freezes version for audit"]
+        SUBMIT --> DECIDE{"Reviewer Role Gate"}
+        DECIDE -->|"Approve"| APP["Version 1: APPROVED\nCryptographic SHA-256 Lock"]
+        DECIDE -->|"Reject"| REJ["Version 1: REJECTED\nExport Blocked (HTTP 400)"]
+    end
+
+    subgraph DELIVER ["4. Delivery & Interactive Visuals"]
+        APP --> EXP["Export Gate (HTTP 200)\nImmutable JSON (final_report.json)"]
+        APP --> HTML["Interactive Executive Dashboard\n(evaluation/results/report.html)"]
+    end
+```
+
+### Core Design Principles:
 1. **Evidence Before Conclusions:** Every diagnostic and remedy references specific `response_id`s and verbatim source excerpts. Hallucinated or non-verbatim excerpts are automatically flagged and rejected.
 2. **Deterministic Calculations:** Scoring formulas, component weights, and aggregations are strictly deterministic in application code.
 3. **Visible Failures:** Provider timeouts and malformed responses are recorded as explicit failures with a `failure_reason`, rather than silently manufactured as zero-score records.
@@ -176,14 +205,18 @@ curl -X GET "http://127.0.0.1:8000/reports/<REPORT_ID>/export" `
 
 ---
 
-## 8. Detailed Technical Documentation
+## 8. Detailed Technical Documentation (`docs/`)
 
-For in-depth architectural and mathematical explanations, consult the dedicated guides in [`docs/`](docs/README.md):
+The repository includes a dedicated documentation suite in the [`docs/`](docs/README.md) directory, structured into focused, single-topic guides:
 
-* **[Architecture & Database Schema](docs/ARCHITECTURE.md)**: System design, 8-table relational model with Mermaid ER diagrams, and module responsibilities.
-* **[Scoring Methodology](docs/SCORING_AND_METHODOLOGY.md)**: Formula v1 derivation, prominence reciprocal decay, `null` uncertainty normalization, and denominator hygiene.
-* **[REST API Reference](docs/API_REFERENCE.md)**: Complete OpenAPI contract, request/response schemas, and RBAC token specifications.
-* **[Human Review & Immutability](docs/HUMAN_REVIEW_LIFECYCLE.md)**: Analyst vs Reviewer workflow, state transitions, cryptographic SHA-256 content hashing, and export gate enforcement.
-* **[Evaluation & Benchmarks](docs/EVALUATION_AND_BENCHMARKS.md)**: Benchmark results across 10 gold cases, baseline comparison (+20% agreement), 3 diagnostics, and prioritized remedies.
+| File Path | Document Title | Description & Scope |
+| :--- | :--- | :--- |
+| [`docs/README.md`](docs/README.md) | **Documentation Index** | High-level index, table of contents, and quick navigation across all documentation guides. |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | **System Architecture & Design** | Detailed system flow, complete SQLite Entity-Relationship (ER) model across all 8 tables, directory responsibilities, and engineering trade-offs. |
+| [`docs/SCORING_AND_METHODOLOGY.md`](docs/SCORING_AND_METHODOLOGY.md) | **Scoring Methodology & Formula v1** | Mathematical derivation of Visibility Formula v1, component weights (30/40/20/10), positional reciprocal decay ($1/\text{rank}$), `null` uncertainty normalization, and statistical denominator hygiene. |
+| [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) | **REST API Reference & Integration** | Complete OpenAPI/FastAPI endpoint specifications (`/datasets`, `/analyses`, `/reports`, `/decision`, `/export`), Bearer token RBAC authentication, and end-to-end cURL workflows. |
+| [`docs/HUMAN_REVIEW_LIFECYCLE.md`](docs/HUMAN_REVIEW_LIFECYCLE.md) | **Human Review & Governance** | Analyst vs Reviewer workflow, state machine transitions (`DRAFT → SUBMITTED → APPROVED/REJECTED`), cryptographic SHA-256 content hashing, version immutability, and export gate enforcement. |
+| [`docs/EVALUATION_AND_BENCHMARKS.md`](docs/EVALUATION_AND_BENCHMARKS.md) | **Evaluation & Benchmark Insights** | Ground-truth benchmark across 10 gold cases, baseline regex comparison (+20% agreement improvement), 3 evidence-backed diagnostics with verbatim source excerpts, and the prioritized remedies roadmap. |
+
 
 
