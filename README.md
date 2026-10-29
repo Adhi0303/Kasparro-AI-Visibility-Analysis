@@ -11,8 +11,13 @@
 
 > [!TIP]
 > ### 📊 Interactive Executive HTML Report
-> 🌐 **[Click Here to Open the Executive HTML Report (Live Web View)](https://htmlpreview.github.io/?https://github.com/Adhi0303/Kasparro-AI-Visibility-Analysis/blob/main/evaluation/results/report.html)**  
-> *(Repository file path: [`evaluation/results/report.html`](evaluation/results/report.html) — includes interactive 50-prompt scatter trajectories, engine performance comparisons, and verbatim diagnostic evidence.)*
+> * **Direct Repository File:** [`evaluation/results/report.html`](evaluation/results/report.html)
+> * **Email Attachment:** A standalone copy of `report.html` is attached directly to the submission email for instant browser viewing.
+> * **Open in Browser (PowerShell):**
+>   ```powershell
+>   Start-Process evaluation/results/report.html
+>   ```
+>   *(Opens the complete dashboard in your default browser — features the 50-prompt scatter trajectory, metric filters, and verbatim diagnostic evidence).*
 
 ---
 
