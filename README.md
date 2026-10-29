@@ -1,11 +1,19 @@
 # Kasparro AI Visibility Analysis & Human Review Backend
 
+**Creator / Candidate:** Adarsh S  
 **Pack Version:** 1.0.0  
 **Creator:** ADARSH S  
 **Role:** AI Software Engineer I (Assignment)  
 **Execution Modes:** Keyless Replay (Default) & Real-Model Adapter  
 **Persistence:** SQLite (`kasparro.db`)  
 **API Framework:** FastAPI + Uvicorn  
+
+---
+
+> [!TIP]
+> ### 📊 Interactive Executive HTML Report
+> 🌐 **[Click Here to Open the Executive HTML Report (Live Web View)](https://htmlpreview.github.io/?https://github.com/Adhi0303/Kasparro-AI-Visibility-Analysis/blob/main/evaluation/results/report.html)**  
+> *(Repository file path: [`evaluation/results/report.html`](evaluation/results/report.html) — includes interactive 50-prompt scatter trajectories, engine performance comparisons, and verbatim diagnostic evidence.)*
 
 ---
 
