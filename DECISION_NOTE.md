@@ -61,6 +61,13 @@ DRAFT ──► SUBMITTED ──► APPROVED ──► (Export Permitted)
 - **Asynchronous Task Queue (Celery/Redis) vs. In-process Runner:** With 150 local records, in-process bounded synchronous execution completes in under 5 seconds in replay mode, avoiding external dependencies like Redis.
 - **Always-on Live API vs. Replay Mode:** Replay mode provides 100% deterministic reproducibility for grading and automated tests without incurring external API costs.
 
+### Documented Failure, Diagnosis, Fix, and Regression
+As required by the assignment brief, one critical failure observed during development is documented:
+- **Failure:** Diagnostic findings initially contained paraphrased summaries of competitor recommendations (e.g. *"Profound, Peec AI, and Otterly are dedicated platforms..."*) rather than exact substring matches from `responses.jsonl`.
+- **Diagnosis:** LLM-generated summaries were transcribed into diagnostic data fixtures without automated substring verification against source `answer_text` records.
+- **Fix:** Replaced all excerpts with verified verbatim substrings from the source responses and added an automated regression test (`test_all_diagnostic_evidence_verbatim_integrity`) in `tests/test_analysis.py` that asserts `excerpt in answer_text` across all diagnostics.
+- **Verification:** Command `pytest tests/test_analysis.py -k test_all_diagnostic_evidence_verbatim_integrity` passed with 100% string-matching.
+
 ---
 
 ## 4. Key Empirical Findings (Actual Dataset)

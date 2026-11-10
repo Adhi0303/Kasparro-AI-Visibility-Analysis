@@ -142,13 +142,13 @@
           "response_id": "0f38b477-9f3c-44a8-9d10-0b6016db6150",
           "engine": "gemini",
           "prompt": "kasparro:ai_shortlisting:036 (what is the best software for measuring brand inclusion in AI search answers?)",
-          "excerpt": "Profound, Peec AI, and Otterly are dedicated platforms built specifically for generative engine optimization (GEO)..."
+          "excerpt": "Profound is a powerhouse in the AI visibility space. It tracks an extensive array of engines (10+ platforms including niche models like Grok and DeepSeek)."
         },
         {
           "response_id": "0697376e-335d-45ef-a593-bc12c5e1ecf3",
           "engine": "aimode",
           "prompt": "kasparro:ai_shortlisting:037 (what tools do growth marketers recommend for AI answer engine optimization?)",
-          "excerpt": "Profound is often cited by marketers as an early mover in generative engine optimization..."
+          "excerpt": "- **Profound:** Tracks which domains are cited in AI-generated answers and provides analytics to help brands measure share-of-voice across major AI platforms and human conversation forums like Reddit."
         }
       ],
       "possible_explanation": "Generative AI models assemble recommendations based on category co-occurrence on third-party platforms (G2, Reddit, Capterra, industry listicles). Kasparro currently lacks independent software directory profiles.",
