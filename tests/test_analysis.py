@@ -1007,3 +1007,122 @@ def test_module2_long_multi_opinion_response_end_to_end():
         match = find_evidence_match(ev.excerpt, answer, location=ev.location)
         assert match["valid"] is True
         assert answer[match["start_offset"]:match["end_offset"]] == match["canonical_excerpt"]
+
+
+
+def test_provider_rejects_inconsistent_classification_labels():
+    import pytest
+    from pydantic import ValidationError
+    from app.llm.provider import ProviderClassificationOutput
+
+    valid = {
+        "kasparro_absent": False,
+        "kasparro_mentioned": True,
+        "kasparro_recommended": True,
+        "kasparro_negative": False,
+        "competitors": [],
+        "recommendation_position": 1,
+        "evidence": [{"excerpt": "Kasparro is recommended", "location": "answer_text"}],
+        "confidence": 0.9,
+    }
+    assert ProviderClassificationOutput.model_validate(valid).kasparro_mentioned is True
+
+    invalid_cases = [
+        {**valid, "kasparro_absent": True},
+        {**valid, "kasparro_mentioned": False},
+        {**valid, "kasparro_recommended": True, "kasparro_mentioned": False, "kasparro_absent": True},
+        {**valid, "kasparro_negative": True, "kasparro_mentioned": False, "kasparro_absent": True},
+        {**valid, "kasparro_recommended": False, "recommendation_position": 1},
+        {**valid, "evidence": [{"excerpt": "quote", "location": "user_prompt"}]},
+        {**valid, "evidence": [{"excerpt": ""}]},
+    ]
+    for payload in invalid_cases:
+        with pytest.raises(ValidationError):
+            ProviderClassificationOutput.model_validate(payload)
+
+
+def test_provider_retries_transient_http_errors_with_bounded_delay(monkeypatch):
+    import json
+    import app.llm.provider as provider_mod
+    from app.config import Settings
+    from app.llm.provider import ProviderClassifier
+
+    calls = []
+    delays = []
+
+    class FakeResponse:
+        def __init__(self, status_code, body, headers=None):
+            self.status_code = status_code
+            self._body = body
+            self.headers = headers or {}
+            self.text = json.dumps(body)
+
+        def json(self):
+            return self._body
+
+    class FakeClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def post(self, *args, **kwargs):
+            calls.append(1)
+            if len(calls) == 1:
+                return FakeResponse(429, {"error": "rate limited"}, {"Retry-After": "0"})
+            payload = {
+                "kasparro_absent": False,
+                "kasparro_mentioned": True,
+                "kasparro_recommended": False,
+                "kasparro_negative": False,
+                "competitors": [],
+                "recommendation_position": None,
+                "evidence": [],
+                "confidence": 0.8,
+            }
+            return FakeResponse(200, {"choices": [{"message": {"content": json.dumps(payload)}}]})
+
+    monkeypatch.setattr(provider_mod.httpx, "Client", FakeClient)
+    monkeypatch.setattr(provider_mod.time, "sleep", lambda delay: delays.append(delay))
+    classifier = ProviderClassifier(
+        Settings(LLM_API_KEY="test-key", LLM_MAX_RETRIES=1)
+    )
+    result = classifier.classify("retry-case", "chatgpt", "Kasparro is mentioned.")
+    assert result.status == "success"
+    assert len(calls) == 2
+    assert delays == [0.0]
+
+
+def test_provider_does_not_retry_permanent_http_errors(monkeypatch):
+    import app.llm.provider as provider_mod
+    from app.config import Settings
+    from app.llm.provider import ProviderClassifier
+
+    calls = []
+
+    class FakeResponse:
+        status_code = 401
+        headers = {}
+        text = "unauthorized"
+
+    class FakeClient:
+        def __init__(self, *args, **kwargs):
+            pass
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            return False
+        def post(self, *args, **kwargs):
+            calls.append(1)
+            return FakeResponse()
+
+    monkeypatch.setattr(provider_mod.httpx, "Client", FakeClient)
+    classifier = ProviderClassifier(Settings(LLM_API_KEY="test-key", LLM_MAX_RETRIES=3))
+    result = classifier.classify("permanent-error", "chatgpt", "Kasparro is mentioned.")
+    assert result.status == "failed"
+    assert len(calls) == 1
+    assert "401" in result.failure_reason
