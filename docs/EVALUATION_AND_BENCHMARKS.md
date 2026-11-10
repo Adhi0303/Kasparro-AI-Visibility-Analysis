@@ -1,51 +1,69 @@
 # Evaluation Framework, Methodology & Benchmark Results
 
-## 1. Classification & Evaluation Methodology
+## 1. Evaluation design
 
-The project separates deterministic offline replay from configured live provider inference. The checked-in benchmark is intended for **regression testing**, not as a statistically representative or held-out estimate of real-world performance.
+The project keeps a development/regression set separate from a frozen held-out candidate set. Split definitions and limitations are recorded in `evaluation/split_manifest.json`.
 
-### Execution Mode Separation
-1. **Deterministic Replay (`execution_mode="replay"`, default):** Keyless contextual rules in `app/llm/replay.py`. This verifies deterministic behavior and known edge cases; it is not live LLM reasoning.
-2. **Real-Model Provider (`execution_mode="real_model"`):** `app/llm/provider.py` calls an OpenAI-compatible chat-completions endpoint. The adapter validates strict response types and cross-field label consistency, retries selected transient HTTP/transport failures with bounded backoff, and leaves evidence verification to the centralized source-audit pipeline. Compatibility depends on the endpoint supporting `choices[0].message.content` and JSON-object response mode.
+- **Regression split:** `evaluation/cases.jsonl` contains the 20 existing supplied and synthetic cases. It may be used during implementation and rule development.
+- **Held-out candidate split:** `evaluation/held_out_cases.jsonl` contains 30 additional synthetic scenarios with prompt-family IDs disjoint from the regression set. Do not tune classifier rules against this set.
+- **Annotation limitation:** The 30 held-out labels are provisional single-annotator labels. They are not independently double-annotated or adjudicated. They provide a separate leakage-control check, but must not be presented as an independently validated benchmark until a human reviewer independently labels them and disagreements are resolved.
 
-### Checked-in Regression Cases
-The current case file contains 20 labeled examples (8 supplied and 12 synthetic). Synthetic examples target known regressions such as prompt echo, competitor attribution, negation and pronoun scope. These examples are useful for repeatable regression checks, but the sample is too small and partly hand-authored; it must not be treated as an independent held-out test set.
-
-### Metrics
-The grader reports per-label support, positive/negative support, confusion counts (TP/FP/TN/FN), precision, recall, specificity, accuracy, balanced accuracy and F1, plus exact-match agreement across the three labels. The grader rejects mismatched prediction lengths and non-boolean labels instead of silently truncating or coercing them.
-
-## 2. Interpreting Results Correctly
-
-Run the deterministic regression suite:
+Run regression evaluation:
 
 ```bash
-python -m evaluation.run_eval --mode replay
+python -m evaluation.run_eval --mode replay --split regression
 ```
 
-Run a separate provider evaluation only when a compatible endpoint and credentials are configured:
+Run the frozen held-out candidate evaluation:
 
 ```bash
-python -m evaluation.run_eval --mode real_model
+python -m evaluation.run_eval --mode replay --split held_out
 ```
 
-Replay and provider outputs are written to separate files. Provider results are not interchangeable with replay results. A 100% result on the 20 checked-in cases means only that the implementation matched those 20 labels in that run; it does not establish generalization to unseen customer data, other brands, languages, industries or model families.
+The outputs are written to separate files for each execution mode and split. Replay and provider runs are not interchangeable. A high score on synthetic cases does not establish real-world generalization.
 
-### Required next step for a statistically meaningful benchmark
+## 2. Execution modes
 
-Before making broad accuracy claims, build a larger independently annotated corpus and freeze a held-out test set. Split by source response/prompt family (not randomly by near-duplicate rows) to reduce leakage. Have labels reviewed independently, record disagreements and adjudication, and publish per-class support and confusion matrices for each split. Do not tune replay rules against the held-out set.
+1. **Deterministic Replay (`execution_mode="replay"`):** Keyless contextual rules in `app/llm/replay.py`. It verifies deterministic behavior; it is not live LLM reasoning.
+2. **Real-Model Provider (`execution_mode="real_model"`):** `app/llm/provider.py` calls an OpenAI-compatible chat-completions endpoint. It validates strict response types and cross-field label consistency, retries selected transient HTTP/transport failures with bounded backoff, and leaves evidence verification to the centralized source-audit pipeline. Compatibility depends on the endpoint supporting `choices[0].message.content` and JSON-object response mode.
 
-## 3. Evidence and Source Traceability
+Example provider evaluation on the held-out candidate set (requires configured credentials and compatible endpoint):
 
-Classifier-proposed evidence is treated as untrusted input. The analysis coordinator verifies every candidate against the original answer text and records accepted and rejected evidence, including source offsets and rejection reasons. Report creation, editing and export repeat source validation before rendering diagnostics. A provider response with invalid evidence does not gain credibility merely because its JSON schema passed.
+```bash
+python -m evaluation.run_eval --mode real_model --split held_out
+```
 
-## 4. Historical Dataset Findings
+## 3. Metrics
 
-The archived dataset contains 50 prompts, 150 captured responses and 2,439 citation records from the 31 July 2026 snapshot. Findings in the executive report describe that historical capture only. They should not be interpreted as live model rankings or current brand visibility.
+The grader reports, per label:
+- Support, positive support and negative support
+- True positives, false positives, true negatives and false negatives
+- Precision, recall, specificity, accuracy, balanced accuracy and F1
+- Exact-match agreement across mention, recommendation and negative labels
 
-## 5. Limitations
+Metrics are calculated only for successful classifier responses. Failed provider cases are reported separately and must not silently count as correct predictions.
 
-- The checked-in labeled set is small and not an independent held-out benchmark.
-- Replay is deterministic rule-based logic; it is not an LLM and cannot guarantee semantic understanding beyond implemented rules.
-- Live provider quality depends on the selected model, endpoint, model version, prompt, provider behavior and credentials. No live provider quality claim should be made without recording an actual run.
-- Citation presence does not establish that the cited page supports the associated model claim without inspecting the page.
+## 4. Leakage and annotation policy
+
+- Keep the regression and held-out files separate.
+- The test suite checks that their prompt-family IDs do not overlap and that held-out case IDs are unique.
+- Do not inspect held-out errors and then modify classifier rules before reporting the same held-out score as final. If the held-out set is used for development, retire it and create a new unseen test set.
+- Independently annotate the held-out cases (preferably two reviewers), record disagreements and adjudicate labels before describing the set as independent ground truth.
+- Preserve the original labels and record any adjudicated correction with a rationale; do not silently overwrite labels based on model output.
+- Report each split's sample count and per-label support alongside all metrics.
+
+## 5. Evidence and source traceability
+
+Classifier-proposed evidence is untrusted input. The analysis coordinator verifies candidates against original answer text and records accepted and rejected evidence, including source offsets and rejection reasons. Report creation, editing and export repeat source validation before rendering diagnostics.
+
+## 6. Historical dataset findings
+
+The archived dataset contains 50 prompts, 150 captured responses and 2,439 citation records from the 31 July 2026 snapshot. Findings in historical reports describe that capture only; they are not live model rankings or current brand visibility.
+
+## 7. Limitations
+
+- The held-out candidate set is synthetic and its labels are provisional single-annotator labels; independent human annotation is still required.
+- Replay is deterministic rule-based logic and cannot guarantee semantic understanding beyond implemented rules.
+- Live provider quality depends on model, endpoint, version, prompt and provider behavior. No live-provider quality claim should be made without a recorded successful run.
+- Citation presence does not establish that a cited page supports the associated claim without inspecting the page.
 - A single historical capture cannot establish trends or current visibility.
