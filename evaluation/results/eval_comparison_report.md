@@ -1,6 +1,6 @@
 # Evaluation and Grader Comparison Report
 
-**Generated:** 2026-11-10T06:41:11.765400  
+**Generated:** 2026-11-10T07:22:16.309835  
 **Pack Version:** 1.0.0  
 **Evaluated Cases:** 10 (8 supplied, 2 synthetic)  
 **Execution Mode:** replay (keyless deterministic stub)
