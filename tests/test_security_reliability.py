@@ -482,3 +482,42 @@ def test_held_out_benchmark_is_disjoint_from_regression_set():
     assert all(set(case["expected"]) == {
         "kasparro_mentioned", "kasparro_recommended", "kasparro_negative"
     } for case in held_out)
+
+
+
+def test_import_directory_rejects_symlinked_dataset_file(tmp_path, monkeypatch):
+    allowed_root = tmp_path / "imports"
+    dataset_dir = allowed_root / "dataset"
+    outside_dir = tmp_path / "outside"
+    dataset_dir.mkdir(parents=True)
+    outside_dir.mkdir()
+    outside_file = outside_dir / "responses.jsonl"
+    outside_file.write_text('{"sensitive":"outside"}\n', encoding="utf-8")
+    try:
+        (dataset_dir / "responses.jsonl").symlink_to(outside_file)
+    except (OSError, NotImplementedError):
+        pytest.skip("Symlink creation is not permitted on this platform")
+
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(PathSecurityError):
+        validate_safe_source_directory("imports/dataset", allowed_roots=[allowed_root])
+
+
+def test_multipart_invalid_utf8_form_field_is_rejected(isolated_api):
+    client, _, settings = isolated_api
+    boundary = "invalid-utf8-boundary"
+    body = (
+        f"--{boundary}\r\nContent-Disposition: form-data; name=\"dataset_name\"\r\n\r\n".encode("ascii")
+        + b"\xff\xfe"
+        + f"\r\n--{boundary}--\r\n".encode("ascii")
+    )
+    response = client.post(
+        "/datasets/upload",
+        headers={
+            "Authorization": f"Bearer {settings.ANALYST_TOKEN}",
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+        },
+        content=body,
+    )
+    assert response.status_code == 400
+    assert "valid UTF-8" in response.text
