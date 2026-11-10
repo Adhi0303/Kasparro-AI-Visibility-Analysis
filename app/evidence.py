@@ -291,16 +291,16 @@ def validate_report_evidence(
 
 def render_report_markdown(
     report_payload: Dict[str, Any],
-    source_lookup: Optional[Dict[str, Dict[str, str]]] = None,
+    source_lookup: Dict[str, Dict[str, str]],
 ) -> str:
     """
     Renders a validated Markdown summary of an exported/approved report.
     Ensures only verified canonical evidence is rendered.
     """
     content = report_payload.get("content", report_payload)
-    diagnostics = content.get("diagnostics", [])
-    if source_lookup is not None:
-        diagnostics, _ = validate_report_evidence(diagnostics, source_lookup)
+    if source_lookup is None:
+        raise ValueError("source_lookup is required to render evidence-backed reports")
+    diagnostics, _ = validate_report_evidence(content.get("diagnostics", []), source_lookup)
 
     lines: List[str] = [
         f"# {content.get('title', 'Kasparro AI Visibility Report')}",
