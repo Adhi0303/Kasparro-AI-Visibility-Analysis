@@ -20,7 +20,7 @@ Run the frozen held-out candidate evaluation:
 python -m evaluation.run_eval --mode replay --split held_out
 ```
 
-The outputs are written to separate files for each execution mode and split. Replay and provider runs are not interchangeable. A high score on synthetic cases does not establish real-world generalization.
+The outputs are written to separate files for each execution mode and split (for example, `eval_results.json` and `eval_held_out_results.json`). Replay and provider runs are not interchangeable. A high score on synthetic cases does not establish real-world generalization.
 
 ## 2. Execution modes
 
