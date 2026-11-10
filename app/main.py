@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from email import policy
 from email.parser import BytesParser
 import json
 import os
@@ -62,24 +63,86 @@ app = FastAPI(
 )
 
 
-@app.middleware("http")
-async def enforce_request_size_limit(request: Request, call_next):
-    settings = get_settings()
-    content_length = request.headers.get("content-length")
-    if content_length is not None:
-        try:
-            length_val = int(content_length)
-        except ValueError:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"detail": "Invalid Content-Length header"},
-            )
-        if length_val < 0 or length_val > settings.MAX_REQUEST_BODY_BYTES:
-            return JSONResponse(
-                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-                content={"detail": "Request payload exceeds maximum allowed size"},
-            )
-    return await call_next(request)
+class RequestSizeLimitMiddleware:
+    """Pure ASGI body limiter that buffers and replays request messages without consuming them twice."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        max_body_bytes = get_settings().MAX_REQUEST_BODY_BYTES
+        headers = {key.lower(): value for key, value in scope.get("headers", [])}
+        content_length = headers.get(b"content-length")
+        if content_length is not None:
+            try:
+                declared_length = int(content_length)
+            except (TypeError, ValueError):
+                await self._respond(send, 400, "Invalid Content-Length header")
+                return
+            if declared_length < 0:
+                await self._respond(send, 400, "Invalid Content-Length header")
+                return
+            if declared_length > max_body_bytes:
+                await self._respond(send, 413, "Request payload exceeds maximum allowed size")
+                return
+        else:
+            declared_length = None
+
+        messages = []
+        total_bytes = 0
+        while True:
+            message = await receive()
+            if message["type"] == "http.disconnect":
+                await self.app(scope, self._replay(messages, disconnected=True), send)
+                return
+            if message["type"] != "http.request":
+                continue
+            total_bytes += len(message.get("body", b""))
+            if total_bytes > max_body_bytes:
+                await self._respond(send, 413, "Request payload exceeds maximum allowed size")
+                return
+            messages.append(message)
+            if not message.get("more_body", False):
+                break
+
+        if declared_length is not None and total_bytes != declared_length:
+            await self._respond(send, 400, "Request body length does not match Content-Length")
+            return
+
+        await self.app(scope, self._replay(messages), send)
+
+    @staticmethod
+    def _replay(messages, disconnected=False):
+        index = 0
+
+        async def receive():
+            nonlocal index
+            if index < len(messages):
+                message = messages[index]
+                index += 1
+                return message
+            if disconnected:
+                return {"type": "http.disconnect"}
+            return {"type": "http.disconnect"}
+
+        return receive
+
+    @staticmethod
+    async def _respond(send, status_code: int, detail: str):
+        body = json.dumps({"detail": detail}).encode("utf-8")
+        await send({
+            "type": "http.response.start",
+            "status": status_code,
+            "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(body)).encode("ascii"))],
+        })
+        await send({"type": "http.response.body", "body": body, "more_body": False})
+
+
+app.add_middleware(RequestSizeLimitMiddleware)
 
 
 @app.exception_handler(Exception)
@@ -202,7 +265,7 @@ async def _parse_multipart_upload(
 
     raw_body = b"".join(chunks)
     header_prefix = f"Content-Type: {content_type}\r\nMIME-Version: 1.0\r\n\r\n".encode("latin-1")
-    message = BytesParser().parsebytes(header_prefix + raw_body)
+    message = BytesParser(policy=policy.default).parsebytes(header_prefix + raw_body)
     if not message.is_multipart():
         raise HTTPException(status_code=400, detail="Malformed multipart upload payload")
 
@@ -215,9 +278,16 @@ async def _parse_multipart_upload(
         filename = part.get_filename()
         raw_payload = part.get_payload(decode=True) or b""
         if filename is not None:
+            if field_name in files or field_name in fields:
+                raise HTTPException(status_code=400, detail="Duplicate multipart field is not allowed")
             files[field_name] = (filename, part.get_content_type(), raw_payload)
         else:
-            fields[field_name] = raw_payload.decode("utf-8", errors="replace")
+            if field_name in fields or field_name in files:
+                raise HTTPException(status_code=400, detail="Duplicate multipart field is not allowed")
+            try:
+                fields[field_name] = raw_payload.decode("utf-8")
+            except UnicodeDecodeError:
+                raise HTTPException(status_code=400, detail="Multipart form fields must be valid UTF-8")
     return fields, files
 
 

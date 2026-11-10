@@ -356,3 +356,181 @@ def test_import_duplicates_limits_and_database_rollback(tmp_path):
     finally:
         db.close()
 
+
+
+
+def test_import_field_types_and_length_limits(tmp_path):
+    from app.ingestion import validate_prompt_record, validate_response_record, validate_citation_record
+
+    assert validate_prompt_record({"prompt_id": "p1", "run_id": 7, "text": "Prompt"})[0] is False
+    assert validate_prompt_record({"prompt_id": "p" * 129, "run_id": "r1", "text": "Prompt"})[0] is False
+    assert validate_prompt_record({"prompt_id": "p1", "run_id": "r1", "text": "Prompt"})[0] is True
+
+    valid_response = {
+        "response_id": "r1", "run_id": "run1", "prompt_id": "p1",
+        "engine": "chatgpt", "answer_text": "A response",
+        "capture_status": "captured",
+    }
+    assert validate_response_record({**valid_response, "run_id": None})[0] is False
+    assert validate_response_record({**valid_response, "answer_text": "x" * 200001})[0] is False
+    assert validate_response_record(valid_response)[0] is True
+
+    valid_citation = {
+        "citation_id": "c1", "response_id": "r1", "prompt_id": "p1",
+        "engine": "chatgpt", "order": 1, "citation_type": "sources_panel",
+        "url": "https://example.com",
+    }
+    assert validate_citation_record({**valid_citation, "url": "file:///etc/passwd"})[0] is False
+    assert validate_citation_record({**valid_citation, "prompt_id": 9})[0] is False
+    assert validate_citation_record(valid_citation)[0] is True
+
+
+def test_request_size_limit_without_content_length(monkeypatch):
+    import asyncio
+    from app.main import RequestSizeLimitMiddleware
+
+    monkeypatch.setattr("app.main.get_settings", lambda: Settings(MAX_REQUEST_BODY_BYTES=10))
+    status_codes = []
+
+    async def downstream(scope, receive, send):
+        message = await receive()
+        status_codes.append(200)
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": message.get("body", b"")})
+
+    async def scenario():
+        body_messages = [{"type": "http.request", "body": b"x" * 11, "more_body": False}]
+        async def receive():
+            return body_messages.pop(0) if body_messages else {"type": "http.disconnect"}
+        async def send(message):
+            if message["type"] == "http.response.start":
+                status_codes.append(message["status"])
+        scope = {
+            "type": "http", "asgi": {"version": "3.0"}, "http_version": "1.1",
+            "method": "POST", "scheme": "http", "path": "/test",
+            "raw_path": b"/test", "query_string": b"", "headers": [],
+            "client": ("testclient", 123), "server": ("testserver", 80),
+        }
+        await RequestSizeLimitMiddleware(downstream)(scope, receive, send)
+
+    asyncio.run(scenario())
+    assert 413 in status_codes
+    assert 200 not in status_codes
+
+
+def test_request_size_limit_rejects_content_length_mismatch(monkeypatch):
+    import asyncio
+    from app.main import RequestSizeLimitMiddleware
+
+    monkeypatch.setattr("app.main.get_settings", lambda: Settings(MAX_REQUEST_BODY_BYTES=100))
+    status_codes = []
+
+    async def downstream(scope, receive, send):
+        status_codes.append(200)
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+    async def scenario():
+        body_messages = [{"type": "http.request", "body": b"actual-body", "more_body": False}]
+        async def receive():
+            return body_messages.pop(0) if body_messages else {"type": "http.disconnect"}
+        async def send(message):
+            if message["type"] == "http.response.start":
+                status_codes.append(message["status"])
+        scope = {
+            "type": "http", "asgi": {"version": "3.0"}, "http_version": "1.1",
+            "method": "POST", "scheme": "http", "path": "/test",
+            "raw_path": b"/test", "query_string": b"", "headers": [(b"content-length", b"1")],
+            "client": ("testclient", 123), "server": ("testserver", 80),
+        }
+        await RequestSizeLimitMiddleware(downstream)(scope, receive, send)
+
+    asyncio.run(scenario())
+    assert 400 in status_codes
+    assert 200 not in status_codes
+
+
+def test_multipart_duplicate_fields_are_rejected(isolated_api):
+    client, _, settings = isolated_api
+    boundary = "security-boundary"
+    valid_line = json.dumps({
+        "response_id": "duplicate-test", "run_id": "run-1", "prompt_id": "prompt-1",
+        "engine": "chatgpt", "capture_status": "captured", "answer_text": "Kasparro is mentioned.",
+    })
+    parts = [
+        f"--{boundary}\r\nContent-Disposition: form-data; name=\"dataset_name\"\r\n\r\nsecurity-test\r\n",
+        f"--{boundary}\r\nContent-Disposition: form-data; name=\"responses_file\"; filename=\"responses.jsonl\"\r\nContent-Type: application/jsonl\r\n\r\n{valid_line}\r\n",
+        f"--{boundary}\r\nContent-Disposition: form-data; name=\"responses_file\"; filename=\"responses.jsonl\"\r\nContent-Type: application/jsonl\r\n\r\n{valid_line}\r\n",
+        f"--{boundary}--\r\n",
+    ]
+    response = client.post(
+        "/datasets/upload",
+        headers={
+            "Authorization": f"Bearer {settings.ANALYST_TOKEN}",
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+        },
+        content="".join(parts).encode("utf-8"),
+    )
+    assert response.status_code == 400
+    assert "Duplicate multipart field" in response.text
+
+
+def test_held_out_benchmark_is_disjoint_from_regression_set():
+    import json
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    def load(path):
+        return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+    regression = load(root / "evaluation" / "cases.jsonl")
+    held_out = load(root / "evaluation" / "held_out_cases.jsonl")
+    regression_prompts = {case["prompt_id"] for case in regression}
+    held_out_prompts = {case["prompt_id"] for case in held_out}
+    assert len(held_out) >= 30
+    assert not regression_prompts.intersection(held_out_prompts)
+    assert len({case["case_id"] for case in held_out}) == len(held_out)
+    assert all(case["source_type"] == "held_out_synthetic" for case in held_out)
+    assert all(case["annotation_status"] == "provisional_single_annotator" for case in held_out)
+    assert all(set(case["expected"]) == {
+        "kasparro_mentioned", "kasparro_recommended", "kasparro_negative"
+    } for case in held_out)
+
+
+
+def test_import_directory_rejects_symlinked_dataset_file(tmp_path, monkeypatch):
+    allowed_root = tmp_path / "imports"
+    dataset_dir = allowed_root / "dataset"
+    outside_dir = tmp_path / "outside"
+    dataset_dir.mkdir(parents=True)
+    outside_dir.mkdir()
+    outside_file = outside_dir / "responses.jsonl"
+    outside_file.write_text('{"sensitive":"outside"}\n', encoding="utf-8")
+    try:
+        (dataset_dir / "responses.jsonl").symlink_to(outside_file)
+    except (OSError, NotImplementedError):
+        pytest.skip("Symlink creation is not permitted on this platform")
+
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(PathSecurityError):
+        validate_safe_source_directory("imports/dataset", allowed_roots=[allowed_root])
+
+
+def test_multipart_invalid_utf8_form_field_is_rejected(isolated_api):
+    client, _, settings = isolated_api
+    boundary = "invalid-utf8-boundary"
+    body = (
+        f"--{boundary}\r\nContent-Disposition: form-data; name=\"dataset_name\"\r\n\r\n".encode("ascii")
+        + b"\xff\xfe"
+        + f"\r\n--{boundary}--\r\n".encode("ascii")
+    )
+    response = client.post(
+        "/datasets/upload",
+        headers={
+            "Authorization": f"Bearer {settings.ANALYST_TOKEN}",
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+        },
+        content=body,
+    )
+    assert response.status_code == 400
+    assert "valid UTF-8" in response.text

@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Keep regression/development cases separate from a frozen held-out evaluation candidate set.",
+  "splits": {
+    "regression": {
+      "path": "evaluation/cases.jsonl",
+      "role": "Development and regression testing; may be inspected while changing rules.",
+      "current_case_count": 20,
+      "contains_supplied_and_synthetic_cases": true
+    },
+    "held_out": {
+      "path": "evaluation/held_out_cases.jsonl",
+      "role": "Frozen evaluation candidate set; do not use its errors to tune classifier rules.",
+      "current_case_count": 30,
+      "contains_only_synthetic_cases": true,
+      "prompt_family_ids_disjoint_from_regression": true,
+      "annotation_status": "provisional_single_annotator",
+      "limitation": "These labels are provisional and not independently double-annotated. Independent human review and adjudication are required before reporting this as an independent benchmark."
+    }
+  },
+  "commands": {
+    "regression": "python -m evaluation.run_eval --mode replay --split regression",
+    "held_out": "python -m evaluation.run_eval --mode replay --split held_out"
+  },
+  "policy": [
+    "Never merge held-out cases into regression cases for tuning.",
+    "Do not modify held-out expected labels after inspecting model predictions; log adjudicated corrections separately.",
+    "Report sample counts and per-label support with every score.",
+    "A synthetic, single-annotator holdout is a leakage-control measure, not evidence of independent ground truth."
+  ]
+}
