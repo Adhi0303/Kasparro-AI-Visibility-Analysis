@@ -66,15 +66,15 @@ app = FastAPI(
 class RequestSizeLimitMiddleware:
     """Pure ASGI body limiter that buffers and replays request messages without consuming them twice."""
 
-    def __init__(self, app, max_body_bytes: int):
+    def __init__(self, app):
         self.app = app
-        self.max_body_bytes = max_body_bytes
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
 
+        max_body_bytes = get_settings().MAX_REQUEST_BODY_BYTES
         headers = {key.lower(): value for key, value in scope.get("headers", [])}
         content_length = headers.get(b"content-length")
         if content_length is not None:
@@ -86,7 +86,7 @@ class RequestSizeLimitMiddleware:
             if declared_length < 0:
                 await self._respond(send, 400, "Invalid Content-Length header")
                 return
-            if declared_length > self.max_body_bytes:
+            if declared_length > max_body_bytes:
                 await self._respond(send, 413, "Request payload exceeds maximum allowed size")
                 return
         else:
@@ -142,7 +142,7 @@ class RequestSizeLimitMiddleware:
         await send({"type": "http.response.body", "body": body, "more_body": False})
 
 
-app.add_middleware(RequestSizeLimitMiddleware, max_body_bytes=get_settings().MAX_REQUEST_BODY_BYTES)
+app.add_middleware(RequestSizeLimitMiddleware)
 
 
 @app.exception_handler(Exception)
