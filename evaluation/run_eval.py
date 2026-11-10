@@ -68,6 +68,7 @@ def run_evaluation(
 
     if split not in ("regression", "held_out", "all"):
         raise ValueError("split must be one of: regression, held_out, all")
+    using_default_split_path = cases_path is None
     if cases_path is None:
         if split == "regression":
             cases_path = "evaluation/cases.jsonl"
@@ -76,6 +77,13 @@ def run_evaluation(
         else:
             raise ValueError("The all split requires an explicit combined cases_path; do not concatenate development and held-out sets for model selection.")
     cases = load_cases(cases_path)
+    if split == "held_out" and using_default_split_path:
+        regression_cases = load_cases("evaluation/cases.jsonl")
+        regression_prompts = {case.get("prompt_id") for case in regression_cases}
+        held_out_prompts = {case.get("prompt_id") for case in cases}
+        overlap = regression_prompts.intersection(held_out_prompts)
+        if overlap:
+            raise ValueError(f"Held-out prompt families overlap regression split: {sorted(overlap)[:5]}")
     case_ids = [case.get("case_id") for case in cases]
     if any(not isinstance(case_id, str) or not case_id for case_id in case_ids) or len(case_ids) != len(set(case_ids)):
         raise ValueError("Evaluation case IDs must be non-empty and unique")
@@ -204,17 +212,18 @@ def run_evaluation(
     synthetic_count = len([c for c in cases if c.get("source_type") in ("synthetic", "held_out_synthetic")])
     held_out_count = len([c for c in cases if c.get("source_type") == "held_out_synthetic"])
 
+    split_suffix = "_held_out" if split == "held_out" else ""
     if execution_mode == "real_model":
-        md_filename = "eval_provider_report.md"
-        json_filename = "eval_provider_results.json"
+        md_filename = f"eval_provider_report{split_suffix}.md"
+        json_filename = f"eval_provider_results{split_suffix}.json"
         title = "# Provider Evaluation Report (Real-Model Execution)"
         mode_desc = (
             f"real_model (provider={exec_meta['provider']}, model={exec_meta['model']}, "
             f"classifier_version={exec_meta['classifier_version']})"
         )
     else:
-        md_filename = "eval_comparison_report.md"
-        json_filename = "eval_results.json"
+        md_filename = f"eval_comparison_report{split_suffix}.md"
+        json_filename = f"eval_results{split_suffix}.json"
         title = "# Evaluation and Grader Comparison Report"
         mode_desc = f"replay (keyless deterministic contextual classifier, version={exec_meta['classifier_version']})"
 
