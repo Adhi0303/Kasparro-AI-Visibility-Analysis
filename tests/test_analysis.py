@@ -1007,3 +1007,182 @@ def test_module2_long_multi_opinion_response_end_to_end():
         match = find_evidence_match(ev.excerpt, answer, location=ev.location)
         assert match["valid"] is True
         assert answer[match["start_offset"]:match["end_offset"]] == match["canonical_excerpt"]
+
+
+
+def test_provider_rejects_inconsistent_classification_labels():
+    import pytest
+    from pydantic import ValidationError
+    from app.llm.provider import ProviderClassificationOutput
+
+    valid = {
+        "kasparro_absent": False,
+        "kasparro_mentioned": True,
+        "kasparro_recommended": True,
+        "kasparro_negative": False,
+        "competitors": [],
+        "recommendation_position": 1,
+        "evidence": [{"excerpt": "Kasparro is recommended", "location": "answer_text"}],
+        "confidence": 0.9,
+    }
+    assert ProviderClassificationOutput.model_validate(valid).kasparro_mentioned is True
+
+    invalid_cases = [
+        {**valid, "kasparro_absent": True},
+        {**valid, "kasparro_mentioned": False},
+        {**valid, "kasparro_recommended": True, "kasparro_mentioned": False, "kasparro_absent": True},
+        {**valid, "kasparro_negative": True, "kasparro_mentioned": False, "kasparro_absent": True},
+        {**valid, "kasparro_recommended": False, "recommendation_position": 1},
+        {**valid, "evidence": [{"excerpt": "quote", "location": "user_prompt"}]},
+        {**valid, "evidence": [{"excerpt": ""}]},
+    ]
+    for payload in invalid_cases:
+        with pytest.raises(ValidationError):
+            ProviderClassificationOutput.model_validate(payload)
+
+
+def test_provider_retries_transient_http_errors_with_bounded_delay(monkeypatch):
+    import json
+    import app.llm.provider as provider_mod
+    from app.config import Settings
+    from app.llm.provider import ProviderClassifier
+
+    calls = []
+    delays = []
+
+    class FakeResponse:
+        def __init__(self, status_code, body, headers=None):
+            self.status_code = status_code
+            self._body = body
+            self.headers = headers or {}
+            self.text = json.dumps(body)
+
+        def json(self):
+            return self._body
+
+    class FakeClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def post(self, *args, **kwargs):
+            calls.append(1)
+            if len(calls) == 1:
+                return FakeResponse(429, {"error": "rate limited"}, {"Retry-After": "0"})
+            payload = {
+                "kasparro_absent": False,
+                "kasparro_mentioned": True,
+                "kasparro_recommended": False,
+                "kasparro_negative": False,
+                "competitors": [],
+                "recommendation_position": None,
+                "evidence": [],
+                "confidence": 0.8,
+            }
+            return FakeResponse(200, {"choices": [{"message": {"content": json.dumps(payload)}}]})
+
+    monkeypatch.setattr(provider_mod.httpx, "Client", FakeClient)
+    monkeypatch.setattr(provider_mod.time, "sleep", lambda delay: delays.append(delay))
+    classifier = ProviderClassifier(
+        Settings(LLM_API_KEY="test-key", LLM_MAX_RETRIES=1)
+    )
+    result = classifier.classify("retry-case", "chatgpt", "Kasparro is mentioned.")
+    assert result.status == "success"
+    assert len(calls) == 2
+    assert delays == [0.0]
+
+
+def test_provider_does_not_retry_permanent_http_errors(monkeypatch):
+    import app.llm.provider as provider_mod
+    from app.config import Settings
+    from app.llm.provider import ProviderClassifier
+
+    calls = []
+
+    class FakeResponse:
+        status_code = 401
+        headers = {}
+        text = "unauthorized"
+
+    class FakeClient:
+        def __init__(self, *args, **kwargs):
+            pass
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            return False
+        def post(self, *args, **kwargs):
+            calls.append(1)
+            return FakeResponse()
+
+    monkeypatch.setattr(provider_mod.httpx, "Client", FakeClient)
+    classifier = ProviderClassifier(Settings(LLM_API_KEY="test-key", LLM_MAX_RETRIES=3))
+    result = classifier.classify("permanent-error", "chatgpt", "Kasparro is mentioned.")
+    assert result.status == "failed"
+    assert len(calls) == 1
+    assert "401" in result.failure_reason
+
+
+
+def test_evaluation_grader_reports_specificity_accuracy_and_support():
+    import pytest
+    from evaluation.grader import compute_label_metrics, grade_predictions
+
+    metrics = compute_label_metrics(
+        [True, True, False, False],
+        [True, False, True, False],
+    )
+    assert metrics["support"] == 4
+    assert metrics["positive_support"] == 2
+    assert metrics["negative_support"] == 2
+    assert metrics["true_positives"] == 1
+    assert metrics["false_positives"] == 1
+    assert metrics["true_negatives"] == 1
+    assert metrics["false_negatives"] == 1
+    assert metrics["precision"] == 0.5
+    assert metrics["recall"] == 0.5
+    assert metrics["specificity"] == 0.5
+    assert metrics["accuracy"] == 0.5
+    assert metrics["balanced_accuracy"] == 0.5
+
+    with pytest.raises(ValueError):
+        compute_label_metrics([True], [])
+    with pytest.raises(TypeError):
+        compute_label_metrics([1], [True])
+    with pytest.raises(ValueError):
+        grade_predictions([{"kasparro_mentioned": True}], [])
+
+
+
+def test_report_renderers_require_source_lookup_and_filter_invalid_evidence():
+    import pytest
+    from app.evidence import render_report_html, render_report_markdown
+
+    report = {
+        "title": "Evidence guard",
+        "diagnostics": [{
+            "title": "Finding",
+            "observed_pattern": "Pattern",
+            "evidence": [
+                {"response_id": "r1", "excerpt": "Kasparro is present", "location": "answer_text"},
+                {"response_id": "r1", "excerpt": "Fabricated text", "location": "answer_text"},
+            ],
+        }],
+    }
+    with pytest.raises(ValueError):
+        render_report_html(report)
+    with pytest.raises(ValueError):
+        render_report_markdown(report)
+
+    source_lookup = {"r1": {"answer_text": "Kasparro is present in the source."}}
+    html_output = render_report_html(report, source_lookup)
+    markdown_output = render_report_markdown(report, source_lookup)
+    assert "Kasparro is present" in html_output
+    assert "Fabricated text" not in html_output
+    assert "Kasparro is present" in markdown_output
+    assert "Fabricated text" not in markdown_output
