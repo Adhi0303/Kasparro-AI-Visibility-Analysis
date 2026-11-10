@@ -50,7 +50,7 @@ Note: Every 'excerpt' in 'evidence' MUST be an exact verbatim substring from the
 class ProviderEvidenceInput(BaseModel):
     model_config = ConfigDict(strict=True)
 
-    excerpt: StrictStr = Field(min_length=1)
+    excerpt: StrictStr
     location: Literal["answer_text"] = "answer_text"
     citation_id: Optional[StrictStr] = None
 
