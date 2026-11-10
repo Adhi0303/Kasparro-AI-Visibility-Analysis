@@ -131,11 +131,19 @@ Tests cover:
 
 ## 5. Running Evaluation & Grader
 
-Run the regression benchmark comparing the replay/provider classifier against a simple keyword baseline on the checked-in labeled cases. This is a small regression set, not a held-out generalization benchmark:
+Run the development/regression suite:
 ```powershell
-python -m evaluation.run_eval
+python -m evaluation.run_eval --mode replay --split regression
 ```
-*Outputs: `evaluation/results/eval_comparison_report.md` and `evaluation/results/eval_results.json`.*
+
+Run the separate held-out candidate set:
+```powershell
+python -m evaluation.run_eval --mode replay --split held_out
+```
+
+The repository includes 20 regression cases and 30 additional held-out synthetic scenarios with disjoint prompt-family IDs. The held-out labels are provisional single-annotator labels, not independently adjudicated ground truth. Do not tune rules against the held-out set. See [the split manifest](evaluation/split_manifest.json) and [evaluation methodology](docs/EVALUATION_AND_BENCHMARKS.md).
+
+*Replay outputs are written separately as `eval_results.json` and `eval_held_out_results.json`, with matching Markdown reports.*
 
 ---
 
@@ -229,7 +237,7 @@ The repository includes a dedicated documentation suite in the [`docs/`](docs/RE
 | [`docs/SCORING_AND_METHODOLOGY.md`](docs/SCORING_AND_METHODOLOGY.md) | **Scoring Methodology & Formula v1** | Mathematical derivation of Visibility Formula v1, component weights (30/40/20/10), positional reciprocal decay ($1/\text{rank}$), `null` uncertainty normalization, and statistical denominator hygiene. |
 | [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) | **REST API Reference & Integration** | Complete OpenAPI/FastAPI endpoint specifications (`/datasets`, `/analyses`, `/reports`, `/decision`, `/export`), Bearer token RBAC authentication, and end-to-end cURL workflows. |
 | [`docs/HUMAN_REVIEW_LIFECYCLE.md`](docs/HUMAN_REVIEW_LIFECYCLE.md) | **Human Review & Governance** | Analyst vs Reviewer workflow, state machine transitions (`DRAFT → SUBMITTED → APPROVED/REJECTED`), cryptographic SHA-256 content hashing, version immutability, and export gate enforcement. |
-| [`docs/EVALUATION_AND_BENCHMARKS.md`](docs/EVALUATION_AND_BENCHMARKS.md) | **Evaluation & Benchmark Insights** | Ground-truth benchmark across 20 gold cases, baseline regex comparison (+50.0% agreement improvement in replay mode), 3 evidence-backed diagnostics with verbatim source excerpts, and the prioritized remedies roadmap. |
+| [`docs/EVALUATION_AND_BENCHMARKS.md`](docs/EVALUATION_AND_BENCHMARKS.md) | **Evaluation & Benchmark Insights** | Evaluation methodology for 20 regression cases and 30 provisional held-out synthetic cases, including per-label metrics, split isolation, annotation limitations, and evidence traceability. |
 
 
 
