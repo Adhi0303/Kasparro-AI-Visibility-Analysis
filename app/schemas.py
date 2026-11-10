@@ -14,29 +14,16 @@ class DatasetImportRequest(BaseModel):
     @field_validator("source_directory")
     @classmethod
     def validate_directory_path(cls, v: str) -> str:
-        from app.config import get_settings
-
+        # Keep request-shape checks here. Filesystem authorization is enforced
+        # by validate_safe_source_directory in the ingestion service, where
+        # configured roots and symlink targets can be checked consistently.
         if not v or not v.strip() or "\x00" in v:
             raise ValueError("source_directory must be a non-empty valid relative path")
-
         raw_parts = v.replace("\\", "/").split("/")
         if ".." in raw_parts:
             raise ValueError("Path traversal segments ('..') are not permitted in source_directory")
-
         if os.path.isabs(v):
             raise ValueError("Absolute paths are not permitted for source_directory")
-
-        cwd = Path.cwd().resolve()
-        resolved = (cwd / v).resolve()
-
-        allowed_raw = os.getenv("ALLOWED_IMPORT_DIRS") or get_settings().ALLOWED_IMPORT_DIRS
-        allowed_dirs = [
-            (cwd / d.strip()).resolve()
-            for d in allowed_raw.split(",")
-            if d.strip()
-        ]
-        if not any(resolved.is_relative_to(base) for base in allowed_dirs):
-            raise ValueError("source_directory must resolve inside an authorized data directory")
         return v
 
 
