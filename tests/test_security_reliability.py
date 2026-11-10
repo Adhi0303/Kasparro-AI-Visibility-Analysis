@@ -356,3 +356,129 @@ def test_import_duplicates_limits_and_database_rollback(tmp_path):
     finally:
         db.close()
 
+
+
+
+def test_import_field_types_and_length_limits(tmp_path):
+    from app.ingestion import validate_prompt_record, validate_response_record, validate_citation_record
+
+    assert validate_prompt_record({"prompt_id": "p1", "run_id": 7, "text": "Prompt"})[0] is False
+    assert validate_prompt_record({"prompt_id": "p" * 129, "run_id": "r1", "text": "Prompt"})[0] is False
+    assert validate_prompt_record({"prompt_id": "p1", "run_id": "r1", "text": "Prompt"})[0] is True
+
+    valid_response = {
+        "response_id": "r1", "run_id": "run1", "prompt_id": "p1",
+        "engine": "chatgpt", "answer_text": "A response",
+        "capture_status": "captured",
+    }
+    assert validate_response_record({**valid_response, "run_id": None})[0] is False
+    assert validate_response_record({**valid_response, "answer_text": "x" * 200001})[0] is False
+    assert validate_response_record(valid_response)[0] is True
+
+    valid_citation = {
+        "citation_id": "c1", "response_id": "r1", "prompt_id": "p1",
+        "engine": "chatgpt", "order": 1, "citation_type": "sources_panel",
+        "url": "https://example.com",
+    }
+    assert validate_citation_record({**valid_citation, "url": "file:///etc/passwd"})[0] is False
+    assert validate_citation_record({**valid_citation, "prompt_id": 9})[0] is False
+    assert validate_citation_record(valid_citation)[0] is True
+
+
+def test_request_size_limit_without_content_length(monkeypatch):
+    import asyncio
+    from starlette.requests import Request
+    from app.main import enforce_request_size_limit
+
+    settings = Settings(MAX_REQUEST_BODY_BYTES=10)
+    monkeypatch.setattr("app.main.get_settings", lambda: settings)
+
+    async def receive():
+        return {"type": "http.request", "body": b"x" * 11, "more_body": False}
+
+    scope = {
+        "type": "http", "asgi": {"version": "3.0"}, "http_version": "1.1",
+        "method": "POST", "scheme": "http", "path": "/test",
+        "raw_path": b"/test", "query_string": b"", "headers": [],
+        "client": ("testclient", 123), "server": ("testserver", 80),
+    }
+    request = Request(scope, receive=receive)
+
+    async def call_next(_request):
+        pytest.fail("Oversized body must be rejected before reaching the route")
+
+    response = asyncio.run(enforce_request_size_limit(request, call_next))
+    assert response.status_code == 413
+
+
+def test_request_size_limit_rejects_content_length_mismatch(monkeypatch):
+    import asyncio
+    from starlette.requests import Request
+    from app.main import enforce_request_size_limit
+
+    settings = Settings(MAX_REQUEST_BODY_BYTES=100)
+    monkeypatch.setattr("app.main.get_settings", lambda: settings)
+
+    async def receive():
+        return {"type": "http.request", "body": b"actual-body", "more_body": False}
+
+    scope = {
+        "type": "http", "asgi": {"version": "3.0"}, "http_version": "1.1",
+        "method": "POST", "scheme": "http", "path": "/test",
+        "raw_path": b"/test", "query_string": b"", "headers": [(b"content-length", b"1")],
+        "client": ("testclient", 123), "server": ("testserver", 80),
+    }
+    request = Request(scope, receive=receive)
+
+    async def call_next(_request):
+        pytest.fail("Mismatched body length must be rejected before reaching the route")
+
+    response = asyncio.run(enforce_request_size_limit(request, call_next))
+    assert response.status_code == 400
+
+
+def test_multipart_duplicate_fields_are_rejected(isolated_api):
+    client, _, settings = isolated_api
+    boundary = "security-boundary"
+    valid_line = json.dumps({
+        "response_id": "duplicate-test", "run_id": "run-1", "prompt_id": "prompt-1",
+        "engine": "chatgpt", "capture_status": "captured", "answer_text": "Kasparro is mentioned.",
+    })
+    parts = [
+        f"--{boundary}\r\nContent-Disposition: form-data; name=\"dataset_name\"\r\n\r\nsecurity-test\r\n",
+        f"--{boundary}\r\nContent-Disposition: form-data; name=\"responses_file\"; filename=\"responses.jsonl\"\r\nContent-Type: application/jsonl\r\n\r\n{valid_line}\r\n",
+        f"--{boundary}\r\nContent-Disposition: form-data; name=\"responses_file\"; filename=\"responses.jsonl\"\r\nContent-Type: application/jsonl\r\n\r\n{valid_line}\r\n",
+        f"--{boundary}--\r\n",
+    ]
+    response = client.post(
+        "/datasets/upload",
+        headers={
+            "Authorization": f"Bearer {settings.ANALYST_TOKEN}",
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+        },
+        content="".join(parts).encode("utf-8"),
+    )
+    assert response.status_code == 400
+    assert "Duplicate multipart field" in response.text
+
+
+def test_held_out_benchmark_is_disjoint_from_regression_set():
+    import json
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    def load(path):
+        return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+    regression = load(root / "evaluation" / "cases.jsonl")
+    held_out = load(root / "evaluation" / "held_out_cases.jsonl")
+    regression_prompts = {case["prompt_id"] for case in regression}
+    held_out_prompts = {case["prompt_id"] for case in held_out}
+    assert len(held_out) >= 30
+    assert not regression_prompts.intersection(held_out_prompts)
+    assert len({case["case_id"] for case in held_out}) == len(held_out)
+    assert all(case["source_type"] == "held_out_synthetic" for case in held_out)
+    assert all(case["annotation_status"] == "provisional_single_annotator" for case in held_out)
+    assert all(set(case["expected"]) == {
+        "kasparro_mentioned", "kasparro_recommended", "kasparro_negative"
+    } for case in held_out)
