@@ -1156,3 +1156,33 @@ def test_evaluation_grader_reports_specificity_accuracy_and_support():
         compute_label_metrics([1], [True])
     with pytest.raises(ValueError):
         grade_predictions([{"kasparro_mentioned": True}], [])
+
+
+
+def test_report_renderers_require_source_lookup_and_filter_invalid_evidence():
+    import pytest
+    from app.evidence import render_report_html, render_report_markdown
+
+    report = {
+        "title": "Evidence guard",
+        "diagnostics": [{
+            "title": "Finding",
+            "observed_pattern": "Pattern",
+            "evidence": [
+                {"response_id": "r1", "excerpt": "Kasparro is present", "location": "answer_text"},
+                {"response_id": "r1", "excerpt": "Fabricated text", "location": "answer_text"},
+            ],
+        }],
+    }
+    with pytest.raises(ValueError):
+        render_report_html(report)
+    with pytest.raises(ValueError):
+        render_report_markdown(report)
+
+    source_lookup = {"r1": {"answer_text": "Kasparro is present in the source."}}
+    html_output = render_report_html(report, source_lookup)
+    markdown_output = render_report_markdown(report, source_lookup)
+    assert "Kasparro is present" in html_output
+    assert "Fabricated text" not in html_output
+    assert "Kasparro is present" in markdown_output
+    assert "Fabricated text" not in markdown_output
