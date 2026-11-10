@@ -41,7 +41,7 @@ flowchart TD
     subgraph CLASSIFY ["2. Dual Classifier & Scoring Engine"]
         DB --> ROUTE{"Execution Mode"}
         ROUTE -->|"Keyless Replay (Default)"| REPLAY["Deterministic Replay Classifier\n(Fast, offline, zero API keys)"]
-        ROUTE -->|"Real Model Adapter"| PROV["LLM Provider Adapter\n(OpenAI / Google API + Retries)"]
+        ROUTE -->|"Real Model Adapter"| PROV["LLM Provider Adapter\n(OpenAI-compatible chat completions + bounded retries)"]
         REPLAY & PROV --> SCORE["Visibility Scoring Engine (Formula v1)\n30% Inclusion + 40% Recommendation\n+ 20% Prominence + 10% Non-Negative"]
     end
 
