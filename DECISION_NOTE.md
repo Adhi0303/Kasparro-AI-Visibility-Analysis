@@ -76,15 +76,15 @@ From the analysis of the 150 archived responses:
 
 | AI Engine | Eligible Responses | Mean Score | Inclusion Rate | Recommendation Rate | Negative Rate |
 |---|:---:|:---:|:---:|:---:|:---:|
-| **Google AI Mode** | 50 | **34.75** | 50.0% | 8.0% | 4.0% |
-| **ChatGPT** | 50 | **36.48** | 50.0% | 14.0% | **12.0%** |
-| **Gemini** | 50 | **41.48** | 44.0% | **26.0%** | 2.0% |
-| **Overall** | **150** | **37.57** | **48.0%** | **16.0%** | **6.0%** |
+| **Google AI Mode** | 50 | **32.75** | 50.0% | 4.0% | 4.0% |
+| **ChatGPT** | 50 | **31.43** | 50.0% | 2.0% | **6.0%** |
+| **Gemini** | 50 | **34.93** | 44.0% | **12.0%** | 0.0% |
+| **Overall** | **150** | **33.04** | **48.0%** | **6.0%** | **3.33%** |
 
 ### Top Evidence-Backed Remedy
 **Action:** Publish 3 Verified Third-Party B2B Case Studies with Before/After GEO Metrics.  
-**Supporting Evidence:** ChatGPT answers directly cite ScamAdviser and flag Kasparro for lacking independent evidence (Response `ac5bdf24-6a6e-49a0-abf5-2755ff3b42bc`).  
-**Expected Benefit:** Replaces cautionary third-party citations with verified proof points, resolving the 12% negative sentiment in ChatGPT.  
+**Supporting Evidence:** ChatGPT answers directly cite ScamAdviser and flag Kasparro for lacking independent evidence (e.g., Response `ac5bdf24-6a6e-49a0-abf5-2755ff3b42bc`, `5492b420-7fa5-4de4-ab2c-6c4412e5b18d`).
+**Expected Benefit:** Replaces cautionary third-party citations with verified proof points, resolving the 6.0% negative sentiment in ChatGPT.
 **Validation Plan:** Track ChatGPT answers across prompts 001–005 over a 30-day monitoring window. Target: 0 ScamAdviser citations.
 
 ---
@@ -115,7 +115,7 @@ From the analysis of the 150 archived responses:
 | Replay classifier, provider adapter & error handling | 45 mins | Completed |
 | Scoring formula, prominence decay & category taxonomy | 40 mins | Completed |
 | Report lifecycle, review workflow & export gate | 40 mins | Completed |
-| Automated pytest suite (21 tests) | 35 mins | Completed |
+| Automated pytest suite (76 tests across unit & API integration suites) | 35 mins | Completed |
 | Evaluation grader, cases & comparison report | 30 mins | Completed |
 | Final report generation, README & Decision Note | 35 mins | Completed |
 | **Total Active Time** | **5h 45m** | **Within 6h Limit** |

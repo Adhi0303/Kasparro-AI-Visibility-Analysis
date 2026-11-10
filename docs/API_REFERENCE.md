@@ -101,17 +101,17 @@ Authorization: Bearer <TOKEN>
     "failed_count": 0,
     "skipped_count": 0,
     "overall": {
-      "mean_score": 37.57,
+      "mean_score": 33.04,
       "distribution": {
         "inclusion_rate": 0.48,
-        "recommendation_rate": 0.16,
-        "negative_rate": 0.06
+        "recommendation_rate": 0.06,
+        "negative_rate": 0.0333
       }
     },
     "engine_aggregates": {
-      "gemini": { "mean_score": 41.5, "distribution": { "inclusion_rate": 0.44, "recommendation_rate": 0.26, "negative_rate": 0.02 } },
-      "chatgpt": { "mean_score": 36.5, "distribution": { "inclusion_rate": 0.50, "recommendation_rate": 0.14, "negative_rate": 0.12 } },
-      "aimode": { "mean_score": 34.8, "distribution": { "inclusion_rate": 0.50, "recommendation_rate": 0.08, "negative_rate": 0.04 } }
+      "gemini": { "mean_score": 34.93, "distribution": { "inclusion_rate": 0.44, "recommendation_rate": 0.12, "negative_rate": 0.0 } },
+      "chatgpt": { "mean_score": 31.43, "distribution": { "inclusion_rate": 0.50, "recommendation_rate": 0.02, "negative_rate": 0.06 } },
+      "aimode": { "mean_score": 32.75, "distribution": { "inclusion_rate": 0.50, "recommendation_rate": 0.04, "negative_rate": 0.04 } }
     }
   }
   ```

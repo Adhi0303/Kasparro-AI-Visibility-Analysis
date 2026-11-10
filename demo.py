@@ -213,7 +213,7 @@ def main():
 Key Deliverables to Explore:
   1. Interactive HTML Report : evaluation/results/report.html
      (Open in Brave or Chrome for the 50-prompt scatter chart & filters)
-  2. Automated Test Suite    : pytest -v (22/22 tests passing)
+  2. Automated Test Suite    : pytest -v (76/76 tests passing)
   3. Classifier Evaluation   : python -m evaluation.run_eval
   4. Final Export JSON       : evaluation/results/final_report.json
   5. Architecture & Rationale: README.md and DECISION_NOTE.md

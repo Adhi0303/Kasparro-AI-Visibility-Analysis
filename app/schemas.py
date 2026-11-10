@@ -9,19 +9,34 @@ from pathlib import Path
 
 class DatasetImportRequest(BaseModel):
     dataset_name: str = Field(default="kasparro-historical-snapshot", min_length=1, max_length=100)
-    source_directory: str = Field(default="data")
+    source_directory: str = Field(default="data", min_length=1, max_length=300)
 
     @field_validator("source_directory")
     @classmethod
     def validate_directory_path(cls, v: str) -> str:
-        # Prevent path traversal attacks (e.g. ../../etc)
-        normalized = os.path.normpath(v)
-        if normalized.startswith("..") or os.path.isabs(v):
-            # Only allow subdirectories within current workspace or explicitly 'data'
-            resolved = Path(v).resolve()
-            cwd = Path.cwd().resolve()
-            if not str(resolved).startswith(str(cwd)):
-                raise ValueError("source_directory must be a relative path within the project workspace")
+        from app.config import get_settings
+
+        if not v or not v.strip() or "\x00" in v:
+            raise ValueError("source_directory must be a non-empty valid relative path")
+
+        raw_parts = v.replace("\\", "/").split("/")
+        if ".." in raw_parts:
+            raise ValueError("Path traversal segments ('..') are not permitted in source_directory")
+
+        if os.path.isabs(v):
+            raise ValueError("Absolute paths are not permitted for source_directory")
+
+        cwd = Path.cwd().resolve()
+        resolved = (cwd / v).resolve()
+
+        allowed_raw = os.getenv("ALLOWED_IMPORT_DIRS") or get_settings().ALLOWED_IMPORT_DIRS
+        allowed_dirs = [
+            (cwd / d.strip()).resolve()
+            for d in allowed_raw.split(",")
+            if d.strip()
+        ]
+        if not any(resolved.is_relative_to(base) for base in allowed_dirs):
+            raise ValueError("source_directory must resolve inside an authorized data directory")
         return v
 
 

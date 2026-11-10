@@ -36,7 +36,7 @@ def get_default_remedies() -> List[Dict[str, Any]]:
             "title": "Establish Official Profiles on Software Review Directories (G2, Capterra, ProductHunt)",
             "problem": (
                 "Kasparro is 100% absent (0/75 responses) from unbranded category discovery queries, "
-                "while AI engines cite G2 and Capterra in over 88% of recommendations (Diagnostic 1, Response 0f38b477-9f3c-44a8-9d10-0b6016db6150)."
+                "while AI engines frequently ground competitor shortlists in third-party review directories and editorial listicles (Diagnostic 1, Response 0f38b477-9f3c-44a8-9d10-0b6016db6150)."
             ),
             "supporting_evidence": [
                 "0f38b477-9f3c-44a8-9d10-0b6016db6150",

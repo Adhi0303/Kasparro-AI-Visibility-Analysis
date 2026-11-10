@@ -10,7 +10,7 @@ This documentation suite is organized into focused, single-responsibility guides
 | **[2. Scoring & Methodology](SCORING_AND_METHODOLOGY.md)** | Deep dive into Visibility Formula v1, component weights (30/40/20/10), prominence decay math, `null` uncertainty normalization, and statistical denominator integrity. |
 | **[3. REST API Reference](API_REFERENCE.md)** | Complete HTTP contract, endpoints (`/datasets`, `/analyses`, `/reports`, `/decision`, `/export`), Bearer token RBAC authentication, and cURL workflow examples. |
 | **[4. Human Review & Immutability](HUMAN_REVIEW_LIFECYCLE.md)** | Analyst vs Reviewer workflow, state machine (`DRAFT → SUBMITTED → APPROVED/REJECTED`), cryptographic SHA-256 content hashing, version immutability, and export gate enforcement. |
-| **[5. Evaluation & Benchmarks](EVALUATION_AND_BENCHMARKS.md)** | Evaluation framework across 10 gold cases, baseline vs proposed classifier performance (+20% agreement), 3 evidence-backed diagnostics, and prioritized remedies roadmap. |
+| **[5. Evaluation & Benchmarks](EVALUATION_AND_BENCHMARKS.md)** | Evaluation framework across 20 gold cases, baseline vs replay classifier performance (+50.0% agreement), 3 evidence-backed diagnostics, and prioritized remedies roadmap. |
 
 ---
 
@@ -20,7 +20,7 @@ This documentation suite is organized into focused, single-responsibility guides
   ```powershell
   python demo.py
   ```
-* To run the 21-test automated pytest suite:
+* To run the 76-test automated pytest suite:
   ```powershell
   pytest -v
   ```

@@ -10,7 +10,15 @@ class Settings(BaseSettings):
     EXECUTION_MODE: str = "replay"
 
     ANALYST_TOKEN: str = "dev-analyst-token-2026"
+    SECONDARY_ANALYST_TOKEN: Optional[str] = None
     REVIEWER_TOKEN: str = "dev-reviewer-token-2026"
+    ADMIN_TOKEN: Optional[str] = None
+
+    ALLOWED_IMPORT_DIRS: str = "data,fixtures"
+    MAX_REQUEST_BODY_BYTES: int = 12 * 1024 * 1024
+    MAX_IMPORT_FILE_BYTES: int = 10 * 1024 * 1024
+    MAX_IMPORT_RECORDS_PER_FILE: int = 10000
+    MAX_ANALYSIS_SECONDS: int = 120
 
     LLM_PROVIDER: Optional[str] = None
     LLM_MODEL: Optional[str] = None

@@ -10,6 +10,7 @@ class EvidenceItem(BaseModel):
     start_offset: Optional[int] = None
     end_offset: Optional[int] = None
     match_type: Optional[str] = None
+    submitted_excerpt: Optional[str] = None
     malformed_reason: Optional[str] = None
 
 
@@ -33,7 +34,14 @@ class ClassificationResult(BaseModel):
 
 class LLMBase(ABC):
     @abstractmethod
-    def classify(self, response_id: str, engine: str, answer_text: str, failure_scenario: Optional[str] = None) -> ClassificationResult:
+    def classify(
+        self,
+        response_id: str,
+        engine: str,
+        answer_text: str,
+        failure_scenario: Optional[str] = None,
+        prompt_text: Optional[str] = None,
+    ) -> ClassificationResult:
         """Classify a single response."""
         pass
 

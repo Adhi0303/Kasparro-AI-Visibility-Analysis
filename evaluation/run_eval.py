@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 
 from evaluation.grader import grade_predictions, baseline_classify
+from app.evidence import find_evidence_match
 from app.llm.replay import ReplayClassifier
 from app.llm.provider import ProviderClassifier, DEFAULT_LLM_BASE_URL
 from app.config import get_settings, Settings
@@ -32,6 +33,28 @@ def load_response_texts(responses_path: str = "data/responses.jsonl") -> Dict[st
     return texts
 
 
+def load_response_prompt_texts(responses_path: str = "data/responses.jsonl") -> Dict[str, str]:
+    prompts_by_id: Dict[str, str] = {}
+    prompts_file = os.path.join(os.path.dirname(responses_path), "prompts.jsonl")
+    if os.path.exists(prompts_file):
+        with open(prompts_file, "r", encoding="utf-8") as pf:
+            for line in pf:
+                line = line.strip()
+                if line:
+                    p = json.loads(line)
+                    prompts_by_id[p["prompt_id"]] = p.get("text", "")
+
+    resp_prompts: Dict[str, str] = {}
+    if os.path.exists(responses_path):
+        with open(responses_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    item = json.loads(line)
+                    resp_prompts[item["response_id"]] = prompts_by_id.get(item.get("prompt_id", ""), "")
+    return resp_prompts
+
+
 def run_evaluation(
     execution_mode: str = "replay",
     cases_path: str = "evaluation/cases.jsonl",
@@ -44,6 +67,7 @@ def run_evaluation(
 
     cases = load_cases(cases_path)
     response_texts = load_response_texts(responses_path)
+    response_prompts = load_response_prompt_texts(responses_path)
     settings = settings_override or get_settings()
 
     if execution_mode == "real_model":
@@ -71,19 +95,29 @@ def run_evaluation(
     failed_cases: List[Dict[str, Any]] = []
     case_details: List[Dict[str, Any]] = []
 
+    import inspect
+    classify_sig = inspect.signature(classifier.classify)
+    accepts_prompt_text = "prompt_text" in classify_sig.parameters or any(
+        p.kind == inspect.Parameter.VAR_KEYWORD for p in classify_sig.parameters.values()
+    )
+
     for c in cases:
         c_id = c["case_id"]
         source_type = c.get("source_type", "supplied")
         resp_id = c.get("response_id")
         text = c.get("synthetic_text", "") if source_type == "synthetic" else response_texts.get(resp_id, "")
+        prompt_text = c.get("prompt_text") if source_type == "synthetic" else response_prompts.get(resp_id)
         expected = c["expected"]
 
         b_pred = baseline_classify(text)
-        res = classifier.classify(
-            response_id=resp_id or c_id,
-            engine=c.get("engine", "unknown"),
-            answer_text=text,
-        )
+        classify_kwargs = {
+            "response_id": resp_id or c_id,
+            "engine": c.get("engine", "unknown"),
+            "answer_text": text,
+        }
+        if accepts_prompt_text:
+            classify_kwargs["prompt_text"] = prompt_text or None
+        res = classifier.classify(**classify_kwargs)
 
         if res.status != "success":
             failed_cases.append({
@@ -104,6 +138,25 @@ def run_evaluation(
             })
             continue
 
+        validated_ev = []
+        rejected_ev = []
+        for ev in res.evidence:
+            match = find_evidence_match(ev.excerpt, text, location=ev.location)
+            if match["valid"]:
+                validated_ev.append({
+                    "excerpt": match["canonical_excerpt"],
+                    "location": ev.location,
+                    "start_offset": match["start_offset"],
+                    "end_offset": match["end_offset"],
+                    "match_type": match["match_type"],
+                })
+            else:
+                rejected_ev.append({
+                    "excerpt": ev.excerpt,
+                    "location": ev.location,
+                    "rejection_reason": match["rejection_reason"],
+                })
+
         p_pred = {
             "kasparro_mentioned": res.kasparro_mentioned,
             "kasparro_recommended": res.kasparro_recommended,
@@ -121,6 +174,10 @@ def run_evaluation(
             "expected": expected,
             "baseline": b_pred,
             "proposed": p_pred,
+            "evidence_validation": {
+                "accepted_count": len(validated_ev),
+                "rejected_count": len(rejected_ev),
+            },
             "notes": c.get("notes", ""),
         })
 

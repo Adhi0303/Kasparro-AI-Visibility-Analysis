@@ -113,7 +113,7 @@ uvicorn app.main:app --reload
 
 ## 4. Running Automated Tests
 
-Run the comprehensive 21-test pytest suite:
+Run the 76-test pytest suite:
 ```powershell
 pytest -v
 ```
@@ -229,7 +229,7 @@ The repository includes a dedicated documentation suite in the [`docs/`](docs/RE
 | [`docs/SCORING_AND_METHODOLOGY.md`](docs/SCORING_AND_METHODOLOGY.md) | **Scoring Methodology & Formula v1** | Mathematical derivation of Visibility Formula v1, component weights (30/40/20/10), positional reciprocal decay ($1/\text{rank}$), `null` uncertainty normalization, and statistical denominator hygiene. |
 | [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) | **REST API Reference & Integration** | Complete OpenAPI/FastAPI endpoint specifications (`/datasets`, `/analyses`, `/reports`, `/decision`, `/export`), Bearer token RBAC authentication, and end-to-end cURL workflows. |
 | [`docs/HUMAN_REVIEW_LIFECYCLE.md`](docs/HUMAN_REVIEW_LIFECYCLE.md) | **Human Review & Governance** | Analyst vs Reviewer workflow, state machine transitions (`DRAFT → SUBMITTED → APPROVED/REJECTED`), cryptographic SHA-256 content hashing, version immutability, and export gate enforcement. |
-| [`docs/EVALUATION_AND_BENCHMARKS.md`](docs/EVALUATION_AND_BENCHMARKS.md) | **Evaluation & Benchmark Insights** | Ground-truth benchmark across 10 gold cases, baseline regex comparison (+20% agreement improvement), 3 evidence-backed diagnostics with verbatim source excerpts, and the prioritized remedies roadmap. |
+| [`docs/EVALUATION_AND_BENCHMARKS.md`](docs/EVALUATION_AND_BENCHMARKS.md) | **Evaluation & Benchmark Insights** | Ground-truth benchmark across 20 gold cases, baseline regex comparison (+50.0% agreement improvement in replay mode), 3 evidence-backed diagnostics with verbatim source excerpts, and the prioritized remedies roadmap. |
 
 
 

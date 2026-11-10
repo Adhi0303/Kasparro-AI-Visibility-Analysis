@@ -15,23 +15,24 @@ To evaluate classifier reliability independently from engineering unit tests, th
    * Evaluated separately via `python -m evaluation.run_eval --mode real_model`, writing strictly to `evaluation/results/eval_provider_results.json` and `eval_provider_report.md` so replay and provider metrics are never conflated.
 
 ### Labeled Evaluation Cases (`evaluation/cases.jsonl`)
-The benchmark suite contains **15 gold-standard cases**:
+The benchmark suite contains **20 gold-standard cases**:
 * **8 Supplied Real Cases (`case-001` to `case-008`):** Spanning Gemini, ChatGPT, and Google AI Mode across branded, unbranded, negative, and neutral uncertainty responses.
-* **7 Synthetic Regression Cases (`synthetic-001` to `synthetic-007`):**
-  * `synthetic-001`: Prompt repetition/echo without actual brand evaluation (`kasparro_mentioned=False`).
+* **12 Synthetic Regression Cases (`synthetic-001` to `synthetic-012`):**
+  * `synthetic-001` & `synthetic-008`: Prompt repetition/echo without actual brand evaluation (`kasparro_mentioned=False`).
   * `synthetic-002`: Explicit negative characterization & caution warning.
   * `synthetic-003`: Competitor recommendation (`"I recommend Profound over Kasparro"`).
   * `synthetic-004`: Competitor negativity in an adjacent sentence while Kasparro description stays neutral.
   * `synthetic-005`: Negated recommendation with poor evidence (`kasparro_recommended=False, kasparro_negative=True`).
   * `synthetic-006`: Neutral insufficient-information statement (`kasparro_negative=False`).
   * `synthetic-007`: Coexisting recommendation + negative caveat (`kasparro_recommended=True, kasparro_negative=True`).
+  * `synthetic-009` to `synthetic-012`: Passive practitioner endorsements, double-negation defense (`"not unreliable"` / `"not a scam"`), ambiguous `"It"` after competitor comparison, and subject shifts before anaphora.
 
 ```mermaid
 flowchart LR
-    GOLD["Gold Cases (15 cases)\nevaluation/cases.jsonl"] --> GRADER["Grader Engine\nevaluation/grader.py"]
+    GOLD["Gold Cases (20 cases)\nevaluation/cases.jsonl"] --> GRADER["Grader Engine\nevaluation/grader.py"]
     BASELINE["Baseline Keyword Matcher\n(Global substring heuristics)"] --> GRADER
     REPLAY["Replay Classifier\n(Contextual clause-aware rules)"] --> GRADER
-    GRADER --> RESULTS["Measured Replay Benchmark\nBaseline: 53.3% vs Replay: 100.0%"]
+    GRADER --> RESULTS["Measured Replay Benchmark\nBaseline: 50.0% vs Replay: 100.0%"]
 ```
 
 ---
@@ -42,16 +43,16 @@ Running `python -m evaluation.run_eval` produces the following verified results 
 
 | Metric | Rule-Based Baseline | Contextual Replay (`v1`) | Delta |
 | :--- | :---: | :---: | :---: |
-| **Exact-Match Agreement** | **53.3%** (`8/15`) | **100.0%** (`15/15`) | **+46.7%** |
-| Mention Precision | 91.67% (`0.9167`) | 100.0% (`1.0`) | +8.33% |
+| **Exact-Match Agreement** | **50.0%** (`10/20`) | **100.0%** (`20/20`) | **+50.0%** |
+| Mention Precision | 88.24% (`0.8824`) | 100.0% (`1.0`) | +11.76% |
 | Mention Recall | 100.0% (`1.0`) | 100.0% (`1.0`) | 0.0% |
-| Recommendation Precision | 33.33% (`0.3333`) | 100.0% (`1.0`) | +66.67% |
+| Recommendation Precision | 37.50% (`0.375`) | 100.0% (`1.0`) | +62.50% |
 | Recommendation Recall | 100.0% (`1.0`) | 100.0% (`1.0`) | 0.0% |
-| Negative Precision | 66.67% (`0.6667`) | 100.0% (`1.0`) | +33.33% |
-| Negative Recall | 40.00% (`0.4000`) | 100.0% (`1.0`) | +60.0% |
+| Negative Precision | 50.00% (`0.5`) | 100.0% (`1.0`) | +50.00% |
+| Negative Recall | 40.00% (`0.4`) | 100.0% (`1.0`) | +60.00% |
 
 > [!NOTE]
-> These metrics reflect offline deterministic **replay** evaluation over the 15 gold cases and do not claim live-model performance. Live provider benchmarks require running `python -m evaluation.run_eval --mode real_model` with valid API credentials.
+> These metrics reflect offline deterministic **replay** evaluation over the 20 gold cases and do not claim live-model performance. Live provider benchmarks require running `python -m evaluation.run_eval --mode real_model` with valid API credentials.
 
 ---
 
@@ -88,4 +89,4 @@ From the 150 archived responses captured on 31 July 2026 across ChatGPT, Gemini,
 | :---: | :--- | :--- | :---: | :--- |
 | **R1** | **Publish 3 Verified Third-Party B2B Case Studies**<br>Address independent evidence deficit and ScamAdviser trust concerns. | `ac5bdf24`, `08f81acc` | **Medium** | Zero `scamadviser.com` citations across prompts `001`–`005` on re-crawl. |
 | **R2** | **Establish Profiles on Software Review Directories (G2, Capterra, ProductHunt)**<br>Seed independent category co-occurrence for unbranded buyer discovery. | `0f38b477`, `0697376e`, `a3fdd8bb` | **Low** | Unbranded prompt recall (`026`–`050`) rises above `0.0%` baseline. |
-| **R3** | **Deploy JSON-LD Organization Schema & Brand Disambiguation**<br>Separate Kasparro cleanly from Kaspr in crawler entity graphs. | `1d2dc007`, `1fda2a12`, `a3fdd8bb` | **Low** | Zero `kaspr` / `kaspr.io` citation leakage on branded prompts `016`–`019`. |
+| **R3** | **Deploy JSON-LD Organization Schema & Brand Disambiguation**<br>Separate Kasparro cleanly from Kaspr in crawler entity graphs. | `1d2dc007`, `1fda2a12`, `a3fdd8bb` | **Low** | Zero accidental `kaspr` citation leakage on branded prompts `016`–`019`. |

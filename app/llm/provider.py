@@ -69,13 +69,13 @@ class ProviderClassificationOutput(BaseModel):
 def _to_candidate_evidence(items: List[ProviderEvidenceInput]) -> List[EvidenceItem]:
     """
     Converts validated provider evidence objects into EvidenceItem candidates
-    without pre-filtering unverified strings, allowing centralized audit in
-    execute_analysis() to record valid and rejected excerpts.
+    without pre-filtering unverified strings or rewriting locations, allowing
+    centralized audit in execute_analysis() to record valid and rejected excerpts.
     """
     return [
         EvidenceItem(
             excerpt=item.excerpt,
-            location=item.location.strip() or "answer_text",
+            location=item.location,
             citation_id=item.citation_id,
         )
         for item in items
@@ -106,7 +106,8 @@ class ProviderClassifier(LLMBase):
         response_id: str,
         engine: str,
         answer_text: str,
-        failure_scenario: Optional[str] = None
+        failure_scenario: Optional[str] = None,
+        prompt_text: Optional[str] = None,
     ) -> ClassificationResult:
         config_error = self._validate_configuration()
         if config_error:
@@ -124,11 +125,18 @@ class ProviderClassifier(LLMBase):
             "Content-Type": "application/json",
         }
 
+        user_content = f"Response text to analyze:\n---\n{answer_text}\n---"
+        if prompt_text and prompt_text.strip():
+            user_content = (
+                f"Original user prompt (context only):\n---\n{prompt_text.strip()}\n---\n\n"
+                + user_content
+            )
+
         payload = {
             "model": self.model,
             "messages": [
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Response text to analyze:\n---\n{answer_text}\n---"},
+                {"role": "user", "content": user_content},
             ],
             "temperature": 0.0,
             "response_format": {"type": "json_object"},

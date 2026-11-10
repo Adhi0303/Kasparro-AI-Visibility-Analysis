@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-10T08:54:20.395857+00:00",
+  "timestamp": "2026-11-10T09:35:10.739473+00:00",
   "execution_metadata": {
     "execution_mode": "replay",
     "provider": "deterministic_replay",
@@ -8,64 +8,64 @@
     "classifier_version": "v1"
   },
   "counts": {
-    "total_cases": 15,
+    "total_cases": 20,
     "supplied_cases": 8,
-    "synthetic_cases": 7,
-    "evaluated_cases": 15,
+    "synthetic_cases": 12,
+    "evaluated_cases": 20,
     "failed_cases": 0
   },
   "baseline_metrics": {
-    "total_cases": 15,
-    "exact_matches": 8,
-    "agreement_rate": 0.5333,
+    "total_cases": 20,
+    "exact_matches": 10,
+    "agreement_rate": 0.5,
     "per_label": {
       "kasparro_mentioned": {
-        "true_positives": 11,
-        "false_positives": 1,
+        "true_positives": 15,
+        "false_positives": 2,
         "true_negatives": 3,
         "false_negatives": 0,
-        "precision": 0.9167,
+        "precision": 0.8824,
         "recall": 1.0,
-        "f1": 0.9565
+        "f1": 0.9375
       },
       "kasparro_recommended": {
-        "true_positives": 2,
-        "false_positives": 4,
-        "true_negatives": 9,
+        "true_positives": 3,
+        "false_positives": 5,
+        "true_negatives": 12,
         "false_negatives": 0,
-        "precision": 0.3333,
+        "precision": 0.375,
         "recall": 1.0,
-        "f1": 0.5
+        "f1": 0.5455
       },
       "kasparro_negative": {
         "true_positives": 2,
-        "false_positives": 1,
-        "true_negatives": 9,
+        "false_positives": 2,
+        "true_negatives": 13,
         "false_negatives": 3,
-        "precision": 0.6667,
+        "precision": 0.5,
         "recall": 0.4,
-        "f1": 0.5
+        "f1": 0.4444
       }
     }
   },
   "proposed_metrics": {
-    "total_cases": 15,
-    "exact_matches": 15,
+    "total_cases": 20,
+    "exact_matches": 20,
     "agreement_rate": 1.0,
     "per_label": {
       "kasparro_mentioned": {
-        "true_positives": 11,
+        "true_positives": 15,
         "false_positives": 0,
-        "true_negatives": 4,
+        "true_negatives": 5,
         "false_negatives": 0,
         "precision": 1.0,
         "recall": 1.0,
         "f1": 1.0
       },
       "kasparro_recommended": {
-        "true_positives": 2,
+        "true_positives": 3,
         "false_positives": 0,
-        "true_negatives": 13,
+        "true_negatives": 17,
         "false_negatives": 0,
         "precision": 1.0,
         "recall": 1.0,
@@ -74,7 +74,7 @@
       "kasparro_negative": {
         "true_positives": 5,
         "false_positives": 0,
-        "true_negatives": 10,
+        "true_negatives": 15,
         "false_negatives": 0,
         "precision": 1.0,
         "recall": 1.0,
@@ -104,6 +104,10 @@
         "kasparro_recommended": false,
         "kasparro_negative": true
       },
+      "evidence_validation": {
+        "accepted_count": 3,
+        "rejected_count": 0
+      },
       "notes": "ChatGPT cautions buyer about lack of verifiable third-party case studies and cites ScamAdviser."
     },
     {
@@ -125,6 +129,10 @@
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
         "kasparro_negative": true
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
       },
       "notes": "Google AI Mode notes Kasparro is not a recognized top-tier tool in the space."
     },
@@ -148,6 +156,10 @@
         "kasparro_recommended": true,
         "kasparro_negative": false
       },
+      "evidence_validation": {
+        "accepted_count": 3,
+        "rejected_count": 0
+      },
       "notes": "Gemini presents Kasparro as a viable solution provider."
     },
     {
@@ -169,6 +181,10 @@
         "kasparro_mentioned": false,
         "kasparro_recommended": false,
         "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 0,
+        "rejected_count": 0
       },
       "notes": "Unbranded prompt asking for best software; Gemini recommends Profound, Peec AI, Otterly. Kasparro absent."
     },
@@ -192,6 +208,10 @@
         "kasparro_recommended": false,
         "kasparro_negative": false
       },
+      "evidence_validation": {
+        "accepted_count": 0,
+        "rejected_count": 0
+      },
       "notes": "Unbranded prompt on growth marketer tools; Google AI Mode cites Profound and First Page Sage. Kasparro absent."
     },
     {
@@ -213,6 +233,10 @@
         "kasparro_mentioned": false,
         "kasparro_recommended": false,
         "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 0,
+        "rejected_count": 0
       },
       "notes": "Unbranded prompt on how B2B SaaS tracks ChatGPT recommendations; Kasparro absent."
     },
@@ -236,6 +260,10 @@
         "kasparro_recommended": false,
         "kasparro_negative": false
       },
+      "evidence_validation": {
+        "accepted_count": 3,
+        "rejected_count": 0
+      },
       "notes": "Neutral mention noting lack of pricing; disambiguates from Kaspr."
     },
     {
@@ -257,6 +285,10 @@
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
         "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 2,
+        "rejected_count": 0
       },
       "notes": "Balanced analysis explaining capability vs LLM non-determinism."
     },
@@ -280,6 +312,10 @@
         "kasparro_recommended": false,
         "kasparro_negative": false
       },
+      "evidence_validation": {
+        "accepted_count": 0,
+        "rejected_count": 0
+      },
       "notes": "Synthetic edge case: Brand name appears only in prompt echo/recap, not in model recommendation."
     },
     {
@@ -301,6 +337,10 @@
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
         "kasparro_negative": true
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
       },
       "notes": "Synthetic edge case: Strong explicit negative sentiment with caution warning."
     },
@@ -324,6 +364,10 @@
         "kasparro_recommended": false,
         "kasparro_negative": false
       },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Synthetic edge case: Recommendation keyword targets Profound rather than Kasparro."
     },
     {
@@ -345,6 +389,10 @@
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
         "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
       },
       "notes": "Synthetic edge case: Negative sentiment applies to competitor, not Kasparro."
     },
@@ -368,6 +416,10 @@
         "kasparro_recommended": false,
         "kasparro_negative": true
       },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Synthetic edge case: Explicit negated recommendation with negative evidence claim."
     },
     {
@@ -389,6 +441,10 @@
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
         "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
       },
       "notes": "Synthetic edge case: Neutral uncertainty when public information is limited."
     },
@@ -412,7 +468,141 @@
         "kasparro_recommended": true,
         "kasparro_negative": true
       },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Synthetic edge case: Positive recommendation and negative caveat coexist."
+    },
+    {
+      "case_id": "synthetic-008",
+      "source_type": "synthetic",
+      "response_id": "synth-prompt-context-echo",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 0,
+        "rejected_count": 0
+      },
+      "notes": "Module 2 edge case: Literal prompt repetition using prompt_text without genuine Kasparro discussion."
+    },
+    {
+      "case_id": "synthetic-009",
+      "source_type": "synthetic",
+      "response_id": "synth-passive-endorsement",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "Module 2 edge case: Passive recommendation & practitioner endorsement."
+    },
+    {
+      "case_id": "synthetic-010",
+      "source_type": "synthetic",
+      "response_id": "synth-double-negation",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "Module 2 edge case: Negated negative allegation & double negation."
+    },
+    {
+      "case_id": "synthetic-011",
+      "source_type": "synthetic",
+      "response_id": "synth-ambiguous-pronoun",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "Module 2 edge case: Ambiguous pronoun 'It' following multi-entity comparison."
+    },
+    {
+      "case_id": "synthetic-012",
+      "source_type": "synthetic",
+      "response_id": "synth-subject-shift",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "Module 2 edge case: Subject shift to Profound before 'It is widely recommended'."
     }
   ]
 }

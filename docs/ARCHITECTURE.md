@@ -155,13 +155,13 @@ Kasparro_AI_Engineer_Fresher/
 │   ├── run.json            # Capture metadata (July 31, 2026, DataForSEO, India, English)
 │   └── READ_ME.txt         # Dataset documentation
 ├── evaluation/             # Independent evaluation suite
-│   ├── cases.jsonl         # 10 labeled gold cases (8 supplied + 2 synthetic edge cases)
+│   ├── cases.jsonl         # 20 labeled gold cases (8 supplied + 12 synthetic edge cases)
 │   ├── grader.py           # Multi-label precision, recall, and agreement metrics calculator
 │   ├── run_eval.py         # Comparative benchmark script (Baseline vs Proposed)
 │   └── results/            # Benchmark outputs, final_report.json, and report.html
 ├── fixtures/               # Test fixtures and simulated failure conditions
-├── tests/                  # 21 unit and integration pytest test cases
-├── tools/                  # Pack integrity validation tools
+├── tests/                  # 76 unit and integration pytest test cases
+├── tools/                  # Pack integrity verification and artifact regeneration scripts
 ├── demo.py                 # One-click end-to-end demonstration script
 ├── README.md               # Quick-start manual and API usage guide
 └── DECISION_NOTE.md        # Architectural decisions, trade-offs, and disclosures

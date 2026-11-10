@@ -23,6 +23,7 @@ class Dataset(Base):
 
     id = Column(String, primary_key=True, default=generate_uuid)
     name = Column(String, nullable=False)
+    owner_id = Column(String, nullable=False, default="analyst-1")
     source_hash = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     validation_status = Column(String, nullable=False, default="valid")
@@ -73,6 +74,7 @@ class AnalysisRun(Base):
 
     id = Column(String, primary_key=True, default=generate_uuid)
     dataset_id = Column(String, ForeignKey("datasets.id"), nullable=False)
+    created_by = Column(String, nullable=False, default="analyst-1")
     execution_mode = Column(String, nullable=False, default="replay")
     classifier_version = Column(String, nullable=False, default="v1")
     scoring_version = Column(String, nullable=False, default="v1")
@@ -107,6 +109,7 @@ class Report(Base):
 
     id = Column(String, primary_key=True, default=generate_uuid)
     dataset_id = Column(String, ForeignKey("datasets.id"), nullable=False)
+    owner_id = Column(String, nullable=False, default="analyst-1")
     current_draft_version_id = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 

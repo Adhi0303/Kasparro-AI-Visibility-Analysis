@@ -28,16 +28,20 @@ def process_review_decision(
     if decision_norm not in ("approve", "reject"):
         raise HTTPException(status_code=400, detail="Decision must be 'approve' or 'reject'")
 
-    review = ReviewDecision(
-        report_version_id=version.id,
-        reviewer_id=reviewer_id,
-        decision=decision_norm,
-        comment=decision_req.comment,
-        created_at=datetime.utcnow()
-    )
-    db.add(review)
+    try:
+        review = ReviewDecision(
+            report_version_id=version.id,
+            reviewer_id=reviewer_id,
+            decision=decision_norm,
+            comment=decision_req.comment,
+            created_at=datetime.utcnow()
+        )
+        db.add(review)
 
-    version.status = "APPROVED" if decision_norm == "approve" else "REJECTED"
-    db.commit()
-    return version
+        version.status = "APPROVED" if decision_norm == "approve" else "REJECTED"
+        db.commit()
+        return version
+    except Exception:
+        db.rollback()
+        raise
 

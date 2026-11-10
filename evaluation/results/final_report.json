@@ -1,10 +1,10 @@
 {
   "title": "Kasparro AI Visibility Analysis & Human Review Final Report",
   "pack_version": "1.0.0",
-  "generated_at": "2026-10-28T15:35:43.894836",
+  "generated_at": "2026-11-10T09:34:38.634027+00:00",
   "provenance": {
-    "run_id": "4a4b71d9-9b0d-4497-85f1-7db5c4e21472",
-    "dataset_id": "67181111-43f9-4b48-8770-b316fa945f4a",
+    "run_id": "520896c4-5f85-4bef-a192-1ae56f5e6660",
+    "dataset_id": "31a3aab0-d33f-4345-bd13-9305dde786e8",
     "dataset_name": "kasparro-historical-snapshot",
     "source_hash": "142de02b3da907cb2f18847d73862b894164cb0bf94515d1adc4df6d21d1d4d7",
     "historical_capture_date": "2026-07-31",
@@ -25,11 +25,11 @@
     "scoring_version": "v1",
     "classifier_version": "v1",
     "execution_mode": "replay",
-    "overall_mean_score": 37.57,
+    "overall_mean_score": 33.04,
     "overall_distribution": {
       "inclusion_rate": 0.48,
-      "recommendation_rate": 0.16,
-      "negative_rate": 0.06
+      "recommendation_rate": 0.06,
+      "negative_rate": 0.0333
     },
     "engine_aggregates": {
       "aimode": {
@@ -37,10 +37,10 @@
         "total_successful": 50,
         "total_failed": 0,
         "total_skipped": 0,
-        "mean_score": 34.75,
+        "mean_score": 32.75,
         "distribution": {
           "inclusion_rate": 0.5,
-          "recommendation_rate": 0.08,
+          "recommendation_rate": 0.04,
           "negative_rate": 0.04
         }
       },
@@ -49,11 +49,11 @@
         "total_successful": 50,
         "total_failed": 0,
         "total_skipped": 0,
-        "mean_score": 36.48,
+        "mean_score": 31.43,
         "distribution": {
           "inclusion_rate": 0.5,
-          "recommendation_rate": 0.14,
-          "negative_rate": 0.12
+          "recommendation_rate": 0.02,
+          "negative_rate": 0.06
         }
       },
       "gemini": {
@@ -61,72 +61,72 @@
         "total_successful": 50,
         "total_failed": 0,
         "total_skipped": 0,
-        "mean_score": 41.48,
+        "mean_score": 34.93,
         "distribution": {
           "inclusion_rate": 0.44,
-          "recommendation_rate": 0.26,
-          "negative_rate": 0.02
+          "recommendation_rate": 0.12,
+          "negative_rate": 0.0
         }
       }
     },
     "category_aggregates": {
       "brand_discovery": {
-        "total_eligible": 150,
-        "total_successful": 150,
+        "total_eligible": 36,
+        "total_successful": 36,
         "total_failed": 0,
         "total_skipped": 0,
-        "mean_score": 37.57,
+        "mean_score": 22.57,
         "distribution": {
-          "inclusion_rate": 0.48,
-          "recommendation_rate": 0.16,
-          "negative_rate": 0.06
+          "inclusion_rate": 0.25,
+          "recommendation_rate": 0.0278,
+          "negative_rate": 0.0556
         }
       },
       "vendor_comparison": {
-        "total_eligible": 0,
-        "total_successful": 0,
+        "total_eligible": 24,
+        "total_successful": 24,
         "total_failed": 0,
         "total_skipped": 0,
-        "mean_score": null,
+        "mean_score": 44.65,
         "distribution": {
-          "inclusion_rate": 0.0,
-          "recommendation_rate": 0.0,
+          "inclusion_rate": 0.75,
+          "recommendation_rate": 0.0833,
           "negative_rate": 0.0
         }
       },
       "capability_evaluation": {
-        "total_eligible": 0,
-        "total_successful": 0,
+        "total_eligible": 30,
+        "total_successful": 30,
         "total_failed": 0,
         "total_skipped": 0,
-        "mean_score": null,
+        "mean_score": 29.17,
         "distribution": {
-          "inclusion_rate": 0.0,
-          "recommendation_rate": 0.0,
+          "inclusion_rate": 0.4,
+          "recommendation_rate": 0.0333,
           "negative_rate": 0.0
         }
       },
       "trust_and_legitimacy": {
-        "total_eligible": 0,
-        "total_successful": 0,
+        "total_eligible": 27,
+        "total_successful": 27,
         "total_failed": 0,
         "total_skipped": 0,
-        "mean_score": null,
+        "mean_score": 38.3,
         "distribution": {
-          "inclusion_rate": 0.0,
-          "recommendation_rate": 0.0,
-          "negative_rate": 0.0
+          "inclusion_rate": 0.6296,
+          "recommendation_rate": 0.0741,
+          "negative_rate": 0.1111
         }
       },
       "pricing_and_implementation": {
-        "total_eligible": 0,
-        "total_successful": 0,
+        "total_eligible": 33,
+        "total_successful": 33,
         "total_failed": 0,
         "total_skipped": 0,
-        "mean_score": null,
+        "mean_score": 35.23,
         "distribution": {
-          "inclusion_rate": 0.0,
-          "recommendation_rate": 0.0,
+          "inclusion_rate": 0.4848,
+          "recommendation_rate": 0.0909,
           "negative_rate": 0.0
         }
       }
@@ -134,118 +134,198 @@
   },
   "diagnostics": [
     {
-      "title": "Complete Absence in Unbranded Category Discovery Prompts",
-      "observed_pattern": "Across all 25 unbranded category prompts (kasparro:ai_shortlisting:026 to 050) evaluated across Google AI Mode, ChatGPT, and Gemini (75 total responses), Kasparro was included in 0 out of 75 responses (0.0% inclusion rate). Meanwhile, competitors Profound, Peec AI, and Otterly were consistently recommended.",
-      "comparison": "Branded inclusion rate: 37/75 (49.3%) vs Unbranded category inclusion rate: 0/75 (0.0%). Kasparro currently has zero spontaneous category recall when buyers do not explicitly name it.",
+      "title": "Absence in Unbranded Category Discovery Prompts",
+      "observed_pattern": "Across 75 unbranded category discovery responses, Kasparro was included in 0 out of 75 responses (0.0% inclusion rate), while competitors such as Profound, Peec AI, and Otterly dominated recommendations.",
+      "comparison": "Branded inclusion rate: 72/75 (96.0%) vs Unbranded category inclusion rate: 0/75 (0.0%).",
       "evidence": [
         {
           "response_id": "0f38b477-9f3c-44a8-9d10-0b6016db6150",
           "engine": "gemini",
           "prompt": "kasparro:ai_shortlisting:036 (what is the best software for measuring brand inclusion in AI search answers?)",
-          "excerpt": "Profound is a powerhouse in the AI visibility space. It tracks an extensive array of engines (10+ platforms including niche models like Grok and DeepSeek)."
+          "excerpt": "Best for Enterprise & Deep AI Persona Research: Profound",
+          "location": "answer_text",
+          "start_offset": 762,
+          "end_offset": 818,
+          "match_type": "exact",
+          "validation_status": "valid"
         },
         {
-          "response_id": "0697376e-335d-45ef-a593-bc12c5e1ecf3",
-          "engine": "aimode",
+          "response_id": "11010066-8ed2-4741-856e-9259ae1a377b",
+          "engine": "gemini",
           "prompt": "kasparro:ai_shortlisting:037 (what tools do growth marketers recommend for AI answer engine optimization?)",
-          "excerpt": "- **Profound:** Tracks which domains are cited in AI-generated answers and provides analytics to help brands measure share-of-voice across major AI platforms and human conversation forums like Reddit."
+          "excerpt": "* **Profound:** A favorite for enterprise-level programs, offering deep analytics, historical data depth, and prompt intelligence grounded in real user conversations.[dageno.ai](https://dageno.ai/blog/answer-engine-optimization-tools#:~:text=Gauge%20stands%20out%20for%20its,competitor%20visibility%20insights)",
+          "location": "answer_text",
+          "start_offset": 1445,
+          "end_offset": 1755,
+          "match_type": "exact",
+          "validation_status": "valid"
         }
       ],
-      "possible_explanation": "Generative AI models assemble recommendations based on category co-occurrence on third-party platforms (G2, Reddit, Capterra, industry listicles). Kasparro currently lacks independent software directory profiles.",
-      "validation_needed": "Audit third-party review sites and industry listicles to verify whether Kasparro has any presence in GEO/AISO software directories compared to Profound and Peec AI.",
-      "confidence_and_limitations": "High statistical confidence for this historical snapshot (n=75 responses, 0 mentions). Represents historical snapshot captured on 31 July 2026."
+      "possible_explanation": "Generative AI models assemble category shortlists from co-occurrence on third-party software directories and industry roundups where Kasparro currently has sparse presence.",
+      "validation_needed": "Audit G2, Capterra, and industry listicles to benchmark competitor directory presence relative to Kasparro.",
+      "confidence_and_limitations": "Derived directly from n=75 analyzed unbranded responses and n=75 branded responses in the current dataset."
     },
     {
-      "title": "Severe Third-Party Evidence Deficit and Credibility Warnings in ChatGPT",
-      "observed_pattern": "When Kasparro is evaluated in ChatGPT, it receives negative or cautionary characterization in 12% of responses (6/50)\u2014the highest negative rate of all three engines. ChatGPT answers repeatedly warn buyers that Kasparro lacks independent case studies and cite ScamAdviser.",
-      "comparison": "Negative characterization rate: ChatGPT: 12.0% (6/50) vs Google AI Mode: 4.0% (2/50) vs Gemini: 2.0% (1/50).",
+      "title": "Third-Party Evidence Deficit and Cautionary Characterization",
+      "observed_pattern": "Among analyzed responses, negative or cautionary characterization was highest on chatgpt (6.0% (3/50)), alongside 5 response(s) citing ScamAdviser or highlighting missing independent case studies.",
+      "comparison": "Negative characterization rate by engine \u2014 ChatGPT: 6.0% (3/50), Google AI Mode: 4.0% (2/50), Gemini: 0.0% (0/50).",
       "evidence": [
+        {
+          "response_id": "5492b420-7fa5-4de4-ab2c-6c4412e5b18d",
+          "engine": "chatgpt",
+          "prompt": "kasparro:ai_shortlisting:014 (has anyone actually gotten results from kasparro or is it all hype?)",
+          "excerpt": "If you mean **Kasparro (the AI Revenue Engine for D2C brands)**, there isn't much independent evidence yet that it's producing consistent, measurable results across a broad customer base.",
+          "location": "answer_text",
+          "start_offset": 0,
+          "end_offset": 187,
+          "match_type": "exact",
+          "validation_status": "valid"
+        },
         {
           "response_id": "ac5bdf24-6a6e-49a0-abf5-2755ff3b42bc",
           "engine": "chatgpt",
           "prompt": "kasparro:ai_shortlisting:001 (does kasparro actually work for B2B SaaS companies trying to get recommended by chatgpt?)",
-          "excerpt": "However, I couldn't find independent evidence showing that Kasparro consistently delivers measurable improvements for B2B SaaS companies specifically. Most of the publicly available material is the company's own positioning rather than third-party case studies with before/after data. [www.scamadviser.com](https://www.scamadviser.com/check-website/kasparro.com?utm_source=chatgpt.com)"
-        },
-        {
-          "response_id": "08f81acc-0824-4e3a-a5d5-58446e2a6a90",
-          "engine": "chatgpt",
-          "prompt": "kasparro:ai_shortlisting:005 (does kasparro actually work or is ai visibility tracking just a gimmick?)",
-          "excerpt": "Short answer: **AI visibility tracking is a real problem, but many tools oversell how precisely they can measure it.** Kasparro falls into a category of tools trying to solve a legitimate need, but I'd be skeptical of taking any single \"AI visibility score\" at face value."
+          "excerpt": "However, I couldn't find independent evidence showing that Kasparro consistently delivers measurable improvements for B2B SaaS companies specifically.",
+          "location": "answer_text",
+          "start_offset": 579,
+          "end_offset": 729,
+          "match_type": "exact",
+          "validation_status": "valid"
         }
       ],
-      "possible_explanation": "ChatGPT's live web retrieval prioritizes domain trustworthiness checks and third-party validation. Because kasparro.com is a new domain without verified external client case studies, search queries surface ScamAdviser and cautionary blog posts.",
-      "validation_needed": "Publish verified before-and-after client case studies on reputable third-party domains and test whether subsequent live search retrievals replace the ScamAdviser citation.",
-      "confidence_and_limitations": "High confidence: Directly evidenced by source response excerpts and cited URLs. Does not mean Kasparro is invalid, but proves what ChatGPT conveys to prospects."
+      "possible_explanation": "Live web retrieval surfaces low-trust or thin-validation signals when verifiable third-party case studies and external customer reviews are scarce.",
+      "validation_needed": "Publish independent third-party customer case studies and verify whether subsequent crawls displace cautionary citations.",
+      "confidence_and_limitations": "Derived directly from validated ResponseResult labels and 5 ScamAdviser citation matches in the DB."
     },
     {
-      "title": "Brand Entity Confusion with 'Kaspr' in AI Search Results",
-      "observed_pattern": "Multiple responses across ChatGPT and Google AI Mode confuse 'Kasparro' with 'Kaspr' (the French B2B lead generation / contact scraping tool) or 'Gaspar AI', presenting Kaspr's subscription pricing and G2 reviews instead of Kasparro's AI visibility platform.",
-      "comparison": "Entity confusion occurred in both Google AI Mode and ChatGPT responses when answering pricing and company capability questions (e.g. Prompt 018).",
+      "title": "Brand Entity Confusion with 'Kaspr' / Similar Names",
+      "observed_pattern": "20 response(s) reference phonetically similar entities such as 'Kaspr' or 'Gaspar AI' (including G2/pricing disambiguation notes), splitting entity attribution.",
+      "comparison": "Disambiguation or sibling-entity citations detected in 20/150 total responses, compared against clean Kasparro-only attribution.",
       "evidence": [
+        {
+          "response_id": "136b8240-008c-46ff-b744-592c4d859e98",
+          "engine": "gemini",
+          "prompt": "kasparro:ai_shortlisting:025 (is kasparro available for self serve or do you have to talk to sales?)",
+          "excerpt": "Kaspr is primarily available as a **self-serve platform**.",
+          "location": "answer_text",
+          "start_offset": 0,
+          "end_offset": 58,
+          "match_type": "exact",
+          "validation_status": "valid"
+        },
         {
           "response_id": "1d2dc007-0757-480d-a086-6b6e2e13c463",
           "engine": "chatgpt",
           "prompt": "kasparro:ai_shortlisting:018 (is kasparro overpriced for B2B SaaS startups?)",
-          "excerpt": "If you mean **Kasparro** (the B2B SaaS growth/outbound agency, not Kaspr), I couldn't find reliable public pricing or enough verified information to judge whether it's objectively overpriced."
-        },
-        {
-          "response_id": "a3fdd8bb-bcd9-4608-9786-ad4b3a2c7dc2",
-          "engine": "aimode",
-          "prompt": "kasparro:ai_shortlisting:001 (does kasparro actually work for B2B SaaS companies trying to get recommended by chatgpt?)",
-          "excerpt": "Based on my research, Kasparro is not a widely recognized, top-tier agency or tool in the AI visibility space (AISO - AI Search Optimization) for B2B SaaS according to public search results as of July 2026."
+          "excerpt": "If you mean **Kasparro** (the B2B SaaS growth/outbound agency, not Kaspr), I couldn't find reliable public pricing or enough verified information to judge whether it's objectively overpriced.",
+          "location": "answer_text",
+          "start_offset": 0,
+          "end_offset": 191,
+          "match_type": "exact",
+          "validation_status": "valid"
         }
       ],
-      "possible_explanation": "Phonetic and orthographic proximity to 'Kaspr' combined with sparse entity graph data for Kasparro leads AI search engines to pull citations from kaspr.io.",
-      "validation_needed": "Check JSON-LD Schema on kasparro.com and test prompt disambiguation explicitly.",
-      "confidence_and_limitations": "Evidence corroborated across multiple citation domains (e.g. citations from kaspr.io in response ac5bdf24)."
+      "possible_explanation": "Orthographic proximity to 'Kaspr' paired with limited structured Organization schema and external entity links causes search agents to surface Kaspr profiles during disambiguation.",
+      "validation_needed": "Validate Organization JSON-LD markup on kasparro.com and re-test disambiguation prompts.",
+      "confidence_and_limitations": "Corroborated across 20 DB responses/citations containing Kaspr/Gaspar references."
     }
   ],
   "remedies": [
     {
-      "title": "Publish 3 Verified Third-Party Case Studies with Before/After GEO Metrics",
-      "problem": "ChatGPT directly cites ScamAdviser and cautions potential buyers that Kasparro lacks independent case studies and third-party validation (Diagnostic 2, Response ac5bdf24-6a6e-49a0-abf5-2755ff3b42bc).",
+      "title": "Publish Verified Third-Party Case Studies with Before/After GEO Metrics",
+      "problem": "Negative/cautionary responses reached 6.0% (3/50) on chatgpt, with 5 response(s) citing ScamAdviser or lack of independent proof.",
       "supporting_evidence": [
-        "ac5bdf24-6a6e-49a0-abf5-2755ff3b42bc",
-        "08f81acc-0824-4e3a-a5d5-58446e2a6a90"
+        "08f81acc-0824-4e3a-a5d5-58446e2a6a90",
+        "5492b420-7fa5-4de4-ab2c-6c4412e5b18d",
+        "847af3d3-88c3-4cad-ad9f-a1a4d6889052"
       ],
-      "action": "Produce and publish 3 detailed customer case studies on high-authority external platforms (Medium, Substack, industry tech blogs) featuring verifiable before-and-after AI visibility metrics.",
-      "expected_benefit": "Provides authoritative third-party source material for LLM search agents, displacing ScamAdviser citations and converting cautionary answers into substantiated trust signals.",
-      "effort": "Medium: Requires customer approval and 2 weeks of editorial packaging.",
-      "uncertainty": "LLM crawler indexing schedules vary (days to weeks); does not guarantee immediate ranking changes.",
-      "validation": "Re-run prompts 001-005 in a 30-day evaluation window. Target: 0 ScamAdviser citations and positive sentiment."
+      "action": "Produce and publish 3 detailed customer case studies on independent third-party platforms with verifiable before-and-after AI visibility metrics.",
+      "expected_benefit": "Provides third-party validation for retrieval-augmented AI engines, displacing cautionary ScamAdviser lookups.",
+      "effort": "Medium: Requires customer approval and editorial packaging.",
+      "uncertainty": "LLM search indexes refresh asynchronously over weeks.",
+      "validation": "Re-evaluate branded trust prompts after publication and check ScamAdviser citation drops."
     },
     {
       "title": "Establish Official Profiles on Software Review Directories (G2, Capterra, ProductHunt)",
-      "problem": "Kasparro is 100% absent (0/75 responses) from unbranded category discovery queries, while AI engines cite G2 and Capterra in over 88% of recommendations (Diagnostic 1, Response 0f38b477-9f3c-44a8-9d10-0b6016db6150).",
+      "problem": "Kasparro appeared in 0/75 (0.0%) unbranded category discovery responses, while competitors appeared consistently and 2/75 unbranded responses directly cited G2 or Capterra.",
       "supporting_evidence": [
         "0f38b477-9f3c-44a8-9d10-0b6016db6150",
-        "0697376e-335d-45ef-a593-bc12c5e1ecf3",
-        "a3fdd8bb-bcd9-4608-9786-ad4b3a2c7dc2"
+        "11010066-8ed2-4741-856e-9259ae1a377b"
       ],
-      "action": "Claim and populate verified vendor profiles on G2, Capterra, and ProductHunt under 'AI Search Optimization' and 'Marketing Analytics', and collect initial verified user reviews.",
-      "expected_benefit": "Integrates Kasparro into the category co-occurrence graph that LLMs scan when responding to generic buyer recommendations.",
-      "effort": "Low: Administrative profile setup and initial review requests.",
-      "uncertainty": "Review sites require verification processes and minimum review counts before displaying badges.",
-      "validation": "Evaluate prompts 026-050 after 60 days. Target: Kasparro inclusion rate increases from 0% to >15%."
+      "action": "Claim verified vendor profiles on G2, Capterra, and ProductHunt under AI Search Optimization and collect verified customer reviews.",
+      "expected_benefit": "Strengthens category co-occurrence in buyer shortlists across unbranded discovery queries.",
+      "effort": "Low: Profile setup and review collection workflow.",
+      "uncertainty": "Directory verification requires minimum review thresholds.",
+      "validation": "Re-run unbranded discovery prompts and track unbranded inclusion rate change."
     },
     {
-      "title": "Implement Organization Schema.org Markup & Brand Disambiguation to Separate from 'Kaspr'",
-      "problem": "AI engines frequently confuse Kasparro with French tool 'Kaspr', quoting Kaspr's pricing and G2 reviews (Diagnostic 3, Response 1d2dc007-0757-480d-a086-6b6e2e13c463).",
+      "title": "Implement Organization Schema.org Markup & Brand Disambiguation from 'Kaspr'",
+      "problem": "Entity overlap with 'Kaspr' or 'Gaspar AI' appeared in 20 dataset response(s)/citation(s), diluting clean product entity attribution.",
       "supporting_evidence": [
-        "1d2dc007-0757-480d-a086-6b6e2e13c463",
-        "a3fdd8bb-bcd9-4608-9786-ad4b3a2c7dc2"
+        "08f81acc-0824-4e3a-a5d5-58446e2a6a90",
+        "136b8240-008c-46ff-b744-592c4d859e98",
+        "1d2dc007-0757-480d-a086-6b6e2e13c463"
       ],
-      "action": "Deploy JSON-LD Organization schema on kasparro.com with exact brand entity definitions, sameAs social references, and publish a brief 'About Kasparro vs Kaspr' entity disambiguation note.",
-      "expected_benefit": "Clarifies entity resolution for search engine crawlers (Googlebot, OAI-SearchBot), eliminating Kaspr.io citations.",
-      "effort": "Low: Straightforward technical website markup change.",
-      "uncertainty": "Search engines take time to refresh entity graphs.",
-      "validation": "Verify Google Rich Results test passes and verify zero kaspr.io citations on branded prompts 016-019."
+      "action": "Deploy JSON-LD Organization schema on kasparro.com with explicit sameAs links and publish an entity clarification page distinguishing Kasparro (AISO/GEO) from Kaspr (B2B contact data).",
+      "expected_benefit": "Improves entity resolution precision for web search bots and reduces accidental Kaspr overlap.",
+      "effort": "Low: Technical schema deployment and FAQ copy update.",
+      "uncertainty": "Knowledge graph updates propagate over multiple crawl cycles.",
+      "validation": "Verify Rich Results validation passes and re-check disambiguation citations."
     }
   ],
-  "limitations_and_uncertainty": [
-    "Historical capture from 31 July 2026; live model rankings may differ.",
-    "One captured answer per prompt and engine; no repeated-run variance measurement.",
-    "Web citations indicate presence in answer footnotes, not independent claim verification.",
-    "Replay execution mode used for deterministic reproducibility without paid API credentials."
-  ]
+  "evidence_validation": {
+    "accepted_count": 6,
+    "rejected_count": 0,
+    "accepted": [
+      {
+        "diagnostic_title": "Absence in Unbranded Category Discovery Prompts",
+        "response_id": "0f38b477-9f3c-44a8-9d10-0b6016db6150",
+        "location": "answer_text",
+        "start_offset": 762,
+        "end_offset": 818,
+        "validation_status": "valid"
+      },
+      {
+        "diagnostic_title": "Absence in Unbranded Category Discovery Prompts",
+        "response_id": "11010066-8ed2-4741-856e-9259ae1a377b",
+        "location": "answer_text",
+        "start_offset": 1445,
+        "end_offset": 1755,
+        "validation_status": "valid"
+      },
+      {
+        "diagnostic_title": "Third-Party Evidence Deficit and Cautionary Characterization",
+        "response_id": "5492b420-7fa5-4de4-ab2c-6c4412e5b18d",
+        "location": "answer_text",
+        "start_offset": 0,
+        "end_offset": 187,
+        "validation_status": "valid"
+      },
+      {
+        "diagnostic_title": "Third-Party Evidence Deficit and Cautionary Characterization",
+        "response_id": "ac5bdf24-6a6e-49a0-abf5-2755ff3b42bc",
+        "location": "answer_text",
+        "start_offset": 579,
+        "end_offset": 729,
+        "validation_status": "valid"
+      },
+      {
+        "diagnostic_title": "Brand Entity Confusion with 'Kaspr' / Similar Names",
+        "response_id": "136b8240-008c-46ff-b744-592c4d859e98",
+        "location": "answer_text",
+        "start_offset": 0,
+        "end_offset": 58,
+        "validation_status": "valid"
+      },
+      {
+        "diagnostic_title": "Brand Entity Confusion with 'Kaspr' / Similar Names",
+        "response_id": "1d2dc007-0757-480d-a086-6b6e2e13c463",
+        "location": "answer_text",
+        "start_offset": 0,
+        "end_offset": 191,
+        "validation_status": "valid"
+      }
+    ],
+    "rejected": []
+  }
 }

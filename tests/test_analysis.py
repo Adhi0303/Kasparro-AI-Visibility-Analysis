@@ -204,7 +204,8 @@ def test_centralized_evidence_validation_records_rejected_and_accepted(monkeypat
         assert accepted[0]["validation_status"] == "valid"
         assert answer_text[accepted[0]["start_offset"]:accepted[0]["end_offset"]] == exact_quote
 
-        assert accepted[1]["excerpt"] == normalized_quote
+        assert accepted[1]["excerpt"] == "Kasparro provides\nstructured scoring"
+        assert accepted[1]["submitted_excerpt"] == normalized_quote
         assert accepted[1]["match_type"] == "normalized_whitespace"
         assert accepted[1]["validation_status"] == "valid"
         assert answer_text[accepted[1]["start_offset"]:accepted[1]["end_offset"]] == "Kasparro provides\nstructured scoring"
@@ -214,6 +215,7 @@ def test_centralized_evidence_validation_records_rejected_and_accepted(monkeypat
         assert "   " not in accepted_excerpts
 
         labels = json.loads(row.labels_json)
+        assert labels["evidence"] == accepted
         audit = labels["evidence_validation"]
         assert audit["accepted_count"] == 2
         assert audit["rejected_count"] == 2
@@ -613,3 +615,395 @@ def test_all_diagnostic_evidence_verbatim_integrity():
                     assert excerpt.endswith('single "AI visibility score" at face value.')
 
 
+
+
+def test_unvalidated_evidence_leakage_and_unsupported_location_rejected(monkeypatch):
+    import json
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
+    from app.database import Base
+    from app.models import Dataset, Response as DBResponse, ResponseResult
+    from app.classification import execute_analysis
+    from app.llm.base import ClassificationResult, EvidenceItem, LLMBase
+
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    db = Session()
+
+    try:
+        ds = Dataset(name="leakage-guard-test", source_hash="hash_lg", validation_status="valid")
+        db.add(ds)
+        db.flush()
+
+        ans = "Kasparro is a solid option for mid-market teams."
+        db_resp = DBResponse(
+            dataset_id=ds.id,
+            source_response_id="resp-loc-001",
+            prompt_id="prompt-loc-001",
+            engine="gemini",
+            raw_payload=json.dumps({
+                "response_id": "resp-loc-001",
+                "prompt_id": "prompt-loc-001",
+                "prompt_text": "Is Kasparro good?",
+                "engine": "gemini",
+                "answer_text": ans,
+            }),
+        )
+        db.add(db_resp)
+        db.commit()
+
+        class LocStubClassifier(LLMBase):
+            def classify(self, response_id, engine, answer_text, failure_scenario=None, prompt_text=None):
+                return ClassificationResult(
+                    response_id=response_id,
+                    engine=engine,
+                    status="success",
+                    kasparro_absent=False,
+                    kasparro_mentioned=True,
+                    kasparro_recommended=True,
+                    kasparro_negative=False,
+                    competitors=[],
+                    evidence=[
+                        EvidenceItem(excerpt="Kasparro is a solid option", location="answer_text"),
+                        EvidenceItem(excerpt="Kasparro is a solid option", location="user_prompt"),
+                        EvidenceItem(excerpt="Kasparro is a solid option", location=""),
+                        EvidenceItem(excerpt="Fabricated quote never written", location="answer_text"),
+                    ],
+                    confidence=0.9,
+                    execution_mode="replay",
+                    classifier_version="v1",
+                )
+
+        monkeypatch.setattr("app.classification.get_classifier", lambda **kwargs: LocStubClassifier())
+
+        analysis = execute_analysis(db, dataset_id=ds.id, execution_mode="replay")
+        row = db.query(ResponseResult).filter(ResponseResult.analysis_id == analysis.id).first()
+        assert row is not None
+
+        accepted = json.loads(row.evidence_json)
+        labels = json.loads(row.labels_json)
+
+        # Canonical evidence_json and labels["evidence"] must match identically with zero unvalidated leaks
+        assert len(accepted) == 1
+        assert labels["evidence"] == accepted
+        assert accepted[0]["location"] == "answer_text"
+
+        audit = labels["evidence_validation"]
+        assert audit["accepted_count"] == 1
+        assert audit["rejected_count"] == 3
+        reasons = [r["rejection_reason"].lower() for r in audit["rejected"]]
+        assert any("unsupported evidence location" in r and "user_prompt" in r for r in reasons)
+        assert any("unsupported evidence location" in r for r in reasons)
+        assert any("not found" in r for r in reasons)
+        assert all(r["location"] != "answer_text" or r["excerpt"] == "Fabricated quote never written" for r in audit["rejected"])
+    finally:
+        db.close()
+
+
+def test_replay_complete_sentence_and_bounded_clause_extraction():
+    from app.llm.replay import ReplayClassifier
+    from app.evidence import find_evidence_match
+
+    clf = ReplayClassifier()
+
+    # Long compound sentence (>360 chars) with complete punctuation-bounded clause on Kasparro
+    long_compound = (
+        "When B2B marketing leaders evaluate generative search platforms across multiple model vendors and regional markets "
+        "while balancing enterprise procurement workflows, compliance checks, automated prompt libraries, and multi-workspace analytics, "
+        "Kasparro is worth evaluating for agile AISO tracking, "
+        "whereas larger enterprise procurement teams frequently benchmark historical governance modules and custom data warehouse exports across multiple continents before signing contracts."
+    )
+    assert len(long_compound) > 360
+    res = clf.classify("resp-long-clause", "chatgpt", long_compound)
+    assert res.status == "success"
+    assert len(res.evidence) == 1
+    ev_text = res.evidence[0].excerpt
+    assert len(ev_text) <= 360
+    assert ev_text.endswith(",")
+    assert "Kasparro is worth evaluating for agile AISO tracking" in ev_text
+    assert find_evidence_match(ev_text, long_compound)["valid"] is True
+
+    # Unbounded run-on > 360 chars with NO internal punctuation skip cleanly rather than blind slicing
+    run_on = "In a very dense paragraph without separators " + ("token " * 55) + "Kasparro remains discussed continuously without any commas or stops anywhere in this excessively extended span"
+    assert len(run_on) > 360
+    res_runon = clf.classify("resp-runon", "gemini", run_on)
+    assert res_runon.status == "success"
+    assert res_runon.evidence == []
+    assert any("exceeds" in item["reason"].lower() for item in clf.last_extraction_skips)
+
+
+def test_downstream_report_validation_markdown_html_and_missing_sources():
+    import json
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
+    from app.database import Base
+    from app.evidence import render_report_html, render_report_markdown, validate_report_evidence
+    from app.export import export_approved_report
+    from app.models import Dataset, Response as DBResponse, ResponseResult, AnalysisRun
+    from app.reports import create_initial_report, edit_draft_report, submit_report_for_review
+    from app.review import process_review_decision
+    from app.schemas import DiagnosticItem, DraftReportEditRequest, ReviewDecisionRequest
+
+    source_lookup = {
+        "r-ok": {"answer_text": "Kasparro is worth considering for B2B SaaS workflows."},
+    }
+    raw_diags = [
+        {
+            "title": "Finding 1",
+            "observed_pattern": "Pattern",
+            "comparison": "Comp",
+            "evidence": [
+                {"response_id": "r-ok", "engine": "chatgpt", "prompt": "p1", "excerpt": "Kasparro is worth considering"},
+                {"response_id": "r-ok", "engine": "chatgpt", "prompt": "p1", "excerpt": "Totally invented claim"},
+                {"response_id": "r-missing", "engine": "gemini", "prompt": "p2", "excerpt": "Missing response text"},
+            ],
+            "possible_explanation": "Exp",
+            "validation_needed": "Val",
+            "confidence_and_limitations": "Conf",
+        }
+    ]
+
+    sanitized, audit = validate_report_evidence(raw_diags, source_lookup)
+    assert len(sanitized[0]["evidence"]) == 1
+    assert sanitized[0]["evidence"][0]["start_offset"] == 0
+    assert audit["accepted_count"] == 1
+    assert audit["rejected_count"] == 2
+    assert any("missing" in r["rejection_reason"].lower() for r in audit["rejected"])
+
+    # Full DB report lifecycle: edit with XSS & invalid evidence -> approve -> export JSON / Markdown / HTML
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    db = Session()
+    try:
+        ds = Dataset(name="downstream-report-ds", source_hash="hash_ds_rep", validation_status="valid")
+        db.add(ds)
+        db.flush()
+
+        r1_text = "However, Kasparro lacks independent validation and independent reviews."
+        r2_text = "If you mean Kasparro (not Kaspr), there isn't enough public pricing info."
+        for rid, pid, eng, txt in [
+            ("resp-r1", "kasparro:ai_shortlisting:001", "chatgpt", r1_text),
+            ("resp-r2", "kasparro:ai_shortlisting:018", "chatgpt", r2_text),
+        ]:
+            db.add(DBResponse(
+                dataset_id=ds.id,
+                source_response_id=rid,
+                prompt_id=pid,
+                engine=eng,
+                raw_payload=json.dumps({
+                    "response_id": rid,
+                    "prompt_id": pid,
+                    "prompt_text": "Does Kasparro work?",
+                    "engine": eng,
+                    "answer_text": txt,
+                }),
+            ))
+        db.commit()
+
+        from app.classification import execute_analysis
+        analysis = execute_analysis(db, dataset_id=ds.id, execution_mode="replay")
+        report = create_initial_report(db, dataset_id=ds.id, analysis_id=analysis.id)
+
+        # Edit draft attempting to inject XSS in title and fabricated evidence excerpt
+        edit_req = DraftReportEditRequest(
+            title='Snapshot <script>alert("xss")</script>',
+            diagnostics=[
+                DiagnosticItem(
+                    title='Unsafe <b>Tag</b>',
+                    observed_pattern="Negative rate observed",
+                    comparison="Comparison",
+                    evidence=[
+                        {
+                            "response_id": "resp-r1",
+                            "engine": "chatgpt",
+                            "prompt": "p1",
+                            "excerpt": "Kasparro lacks independent validation",
+                        },
+                        {
+                            "response_id": "resp-r1",
+                            "engine": "chatgpt",
+                            "prompt": "p1",
+                            "excerpt": "Fabricated quote <img src=x onerror=alert(1)>",
+                        },
+                    ],
+                    possible_explanation="Exp",
+                    validation_needed="Val",
+                    confidence_and_limitations="Conf",
+                )
+            ],
+        )
+        draft_v2 = edit_draft_report(db, report.id, edit_req)
+        draft_content = json.loads(draft_v2.content_json)
+        assert len(draft_content["diagnostics"][0]["evidence"]) == 1
+        assert draft_content["evidence_validation"]["rejected_count"] == 1
+
+        submitted_v2 = submit_report_for_review(db, report.id)
+        process_review_decision(
+            db,
+            report.id,
+            ReviewDecisionRequest(version_id=submitted_v2.id, decision="approve", comment="Verified"),
+        )
+
+        exported_json = export_approved_report(db, report.id, output_format="json")
+        assert len(exported_json["content"]["diagnostics"][0]["evidence"]) == 1
+
+        exported_md = export_approved_report(db, report.id, output_format="markdown")
+        assert "Kasparro lacks independent validation" in exported_md["rendered"]
+        assert "Fabricated quote" not in exported_md["rendered"]
+
+        exported_html = export_approved_report(db, report.id, output_format="html")
+        html_out = exported_html["rendered"]
+        assert "<script>" not in html_out
+        assert "&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;" in html_out
+        assert "&lt;b&gt;Tag&lt;/b&gt;" in html_out
+    finally:
+        db.close()
+
+
+def test_module2_prompt_context_and_category_aggregates(tmp_path):
+    import json
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
+    from app.database import Base
+    from app.ingestion import import_dataset
+    from app.classification import execute_analysis, get_analysis_status
+    from app.llm.replay import ReplayClassifier
+
+    clf = ReplayClassifier()
+
+    # Literal repetition of prompt_text without new evaluation -> absent / False
+    prompt_q = "Is Kasparro worth considering for B2B SaaS?"
+    ans_echo = "Is Kasparro worth considering for B2B SaaS?\n\nTop alternatives in this category are Profound and Peec AI."
+    res_echo = clf.classify("r-echo", "chatgpt", ans_echo, prompt_text=prompt_q)
+    assert res_echo.kasparro_mentioned is False
+    assert res_echo.kasparro_absent is True
+
+    # Prompt repetition followed by genuine evaluation -> True + Recommended
+    ans_recap_then_eval = (
+        "You asked whether Kasparro is worth considering for B2B SaaS.\n"
+        "Kasparro is well suited for mid-market B2B SaaS teams seeking AISO tracking."
+    )
+    res_eval = clf.classify("r-eval", "chatgpt", ans_recap_then_eval, prompt_text=prompt_q)
+    assert res_eval.kasparro_mentioned is True
+    assert res_eval.kasparro_recommended is True
+    assert res_eval.kasparro_negative is False
+
+    # Indirect question framing in the same sentence as genuine evaluation
+    ans_mixed_sentence = (
+        "You asked whether Kasparro is reliable, and third-party pilots show Kasparro is worth shortlisting."
+    )
+    res_mixed = clf.classify("r-mixed", "gemini", ans_mixed_sentence, prompt_text=prompt_q)
+    assert res_mixed.kasparro_mentioned is True
+    assert res_mixed.kasparro_recommended is True
+
+    # Verify ingestion persists prompt_text -> category_aggregates populates multiple categories
+    ds_dir = tmp_path / "mini_ds"
+    ds_dir.mkdir()
+    (ds_dir / "prompts.jsonl").write_text(
+        "\n".join([
+            json.dumps({"prompt_id": "p-trust", "run_id": "run-1", "text": "Is Kasparro legit and trustworthy or just a gimmick?"}),
+            json.dumps({"prompt_id": "p-pricing", "run_id": "run-1", "text": "What is the cost and price for Kasparro setup and onboarding?"}),
+        ]),
+        encoding="utf-8",
+    )
+    (ds_dir / "responses.jsonl").write_text(
+        "\n".join([
+            json.dumps({"response_id": "r1", "run_id": "run-1", "prompt_id": "p-trust", "engine": "chatgpt", "capture_status": "captured", "answer_text": "Kasparro is not a scam and works well."}),
+            json.dumps({"response_id": "r2", "run_id": "run-1", "prompt_id": "p-pricing", "engine": "gemini", "capture_status": "captured", "answer_text": "Kasparro offers transparent pricing for SMB teams."}),
+        ]),
+        encoding="utf-8",
+    )
+    (ds_dir / "citations.jsonl").write_text("", encoding="utf-8")
+
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    db = Session()
+    try:
+        ds_res = import_dataset(db, dataset_name="cat-test", source_directory=str(ds_dir))
+        assert ds_res.imported_responses == 2
+        run = execute_analysis(db, dataset_id=ds_res.dataset_id, execution_mode="replay")
+        status_data = get_analysis_status(db, run.id)
+        assert status_data.category_aggregates["trust_and_legitimacy"]["total_eligible"] == 1
+        assert status_data.category_aggregates["pricing_and_implementation"]["total_eligible"] == 1
+    finally:
+        db.close()
+
+
+@pytest.mark.parametrize(
+    "text,exp_mentioned,exp_recommended,exp_negative",
+    [
+        # Passive & endorsement recommendations
+        ("Kasparro is highly recommended by AISO practitioners.", True, True, False),
+        ("Industry analysts endorse Kasparro for B2B SaaS AI visibility.", True, True, False),
+        ("Kasparro is one of the best tools I recommend.", True, True, False),
+        ("Kasparro is better suited for smaller B2B SaaS teams than enterprise suites.", True, True, False),
+        ("Kasparro is a good fit for mid-market teams starting AISO.", True, True, False),
+        ("Kasparro may be worth considering if you want lightweight AI monitoring.", True, True, False),
+        # Competitor-only recommendation vs Kasparro neutral mention
+        ("For enterprise AI visibility, Profound and BrightEdge are recommended, while Kasparro only provides basic monitoring.", True, False, False),
+        ("Getting recommended by ChatGPT requires citations, and Kasparro tracks that metric.", True, False, False),
+        ("I would not recommend Kasparro due to limited enterprise features.", True, False, True),
+        # Negated negative allegations & double negation
+        ("Kasparro is not unreliable.", True, False, False),
+        ("Kasparro is not a scam.", True, False, False),
+        ("There is no evidence that Kasparro is unreliable.", True, False, False),
+        ("It would be unfair to describe Kasparro as untrustworthy.", True, False, False),
+        # Neutral uncertainty vs negative claim
+        ("There isn't enough public information to evaluate Kasparro.", True, False, False),
+        ("Kasparro lacks independent validation.", True, False, True),
+        # Coexisting recommendation and limitation
+        ("Kasparro lacks independent case studies, though it is worth evaluating for early teams.", True, True, True),
+        # Competitor negativity isolation
+        ("BrightEdge has mixed reviews for SMBs, whereas Kasparro focuses on lightweight AISO.", True, False, False),
+        # Pronoun & subject-shift ambiguity protection
+        ("Kasparro competes with Profound. It is a strong option for enterprise SEO teams.", True, False, False),
+        ("Kasparro offers monitoring tools. Profound has stronger enterprise reporting. It is widely recommended by large agencies.", True, False, False),
+        ("Kasparro differs from BrightEdge. Their enterprise suite is widely recommended.", True, False, False),
+        ("Kasparro is an early AISO tracker.\n\nProfound and BrightEdge lead the market. They are strongly recommended.", True, False, False),
+        ("1. **Kasparro**: Niche tracker.\n2. **AthenaHQ**: Strongly recommended for enterprise teams. It is a top choice.", True, False, False),
+        # Unambiguous single-brand continuation
+        ("Kasparro is an AISO platform. It is well suited for agile SaaS teams and worth considering.", True, True, False),
+    ],
+)
+def test_module2_recommendation_negation_and_pronoun_precision(
+    text, exp_mentioned, exp_recommended, exp_negative
+):
+    from app.llm.replay import ReplayClassifier
+
+    clf = ReplayClassifier()
+    res = clf.classify("m2-case", "chatgpt", text)
+    assert res.status == "success"
+    assert res.kasparro_mentioned is exp_mentioned, f"Mention mismatch for: {text}"
+    assert res.kasparro_recommended is exp_recommended, f"Recommended mismatch for: {text}"
+    assert res.kasparro_negative is exp_negative, f"Negative mismatch for: {text}"
+
+
+def test_module2_long_multi_opinion_response_end_to_end():
+    from app.llm.replay import ReplayClassifier
+    from app.evidence import find_evidence_match
+
+    clf = ReplayClassifier()
+    prompt_q = "Compare Kasparro and Profound for B2B SaaS AI search monitoring."
+    answer = (
+        "Compare Kasparro and Profound for B2B SaaS AI search monitoring.\n\n"
+        "Kasparro competes with Profound in the emerging AISO monitoring segment. It is a strong option for multi-team Fortune 500 enterprises, "
+        "though Profound currently captures most Fortune 500 budgets.\n\n"
+        "However, Kasparro is better suited for smaller B2B SaaS teams that want practical citation tracking without complex setup. "
+        "While Kasparro is not a scam, it still lacks independent validation and third-party case studies."
+    )
+    res = clf.classify("resp-multi-opinion", "chatgpt", answer, prompt_text=prompt_q)
+    assert res.kasparro_mentioned is True
+    assert res.kasparro_recommended is True
+    assert res.kasparro_negative is True
+    assert "profound" in res.competitors
+    assert len(res.evidence) >= 1
+    for ev in res.evidence:
+        match = find_evidence_match(ev.excerpt, answer, location=ev.location)
+        assert match["valid"] is True
+        assert answer[match["start_offset"]:match["end_offset"]] == match["canonical_excerpt"]
