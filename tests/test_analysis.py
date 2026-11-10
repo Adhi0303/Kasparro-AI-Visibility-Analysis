@@ -1186,3 +1186,31 @@ def test_report_renderers_require_source_lookup_and_filter_invalid_evidence():
     assert "Fabricated text" not in html_output
     assert "Kasparro is present" in markdown_output
     assert "Fabricated text" not in markdown_output
+
+
+
+def test_held_out_evaluation_writes_separate_results(tmp_path):
+    import json
+    from evaluation.run_eval import run_evaluation
+
+    result = run_evaluation(
+        execution_mode="replay",
+        output_dir=str(tmp_path),
+        split="held_out",
+    )
+    assert result["counts"]["total_cases"] == 30
+    assert result["counts"]["held_out_cases"] == 30
+    assert result["counts"]["split"] == "held_out"
+    assert "provisional single-annotator" in result["counts"]["annotation_note"]
+    assert (tmp_path / "eval_held_out_results.json").is_file()
+    assert (tmp_path / "eval_comparison_report_held_out.md").is_file()
+    saved = json.loads((tmp_path / "eval_held_out_results.json").read_text(encoding="utf-8"))
+    assert saved["counts"]["split"] == "held_out"
+
+
+def test_evaluation_rejects_unknown_split():
+    import pytest
+    from evaluation.run_eval import run_evaluation
+
+    with pytest.raises(ValueError, match="split must be one of"):
+        run_evaluation(split="production")
