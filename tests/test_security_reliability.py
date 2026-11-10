@@ -387,54 +387,67 @@ def test_import_field_types_and_length_limits(tmp_path):
 
 def test_request_size_limit_without_content_length(monkeypatch):
     import asyncio
-    from starlette.requests import Request
-    from app.main import enforce_request_size_limit
+    from app.main import RequestSizeLimitMiddleware
 
-    settings = Settings(MAX_REQUEST_BODY_BYTES=10)
-    monkeypatch.setattr("app.main.get_settings", lambda: settings)
+    monkeypatch.setattr("app.main.get_settings", lambda: Settings(MAX_REQUEST_BODY_BYTES=10))
+    status_codes = []
 
-    async def receive():
-        return {"type": "http.request", "body": b"x" * 11, "more_body": False}
+    async def downstream(scope, receive, send):
+        message = await receive()
+        status_codes.append(200)
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": message.get("body", b"")})
 
-    scope = {
-        "type": "http", "asgi": {"version": "3.0"}, "http_version": "1.1",
-        "method": "POST", "scheme": "http", "path": "/test",
-        "raw_path": b"/test", "query_string": b"", "headers": [],
-        "client": ("testclient", 123), "server": ("testserver", 80),
-    }
-    request = Request(scope, receive=receive)
+    async def scenario():
+        body_messages = [{"type": "http.request", "body": b"x" * 11, "more_body": False}]
+        async def receive():
+            return body_messages.pop(0) if body_messages else {"type": "http.disconnect"}
+        async def send(message):
+            if message["type"] == "http.response.start":
+                status_codes.append(message["status"])
+        scope = {
+            "type": "http", "asgi": {"version": "3.0"}, "http_version": "1.1",
+            "method": "POST", "scheme": "http", "path": "/test",
+            "raw_path": b"/test", "query_string": b"", "headers": [],
+            "client": ("testclient", 123), "server": ("testserver", 80),
+        }
+        await RequestSizeLimitMiddleware(downstream)(scope, receive, send)
 
-    async def call_next(_request):
-        pytest.fail("Oversized body must be rejected before reaching the route")
-
-    response = asyncio.run(enforce_request_size_limit(request, call_next))
-    assert response.status_code == 413
+    asyncio.run(scenario())
+    assert 413 in status_codes
+    assert 200 not in status_codes
 
 
 def test_request_size_limit_rejects_content_length_mismatch(monkeypatch):
     import asyncio
-    from starlette.requests import Request
-    from app.main import enforce_request_size_limit
+    from app.main import RequestSizeLimitMiddleware
 
-    settings = Settings(MAX_REQUEST_BODY_BYTES=100)
-    monkeypatch.setattr("app.main.get_settings", lambda: settings)
+    monkeypatch.setattr("app.main.get_settings", lambda: Settings(MAX_REQUEST_BODY_BYTES=100))
+    status_codes = []
 
-    async def receive():
-        return {"type": "http.request", "body": b"actual-body", "more_body": False}
+    async def downstream(scope, receive, send):
+        status_codes.append(200)
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
 
-    scope = {
-        "type": "http", "asgi": {"version": "3.0"}, "http_version": "1.1",
-        "method": "POST", "scheme": "http", "path": "/test",
-        "raw_path": b"/test", "query_string": b"", "headers": [(b"content-length", b"1")],
-        "client": ("testclient", 123), "server": ("testserver", 80),
-    }
-    request = Request(scope, receive=receive)
+    async def scenario():
+        body_messages = [{"type": "http.request", "body": b"actual-body", "more_body": False}]
+        async def receive():
+            return body_messages.pop(0) if body_messages else {"type": "http.disconnect"}
+        async def send(message):
+            if message["type"] == "http.response.start":
+                status_codes.append(message["status"])
+        scope = {
+            "type": "http", "asgi": {"version": "3.0"}, "http_version": "1.1",
+            "method": "POST", "scheme": "http", "path": "/test",
+            "raw_path": b"/test", "query_string": b"", "headers": [(b"content-length", b"1")],
+            "client": ("testclient", 123), "server": ("testserver", 80),
+        }
+        await RequestSizeLimitMiddleware(downstream)(scope, receive, send)
 
-    async def call_next(_request):
-        pytest.fail("Mismatched body length must be rejected before reaching the route")
-
-    response = asyncio.run(enforce_request_size_limit(request, call_next))
-    assert response.status_code == 400
+    asyncio.run(scenario())
+    assert 400 in status_codes
+    assert 200 not in status_codes
 
 
 def test_multipart_duplicate_fields_are_rejected(isolated_api):
