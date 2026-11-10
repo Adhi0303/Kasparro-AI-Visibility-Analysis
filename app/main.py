@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from email import policy
 from email.parser import BytesParser
 import json
 import os
@@ -232,7 +233,7 @@ async def _parse_multipart_upload(
 
     raw_body = b"".join(chunks)
     header_prefix = f"Content-Type: {content_type}\r\nMIME-Version: 1.0\r\n\r\n".encode("latin-1")
-    message = BytesParser().parsebytes(header_prefix + raw_body)
+    message = BytesParser(policy=policy.default).parsebytes(header_prefix + raw_body)
     if not message.is_multipart():
         raise HTTPException(status_code=400, detail="Malformed multipart upload payload")
 
