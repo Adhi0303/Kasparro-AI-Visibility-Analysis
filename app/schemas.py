@@ -14,6 +14,8 @@ class DatasetImportRequest(BaseModel):
     @field_validator("source_directory")
     @classmethod
     def validate_directory_path(cls, v: str) -> str:
+        from app.config import get_settings
+
         # Keep request-shape checks here. Filesystem authorization is enforced
         # by validate_safe_source_directory in the ingestion service, where
         # configured roots and symlink targets can be checked consistently.
