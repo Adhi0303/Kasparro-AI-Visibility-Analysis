@@ -63,54 +63,86 @@ app = FastAPI(
 )
 
 
-@app.middleware("http")
-async def enforce_request_size_limit(request: Request, call_next):
-    """Enforce the request limit from streamed bytes, even when Content-Length is absent or false."""
-    settings = get_settings()
-    content_length = request.headers.get("content-length")
-    if content_length is not None:
-        try:
-            length_val = int(content_length)
-        except ValueError:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"detail": "Invalid Content-Length header"},
-            )
-        if length_val < 0:
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"detail": "Invalid Content-Length header"},
-            )
+class RequestSizeLimitMiddleware:
+    """Pure ASGI body limiter that buffers and replays request messages without consuming them twice."""
 
-    body_chunks = []
-    total_bytes = 0
-    async for chunk in request.stream():
-        total_bytes += len(chunk)
-        if total_bytes > settings.MAX_REQUEST_BODY_BYTES:
-            return JSONResponse(
-                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-                content={"detail": "Request payload exceeds maximum allowed size"},
-            )
-        body_chunks.append(chunk)
+    def __init__(self, app, max_body_bytes: int):
+        self.app = app
+        self.max_body_bytes = max_body_bytes
 
-    body = b"".join(body_chunks)
-    if content_length is not None and total_bytes != int(content_length):
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"detail": "Request body length does not match Content-Length"},
-        )
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
 
-    delivered = False
+        headers = {key.lower(): value for key, value in scope.get("headers", [])}
+        content_length = headers.get(b"content-length")
+        if content_length is not None:
+            try:
+                declared_length = int(content_length)
+            except (TypeError, ValueError):
+                await self._respond(send, 400, "Invalid Content-Length header")
+                return
+            if declared_length < 0:
+                await self._respond(send, 400, "Invalid Content-Length header")
+                return
+            if declared_length > self.max_body_bytes:
+                await self._respond(send, 413, "Request payload exceeds maximum allowed size")
+                return
+        else:
+            declared_length = None
 
-    async def receive():
-        nonlocal delivered
-        if delivered:
-            return {"type": "http.request", "body": b"", "more_body": False}
-        delivered = True
-        return {"type": "http.request", "body": body, "more_body": False}
+        messages = []
+        total_bytes = 0
+        while True:
+            message = await receive()
+            if message["type"] == "http.disconnect":
+                await self.app(scope, self._replay(messages, disconnected=True), send)
+                return
+            if message["type"] != "http.request":
+                continue
+            total_bytes += len(message.get("body", b""))
+            if total_bytes > self.max_body_bytes:
+                await self._respond(send, 413, "Request payload exceeds maximum allowed size")
+                return
+            messages.append(message)
+            if not message.get("more_body", False):
+                break
 
-    bounded_request = Request(request.scope, receive=receive)
-    return await call_next(bounded_request)
+        if declared_length is not None and total_bytes != declared_length:
+            await self._respond(send, 400, "Request body length does not match Content-Length")
+            return
+
+        await self.app(scope, self._replay(messages), send)
+
+    @staticmethod
+    def _replay(messages, disconnected=False):
+        index = 0
+
+        async def receive():
+            nonlocal index
+            if index < len(messages):
+                message = messages[index]
+                index += 1
+                return message
+            if disconnected:
+                return {"type": "http.disconnect"}
+            return {"type": "http.disconnect"}
+
+        return receive
+
+    @staticmethod
+    async def _respond(send, status_code: int, detail: str):
+        body = json.dumps({"detail": detail}).encode("utf-8")
+        await send({
+            "type": "http.response.start",
+            "status": status_code,
+            "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(body)).encode("ascii"))],
+        })
+        await send({"type": "http.response.body", "body": body, "more_body": False})
+
+
+app.add_middleware(RequestSizeLimitMiddleware, max_body_bytes=get_settings().MAX_REQUEST_BODY_BYTES)
 
 
 @app.exception_handler(Exception)
