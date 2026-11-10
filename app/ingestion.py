@@ -81,7 +81,7 @@ def _valid_string(value: Any, *, max_length: int, allow_empty: bool = False) -> 
         isinstance(value, str)
         and (allow_empty or bool(value.strip()))
         and len(value) <= max_length
-        and "\\x00" not in value
+        and "\x00" not in value
     )
 
 
