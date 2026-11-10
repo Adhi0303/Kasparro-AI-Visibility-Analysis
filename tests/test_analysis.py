@@ -1126,3 +1126,33 @@ def test_provider_does_not_retry_permanent_http_errors(monkeypatch):
     assert result.status == "failed"
     assert len(calls) == 1
     assert "401" in result.failure_reason
+
+
+
+def test_evaluation_grader_reports_specificity_accuracy_and_support():
+    import pytest
+    from evaluation.grader import compute_label_metrics, grade_predictions
+
+    metrics = compute_label_metrics(
+        [True, True, False, False],
+        [True, False, True, False],
+    )
+    assert metrics["support"] == 4
+    assert metrics["positive_support"] == 2
+    assert metrics["negative_support"] == 2
+    assert metrics["true_positives"] == 1
+    assert metrics["false_positives"] == 1
+    assert metrics["true_negatives"] == 1
+    assert metrics["false_negatives"] == 1
+    assert metrics["precision"] == 0.5
+    assert metrics["recall"] == 0.5
+    assert metrics["specificity"] == 0.5
+    assert metrics["accuracy"] == 0.5
+    assert metrics["balanced_accuracy"] == 0.5
+
+    with pytest.raises(ValueError):
+        compute_label_metrics([True], [])
+    with pytest.raises(TypeError):
+        compute_label_metrics([1], [True])
+    with pytest.raises(ValueError):
+        grade_predictions([{"kasparro_mentioned": True}], [])
