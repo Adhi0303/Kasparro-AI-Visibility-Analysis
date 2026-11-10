@@ -64,6 +64,7 @@ app = FastAPI(
 
 @app.middleware("http")
 async def enforce_request_size_limit(request: Request, call_next):
+    """Enforce the request limit from streamed bytes, even when Content-Length is absent or false."""
     settings = get_settings()
     content_length = request.headers.get("content-length")
     if content_length is not None:
@@ -74,12 +75,41 @@ async def enforce_request_size_limit(request: Request, call_next):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"detail": "Invalid Content-Length header"},
             )
-        if length_val < 0 or length_val > settings.MAX_REQUEST_BODY_BYTES:
+        if length_val < 0:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"detail": "Invalid Content-Length header"},
+            )
+
+    body_chunks = []
+    total_bytes = 0
+    async for chunk in request.stream():
+        total_bytes += len(chunk)
+        if total_bytes > settings.MAX_REQUEST_BODY_BYTES:
             return JSONResponse(
                 status_code=status.HTTP_413_CONTENT_TOO_LARGE,
                 content={"detail": "Request payload exceeds maximum allowed size"},
             )
-    return await call_next(request)
+        body_chunks.append(chunk)
+
+    body = b"".join(body_chunks)
+    if content_length is not None and total_bytes != int(content_length):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": "Request body length does not match Content-Length"},
+        )
+
+    delivered = False
+
+    async def receive():
+        nonlocal delivered
+        if delivered:
+            return {"type": "http.request", "body": b"", "more_body": False}
+        delivered = True
+        return {"type": "http.request", "body": body, "more_body": False}
+
+    bounded_request = Request(request.scope, receive=receive)
+    return await call_next(bounded_request)
 
 
 @app.exception_handler(Exception)
@@ -215,9 +245,16 @@ async def _parse_multipart_upload(
         filename = part.get_filename()
         raw_payload = part.get_payload(decode=True) or b""
         if filename is not None:
+            if field_name in files or field_name in fields:
+                raise HTTPException(status_code=400, detail="Duplicate multipart field is not allowed")
             files[field_name] = (filename, part.get_content_type(), raw_payload)
         else:
-            fields[field_name] = raw_payload.decode("utf-8", errors="replace")
+            if field_name in fields or field_name in files:
+                raise HTTPException(status_code=400, detail="Duplicate multipart field is not allowed")
+            try:
+                fields[field_name] = raw_payload.decode("utf-8")
+            except UnicodeDecodeError:
+                raise HTTPException(status_code=400, detail="Multipart form fields must be valid UTF-8")
     return fields, files
 
 
