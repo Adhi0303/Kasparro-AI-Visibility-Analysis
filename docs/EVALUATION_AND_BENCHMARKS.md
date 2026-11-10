@@ -46,23 +46,26 @@ From the 150 responses captured on 31 July 2026 across ChatGPT, Gemini, and Goog
 
 ### Diagnostic 1: Complete Absence in Unbranded Category Searches
 * **Finding**: Kasparro achieved **0 mentions out of 75 unbranded category responses** across all 3 engines ($0.0\%$ recall).
-* **Observed Data**: In generic buyer queries (e.g. "top GEO platforms for SaaS", "best generative engine optimization tools"), competitors **Profound**, **Peec AI**, and **Otterly** were cited and recommended in 100% of responses.
+* **Observed Data**: In generic buyer queries (e.g. "what is the best software for measuring brand inclusion in AI search answers?"), competitors **Profound**, **Peec AI**, and **Otterly** were cited and recommended instead.
+* **Verbatim Evidence (`0f38b477-9f3c-44a8-9d10-0b6016db6150`, Gemini)**:
+  > *"Profound is a powerhouse in the AI visibility space. It tracks an extensive array of engines (10+ platforms including niche models like Grok and DeepSeek)."*
 * **Strategic Implication**: Kasparro has an acute top-of-funnel discoverability void. Buyers searching for solutions without already knowing the brand name will never encounter Kasparro in AI engines.
 
 ---
 
 ### Diagnostic 2: ChatGPT Skepticism & Negative Trust Profiling
 * **Finding**: ChatGPT exhibited a **12.0% negative characterization rate** (compared to 2.0% in Gemini and 4.0% in AI Mode).
-* **Root Cause & Evidence**: ChatGPT repeatedly cited **ScamAdviser** domain reputation warnings:
-  > *"Kasparro is cited with a low trust rating on ScamAdviser due to hidden WHOIS registration and recent domain age..."* (Response `chatgpt:kasparro:ai_shortlisting:011`)
+* **Root Cause & Evidence**: ChatGPT repeatedly cited ScamAdviser and flagged the absence of independent third-party evidence.
+* **Verbatim Evidence (`ac5bdf24-6a6e-49a0-abf5-2755ff3b42bc`, ChatGPT)**:
+  > *"However, I couldn't find independent evidence showing that Kasparro consistently delivers measurable improvements for B2B SaaS companies specifically. Most of the publicly available material is the company's own positioning rather than third-party case studies with before/after data. [www.scamadviser.com](https://www.scamadviser.com/check-website/kasparro.com?utm_source=chatgpt.com)"*
 * **Impact**: Suppressed ChatGPT Visibility Score to 36.5 despite a 50% inclusion rate.
 
 ---
 
 ### Diagnostic 3: Phonetic Brand Confusion with "Kaspr"
 * **Finding**: AI Mode and ChatGPT repeatedly confused **Kasparro** (an AI Visibility/GEO platform) with **Kaspr** (a LinkedIn B2B contact enrichment tool).
-* **Observed Evidence**:
-  > *"Kasparro (often associated with Chrome extensions for prospecting and LinkedIn lead scraping)..."* (Response `aimode:kasparro:ai_shortlisting:018`)
+* **Verbatim Evidence (`08f81acc-0824-4e3a-a5d5-58446e2a6a90`, ChatGPT / Prompt 005)**:
+  > *"**Kasparro** (often searched or spelled similarly to \*Kaspr\*, a well-known LinkedIn contact-data finder) is a legitimate, early-stage B2B SaaS startup operating in the emerging **AI Visibility and Brand Intelligence** space..."*
 * **Impact**: Confuses buyer intent and dilutes positioning as an AI search analytics provider.
 
 ---
