@@ -57,15 +57,28 @@ def load_response_prompt_texts(responses_path: str = "data/responses.jsonl") -> 
 
 def run_evaluation(
     execution_mode: str = "replay",
-    cases_path: str = "evaluation/cases.jsonl",
+    cases_path: Optional[str] = None,
     responses_path: str = "data/responses.jsonl",
     output_dir: str = "evaluation/results",
     settings_override: Optional[Settings] = None,
+    split: str = "regression",
 ) -> Dict[str, Any]:
     if execution_mode not in ("replay", "real_model"):
         raise ValueError(f"Invalid execution_mode '{execution_mode}'. Expected 'replay' or 'real_model'.")
 
+    if split not in ("regression", "held_out", "all"):
+        raise ValueError("split must be one of: regression, held_out, all")
+    if cases_path is None:
+        if split == "regression":
+            cases_path = "evaluation/cases.jsonl"
+        elif split == "held_out":
+            cases_path = "evaluation/held_out_cases.jsonl"
+        else:
+            raise ValueError("The all split requires an explicit combined cases_path; do not concatenate development and held-out sets for model selection.")
     cases = load_cases(cases_path)
+    case_ids = [case.get("case_id") for case in cases]
+    if any(not isinstance(case_id, str) or not case_id for case_id in case_ids) or len(case_ids) != len(set(case_ids)):
+        raise ValueError("Evaluation case IDs must be non-empty and unique")
     response_texts = load_response_texts(responses_path)
     response_prompts = load_response_prompt_texts(responses_path)
     settings = settings_override or get_settings()
@@ -105,8 +118,9 @@ def run_evaluation(
         c_id = c["case_id"]
         source_type = c.get("source_type", "supplied")
         resp_id = c.get("response_id")
-        text = c.get("synthetic_text", "") if source_type == "synthetic" else response_texts.get(resp_id, "")
-        prompt_text = c.get("prompt_text") if source_type == "synthetic" else response_prompts.get(resp_id)
+        is_synthetic = source_type in ("synthetic", "held_out_synthetic")
+        text = c.get("synthetic_text", "") if is_synthetic else response_texts.get(resp_id, "")
+        prompt_text = c.get("prompt_text") if is_synthetic else response_prompts.get(resp_id)
         expected = c["expected"]
 
         b_pred = baseline_classify(text)
@@ -187,7 +201,8 @@ def run_evaluation(
     os.makedirs(output_dir, exist_ok=True)
     timestamp = datetime.now(timezone.utc).isoformat()
     supplied_count = len([c for c in cases if c.get("source_type") == "supplied"])
-    synthetic_count = len([c for c in cases if c.get("source_type") == "synthetic"])
+    synthetic_count = len([c for c in cases if c.get("source_type") in ("synthetic", "held_out_synthetic")])
+    held_out_count = len([c for c in cases if c.get("source_type") == "held_out_synthetic"])
 
     if execution_mode == "real_model":
         md_filename = "eval_provider_report.md"
@@ -210,7 +225,7 @@ def run_evaluation(
 
 - **Generated:** {timestamp}
 - **Pack Version:** 1.0.0
-- **Total Cases:** {len(cases)} ({supplied_count} supplied, {synthetic_count} synthetic)
+- **Evaluation Split:** {split}\n- **Total Cases:** {len(cases)} ({supplied_count} supplied, {synthetic_count} synthetic; {held_out_count} held-out synthetic)
 - **Successful Evaluations:** {len(expected_completed)}
 - **Failed/Skipped Evaluations:** {len(failed_cases)}
 - **Execution Mode:** {mode_desc}
@@ -271,6 +286,9 @@ As required by Section 16 of the assignment brief, actual failures observed duri
             "total_cases": len(cases),
             "supplied_cases": supplied_count,
             "synthetic_cases": synthetic_count,
+            "held_out_cases": held_out_count,
+            "split": split,
+            "annotation_note": "Held-out synthetic labels are provisional single-annotator labels and require independent human review before being treated as an independent benchmark.",
             "evaluated_cases": len(expected_completed),
             "failed_cases": len(failed_cases),
         },
@@ -297,6 +315,7 @@ As required by Section 16 of the assignment brief, actual failures observed duri
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Kasparro classifier evaluation.")
+    parser.add_argument("--split", choices=["regression", "held_out"], default="regression", help="Use the regression set for development or the isolated held-out set for final evaluation.")
     parser.add_argument(
         "--mode",
         choices=["replay", "real_model"],
@@ -304,4 +323,4 @@ if __name__ == "__main__":
         help="Execution mode: deterministic 'replay' (default) or live/configured 'real_model'.",
     )
     args = parser.parse_args()
-    run_evaluation(execution_mode=args.mode)
+    run_evaluation(execution_mode=args.mode, split=args.split)
