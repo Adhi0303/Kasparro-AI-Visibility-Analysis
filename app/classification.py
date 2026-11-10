@@ -1,15 +1,81 @@
 import json
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 from sqlalchemy.orm import Session
 
 from app.models import AnalysisRun, Response as DBResponse, ResponseResult
 from app.llm import get_classifier
 from app.config import get_settings
-from app.evidence import validate_evidence
+from app.evidence import find_evidence_match
 from app.scoring import calculate_visibility_score, compute_aggregate_scores
 from app.categories import categorize_prompt, CATEGORIES
 from app.schemas import AnalysisStatusResponse
+
+
+def _audit_evidence_candidates(
+    candidates: List[Any],
+    source_text: str,
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """
+    Validates classifier candidate evidence centrally against source_text,
+    returning (accepted_evidence, rejected_evidence) with offsets and reasons.
+    """
+    accepted: List[Dict[str, Any]] = []
+    rejected: List[Dict[str, Any]] = []
+
+    for ev in candidates or []:
+        if isinstance(ev, dict):
+            excerpt = ev.get("excerpt") if isinstance(ev.get("excerpt"), str) else ""
+            location = ev.get("location") if isinstance(ev.get("location"), str) and ev.get("location") else "answer_text"
+            citation_id = ev.get("citation_id") if isinstance(ev.get("citation_id"), str) else None
+            malformed_reason = ev.get("malformed_reason")
+            if malformed_reason is None and not isinstance(ev.get("excerpt"), str):
+                malformed_reason = f"Malformed evidence object: invalid or missing 'excerpt' ({type(ev.get('excerpt')).__name__})"
+        elif hasattr(ev, "excerpt"):
+            excerpt = ev.excerpt if isinstance(ev.excerpt, str) else ""
+            location = ev.location if isinstance(getattr(ev, "location", None), str) and ev.location else "answer_text"
+            citation_id = getattr(ev, "citation_id", None)
+            malformed_reason = getattr(ev, "malformed_reason", None)
+        else:
+            rejected.append({
+                "excerpt": "",
+                "location": "answer_text",
+                "validation_status": "rejected",
+                "rejection_reason": f"Malformed evidence candidate: unexpected type {type(ev).__name__}",
+            })
+            continue
+
+        if malformed_reason:
+            rejected.append({
+                "excerpt": excerpt,
+                "location": location,
+                "validation_status": "rejected",
+                "rejection_reason": malformed_reason,
+            })
+            continue
+
+        match = find_evidence_match(excerpt, source_text)
+        if match["valid"]:
+            entry: Dict[str, Any] = {
+                "excerpt": excerpt,
+                "location": location,
+                "start_offset": match["start_offset"],
+                "end_offset": match["end_offset"],
+                "validation_status": "valid",
+                "match_type": match["match_type"],
+            }
+            if citation_id is not None:
+                entry["citation_id"] = citation_id
+            accepted.append(entry)
+        else:
+            rejected.append({
+                "excerpt": excerpt,
+                "location": location,
+                "validation_status": "rejected",
+                "rejection_reason": match["rejection_reason"] or "Excerpt not found in source text",
+            })
+
+    return accepted, rejected
 
 
 def execute_analysis(
@@ -62,12 +128,11 @@ def execute_analysis(
             answer_text=answer_text,
         )
 
-        # Validate evidence excerpts verbatim
-        validated_evidence = []
-        for ev in classif.evidence:
-            is_valid, _ = validate_evidence(ev.excerpt, answer_text)
-            if is_valid:
-                validated_evidence.append(ev.model_dump())
+        # Validate evidence excerpts centrally and preserve validation audit
+        validated_evidence, rejected_evidence = _audit_evidence_candidates(
+            classif.evidence,
+            answer_text,
+        )
 
         # Calculate score
         score_res = calculate_visibility_score(
@@ -79,11 +144,19 @@ def execute_analysis(
             scoring_version=scoring_version,
         )
 
+        labels_payload = classif.model_dump()
+        labels_payload["evidence_validation"] = {
+            "accepted": validated_evidence,
+            "rejected": rejected_evidence,
+            "accepted_count": len(validated_evidence),
+            "rejected_count": len(rejected_evidence),
+        }
+
         db_result = ResponseResult(
             analysis_id=analysis.id,
             response_id=resp.id,
             status=classif.status,
-            labels_json=json.dumps(classif.model_dump()),
+            labels_json=json.dumps(labels_payload),
             components_json=json.dumps(score_res.components.model_dump() if score_res.components else None),
             score=score_res.score,
             evidence_json=json.dumps(validated_evidence),

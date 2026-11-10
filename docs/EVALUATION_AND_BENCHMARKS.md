@@ -1,80 +1,91 @@
-# Evaluation Framework, Diagnostics & Benchmark Results
+# Evaluation Framework, Methodology & Benchmark Results
 
-## 1. Evaluation Methodology
+## 1. Classification & Evaluation Methodology
 
-To evaluate classifier reliability independently from application code tests, the platform features a gold-standard evaluation harness located in `evaluation/`.
+To evaluate classifier reliability independently from engineering unit tests, the platform separates **deterministic offline replay** from **live real-model inference** and evaluates them through `evaluation/run_eval.py`.
+
+### Execution Mode Separation
+1. **Deterministic Replay (`execution_mode="replay"`, default):**
+   * Keyless, reproducible contextual pipeline in `app/llm/replay.py`.
+   * Performs citation/URL stripping for semantic prose matching, prompt-echo detection, paragraph/clause-scoped pronoun attribution, target-aware recommendation attribution (allowing positive recommendation and negative caveats to coexist), and target-aware negative characterization (keeping neutral uncertainty separate).
+   * Intended for offline regression verification and deterministic scoring mechanics—not as a substitute for live LLM reasoning.
+2. **Real-Model Provider (`execution_mode="real_model"`):**
+   * Implemented in `app/llm/provider.py` with strict Pydantic v2 validation (`ProviderClassificationOutput`, disallowing unsafe `bool("false")` coercions, out-of-range confidences, or invalid types).
+   * Supports an optional `LLM_BASE_URL` setting (defaulting to `https://api.openai.com/v1/chat/completions`) for OpenAI-compatible chat completion APIs. Compatibility depends on the target endpoint adhering to OpenAI-compatible `choices[0].message.content` JSON-mode schemas.
+   * Evaluated separately via `python -m evaluation.run_eval --mode real_model`, writing strictly to `evaluation/results/eval_provider_results.json` and `eval_provider_report.md` so replay and provider metrics are never conflated.
 
 ### Labeled Evaluation Cases (`evaluation/cases.jsonl`)
-The benchmark includes 10 gold-standard ground-truth cases:
-* **8 Supplied Real Cases**: Spanning all three engines (Gemini, ChatGPT, AI Mode), branded queries, and unbranded queries.
-* **2 Synthetic Adversarial Cases**:
-  1. `eval-syn-001`: Prompt question repetition without AI brand endorsement.
-  2. `eval-syn-002`: Competitor recommendation with a negative passing reference to Kasparro.
+The benchmark suite contains **15 gold-standard cases**:
+* **8 Supplied Real Cases (`case-001` to `case-008`):** Spanning Gemini, ChatGPT, and Google AI Mode across branded, unbranded, negative, and neutral uncertainty responses.
+* **7 Synthetic Regression Cases (`synthetic-001` to `synthetic-007`):**
+  * `synthetic-001`: Prompt repetition/echo without actual brand evaluation (`kasparro_mentioned=False`).
+  * `synthetic-002`: Explicit negative characterization & caution warning.
+  * `synthetic-003`: Competitor recommendation (`"I recommend Profound over Kasparro"`).
+  * `synthetic-004`: Competitor negativity in an adjacent sentence while Kasparro description stays neutral.
+  * `synthetic-005`: Negated recommendation with poor evidence (`kasparro_recommended=False, kasparro_negative=True`).
+  * `synthetic-006`: Neutral insufficient-information statement (`kasparro_negative=False`).
+  * `synthetic-007`: Coexisting recommendation + negative caveat (`kasparro_recommended=True, kasparro_negative=True`).
 
 ```mermaid
 flowchart LR
-    GOLD["Gold Cases (10 cases)\nevaluation/cases.jsonl"] --> GRADER["Grader Engine\nevaluation/grader.py"]
-    BASELINE["Baseline Keyword Matcher\n(Simple substring matching)"] --> GRADER
-    PROPOSED["Proposed Classifier\n(Context-aware heuristics & rules)"] --> GRADER
-    GRADER --> RESULTS["Precision, Recall & F1\nBaseline: 50.0% vs Proposed: 70.0%"]
+    GOLD["Gold Cases (15 cases)\nevaluation/cases.jsonl"] --> GRADER["Grader Engine\nevaluation/grader.py"]
+    BASELINE["Baseline Keyword Matcher\n(Global substring heuristics)"] --> GRADER
+    REPLAY["Replay Classifier\n(Contextual clause-aware rules)"] --> GRADER
+    GRADER --> RESULTS["Measured Replay Benchmark\nBaseline: 53.3% vs Replay: 100.0%"]
 ```
 
 ---
 
-## 2. Benchmark Comparison: Baseline vs. Proposed
+## 2. Measured Replay Benchmark: Baseline vs. Contextual Replay
 
-Running `python -m evaluation.run_eval` produces the comparative benchmark:
+Running `python -m evaluation.run_eval` produces the following verified results in `evaluation/results/eval_results.json` (offline replay mode, `contextual-rules-v1`):
 
-| Metric | Baseline (Keyword Regex) | Proposed Classifier | Improvement |
+| Metric | Rule-Based Baseline | Contextual Replay (`v1`) | Delta |
 | :--- | :---: | :---: | :---: |
-| **Overall Agreement** | **50.0%** | **70.0%** | **+20.0%** |
-| Mention Precision | 62.5% | 87.5% | +25.0% |
-| Mention Recall | 100.0% | 100.0% | 0.0% |
-| Recommendation Precision | 40.0% | 66.7% | +26.7% |
-| Recommendation Recall | 66.7% | 83.3% | +16.6% |
-| Negative Detection Accuracy | 33.3% | 80.0% | +46.7% |
+| **Exact-Match Agreement** | **53.3%** (`8/15`) | **100.0%** (`15/15`) | **+46.7%** |
+| Mention Precision | 91.67% (`0.9167`) | 100.0% (`1.0`) | +8.33% |
+| Mention Recall | 100.0% (`1.0`) | 100.0% (`1.0`) | 0.0% |
+| Recommendation Precision | 33.33% (`0.3333`) | 100.0% (`1.0`) | +66.67% |
+| Recommendation Recall | 100.0% (`1.0`) | 100.0% (`1.0`) | 0.0% |
+| Negative Precision | 66.67% (`0.6667`) | 100.0% (`1.0`) | +33.33% |
+| Negative Recall | 40.00% (`0.4000`) | 100.0% (`1.0`) | +60.0% |
 
-### Key Classifier Improvements Over Baseline:
-1. **Disambiguation of Casual Mentions vs. Recommendations**: The baseline incorrectly scored any sentence containing "Kasparro" as a recommendation. The proposed classifier checks for recommendation verbs ("recommend", "shortlist", "stands out as", "ideal for").
-2. **Adversarial Negative Sentiment Detection**: Successfully identifies negative reputation qualifiers (e.g. ScamAdviser citations) rather than classifying them as neutral mentions.
+> [!NOTE]
+> These metrics reflect offline deterministic **replay** evaluation over the 15 gold cases and do not claim live-model performance. Live provider benchmarks require running `python -m evaluation.run_eval --mode real_model` with valid API credentials.
 
 ---
 
-## 3. Real Findings & Diagnostics (Historical Snapshot)
+## 3. Verbatim Dataset Evidence & Key Observations
 
-From the 150 responses captured on 31 July 2026 across ChatGPT, Gemini, and Google AI Mode:
+From the 150 archived responses captured on 31 July 2026 across ChatGPT, Gemini, and Google AI Mode:
 
-### Diagnostic 1: Complete Absence in Unbranded Category Searches
-* **Finding**: Kasparro achieved **0 mentions out of 75 unbranded category responses** across all 3 engines ($0.0\%$ recall).
-* **Observed Data**: In generic buyer queries (e.g. "what is the best software for measuring brand inclusion in AI search answers?"), competitors **Profound**, **Peec AI**, and **Otterly** were cited and recommended instead.
-* **Verbatim Evidence (`0f38b477-9f3c-44a8-9d10-0b6016db6150`, Gemini)**:
+### Finding 1: Complete Absence in Unbranded Category Searches
+* **Observation:** Across all 25 unbranded category prompts (`026`–`050`, 75 responses across Gemini, ChatGPT, and Google AI Mode), Kasparro had `0` mentions (`0.0%` unbranded inclusion). Competitors such as **Profound**, **Peec AI**, and **Otterly** were recommended instead.
+* **Verbatim Evidence (`0f38b477-9f3c-44a8-9d10-0b6016db6150`, Gemini):**
   > *"Profound is a powerhouse in the AI visibility space. It tracks an extensive array of engines (10+ platforms including niche models like Grok and DeepSeek)."*
-* **Strategic Implication**: Kasparro has an acute top-of-funnel discoverability void. Buyers searching for solutions without already knowing the brand name will never encounter Kasparro in AI engines.
 
 ---
 
-### Diagnostic 2: ChatGPT Skepticism & Negative Trust Profiling
-* **Finding**: ChatGPT exhibited a **12.0% negative characterization rate** (compared to 2.0% in Gemini and 4.0% in AI Mode).
-* **Root Cause & Evidence**: ChatGPT repeatedly cited ScamAdviser and flagged the absence of independent third-party evidence.
-* **Verbatim Evidence (`ac5bdf24-6a6e-49a0-abf5-2755ff3b42bc`, ChatGPT)**:
+### Finding 2: Third-Party Evidence Deficit & ScamAdviser Citations
+* **Observation:** ChatGPT responses frequently cited `scamadviser.com` (present in 5 ChatGPT responses) and flagged the lack of independent third-party case studies.
+* **Verbatim Evidence (`ac5bdf24-6a6e-49a0-abf5-2755ff3b42bc`, ChatGPT):**
   > *"However, I couldn't find independent evidence showing that Kasparro consistently delivers measurable improvements for B2B SaaS companies specifically. Most of the publicly available material is the company's own positioning rather than third-party case studies with before/after data. [www.scamadviser.com](https://www.scamadviser.com/check-website/kasparro.com?utm_source=chatgpt.com)"*
-* **Impact**: Suppressed ChatGPT Visibility Score to 36.5 despite a 50% inclusion rate.
 
 ---
 
-### Diagnostic 3: Phonetic Brand Confusion with "Kaspr"
-* **Finding**: AI Mode and ChatGPT repeatedly confused **Kasparro** (an AI Visibility/GEO platform) with **Kaspr** (a LinkedIn B2B contact enrichment tool).
-* **Verbatim Evidence (`08f81acc-0824-4e3a-a5d5-58446e2a6a90`, ChatGPT / Prompt 005)**:
-  > *"**Kasparro** (often searched or spelled similarly to \*Kaspr\*, a well-known LinkedIn contact-data finder) is a legitimate, early-stage B2B SaaS startup operating in the emerging **AI Visibility and Brand Intelligence** space..."*
-* **Impact**: Confuses buyer intent and dilutes positioning as an AI search analytics provider.
+### Finding 3: Phonetic Brand Confusion with "Kaspr"
+* **Observation:** Multiple responses confused **Kasparro** with **Kaspr** (a LinkedIn B2B contact-data finder), with `kaspr`-related citations appearing across 19 archived responses.
+* **Verbatim Evidence (`1fda2a12-a2df-4ab1-abd5-17b7746bc833`, Gemini / Prompt 011):**
+  > *"**Kasparro** (often searched or spelled similarly to *Kaspr*, a well-known LinkedIn contact-data finder) is a legitimate, early-stage B2B SaaS startup operating in the emerging **AI Visibility and Brand Intelligence** space"*
+* **Disambiguation Evidence (`1d2dc007-0757-480d-a086-6b6e2e13c463`, ChatGPT / Prompt 018):**
+  > *"If you mean **Kasparro** (the B2B SaaS growth/outbound agency, not Kaspr), I couldn't find reliable public pricing or enough verified information to judge whether it's objectively overpriced."*
 
 ---
 
 ## 4. Prioritized Remedies Roadmap
 
-| Priority | Action Item | Target Engine | Expected Impact | Implementation Effort | Validation Metric |
-| :---: | :--- | :--- | :--- | :---: | :--- |
-| **R1** | **B2B Directory & Review Site Profiling**<br>Publish claimed profiles on G2, Capterra, ProductHunt, and Trustpilot. | All Engines | Eliminates 0% unbranded discovery void; seeds LLM retrieval indices. | **Low** (1–2 weeks) | Unbranded query recall rises from $0.0\%$ to $\ge 25.0\%$ in 60-day re-crawl. |
-| **R2** | **Technical Domain Trust Remediation**<br>Verify WHOIS ownership, register EV SSL certificate, submit site to Web of Trust & ScamAdviser. | ChatGPT | Clears scam flag citations and elevates ChatGPT score from 36.5 to ~45+. | **Low** (3–5 days) | ChatGPT negative sentiment rate drops from $12.0\%$ to $< 2.0\%$. |
-| **R3** | **Entity Disambiguation via Structured Data**<br>Implement JSON-LD `SoftwareApplication` schema explicitly differentiating Kasparro from Kaspr. | AI Mode & Gemini | Prevents feature hallucination and sales prospecting misclassification. | **Medium** (2 weeks) | B2B lead scraping misattributions fall from $14.0\%$ to $0.0\%$. |
-
+| Priority | Action Item | Supporting Evidence | Implementation Effort | Validation Metric |
+| :---: | :--- | :--- | :---: | :--- |
+| **R1** | **Publish 3 Verified Third-Party B2B Case Studies**<br>Address independent evidence deficit and ScamAdviser trust concerns. | `ac5bdf24`, `08f81acc` | **Medium** | Zero `scamadviser.com` citations across prompts `001`–`005` on re-crawl. |
+| **R2** | **Establish Profiles on Software Review Directories (G2, Capterra, ProductHunt)**<br>Seed independent category co-occurrence for unbranded buyer discovery. | `0f38b477`, `0697376e`, `a3fdd8bb` | **Low** | Unbranded prompt recall (`026`–`050`) rises above `0.0%` baseline. |
+| **R3** | **Deploy JSON-LD Organization Schema & Brand Disambiguation**<br>Separate Kasparro cleanly from Kaspr in crawler entity graphs. | `1d2dc007`, `1fda2a12`, `a3fdd8bb` | **Low** | Zero `kaspr` / `kaspr.io` citation leakage on branded prompts `016`–`019`. |

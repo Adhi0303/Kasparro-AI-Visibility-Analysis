@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     LLM_PROVIDER: Optional[str] = None
     LLM_MODEL: Optional[str] = None
     LLM_API_KEY: Optional[str] = None
+    LLM_BASE_URL: Optional[str] = None
     LLM_TIMEOUT_SECONDS: int = 20
     LLM_MAX_RETRIES: int = 2
 

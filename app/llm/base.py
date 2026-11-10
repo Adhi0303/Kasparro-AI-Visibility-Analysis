@@ -7,6 +7,10 @@ class EvidenceItem(BaseModel):
     excerpt: str
     location: str = "answer_text"
     citation_id: Optional[str] = None
+    start_offset: Optional[int] = None
+    end_offset: Optional[int] = None
+    match_type: Optional[str] = None
+    malformed_reason: Optional[str] = None
 
 
 class ClassificationResult(BaseModel):

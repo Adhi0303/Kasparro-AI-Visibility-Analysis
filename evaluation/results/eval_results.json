@@ -1,78 +1,94 @@
 {
-  "timestamp": "2026-11-10T07:22:16.310834",
+  "timestamp": "2026-11-10T08:54:20.395857+00:00",
+  "execution_metadata": {
+    "execution_mode": "replay",
+    "provider": "deterministic_replay",
+    "model": "contextual-rules-v1",
+    "base_url": null,
+    "classifier_version": "v1"
+  },
+  "counts": {
+    "total_cases": 15,
+    "supplied_cases": 8,
+    "synthetic_cases": 7,
+    "evaluated_cases": 15,
+    "failed_cases": 0
+  },
   "baseline_metrics": {
-    "total_cases": 10,
-    "exact_matches": 5,
-    "agreement_rate": 0.5,
+    "total_cases": 15,
+    "exact_matches": 8,
+    "agreement_rate": 0.5333,
     "per_label": {
       "kasparro_mentioned": {
-        "true_positives": 6,
+        "true_positives": 11,
         "false_positives": 1,
         "true_negatives": 3,
         "false_negatives": 0,
-        "precision": 0.8571,
+        "precision": 0.9167,
         "recall": 1.0,
-        "f1": 0.9231
+        "f1": 0.9565
       },
       "kasparro_recommended": {
-        "true_positives": 1,
-        "false_positives": 3,
-        "true_negatives": 6,
+        "true_positives": 2,
+        "false_positives": 4,
+        "true_negatives": 9,
         "false_negatives": 0,
-        "precision": 0.25,
+        "precision": 0.3333,
         "recall": 1.0,
-        "f1": 0.4
+        "f1": 0.5
       },
       "kasparro_negative": {
-        "true_positives": 1,
+        "true_positives": 2,
         "false_positives": 1,
-        "true_negatives": 6,
-        "false_negatives": 2,
-        "precision": 0.5,
-        "recall": 0.3333,
-        "f1": 0.4
+        "true_negatives": 9,
+        "false_negatives": 3,
+        "precision": 0.6667,
+        "recall": 0.4,
+        "f1": 0.5
       }
     }
   },
   "proposed_metrics": {
-    "total_cases": 10,
-    "exact_matches": 7,
-    "agreement_rate": 0.7,
+    "total_cases": 15,
+    "exact_matches": 15,
+    "agreement_rate": 1.0,
     "per_label": {
       "kasparro_mentioned": {
-        "true_positives": 6,
-        "false_positives": 1,
-        "true_negatives": 3,
+        "true_positives": 11,
+        "false_positives": 0,
+        "true_negatives": 4,
         "false_negatives": 0,
-        "precision": 0.8571,
+        "precision": 1.0,
         "recall": 1.0,
-        "f1": 0.9231
+        "f1": 1.0
       },
       "kasparro_recommended": {
-        "true_positives": 1,
+        "true_positives": 2,
         "false_positives": 0,
-        "true_negatives": 9,
+        "true_negatives": 13,
         "false_negatives": 0,
         "precision": 1.0,
         "recall": 1.0,
         "f1": 1.0
       },
       "kasparro_negative": {
-        "true_positives": 3,
-        "false_positives": 2,
-        "true_negatives": 5,
+        "true_positives": 5,
+        "false_positives": 0,
+        "true_negatives": 10,
         "false_negatives": 0,
-        "precision": 0.6,
+        "precision": 1.0,
         "recall": 1.0,
-        "f1": 0.75
+        "f1": 1.0
       }
     }
   },
+  "failures": [],
   "cases": [
     {
       "case_id": "case-001",
       "source_type": "supplied",
       "response_id": "ac5bdf24-6a6e-49a0-abf5-2755ff3b42bc",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -94,6 +110,7 @@
       "case_id": "case-002",
       "source_type": "supplied",
       "response_id": "a3fdd8bb-bcd9-4608-9786-ad4b3a2c7dc2",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -115,6 +132,7 @@
       "case_id": "case-003",
       "source_type": "supplied",
       "response_id": "b40168e8-acf4-4430-b22d-8c484fab846f",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": true,
@@ -136,6 +154,7 @@
       "case_id": "case-004",
       "source_type": "supplied",
       "response_id": "0f38b477-9f3c-44a8-9d10-0b6016db6150",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": false,
         "kasparro_recommended": false,
@@ -157,6 +176,7 @@
       "case_id": "case-005",
       "source_type": "supplied",
       "response_id": "0697376e-335d-45ef-a593-bc12c5e1ecf3",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": false,
         "kasparro_recommended": false,
@@ -178,6 +198,7 @@
       "case_id": "case-006",
       "source_type": "supplied",
       "response_id": "0e2c8f07-c483-493d-a9fc-467efc857faa",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": false,
         "kasparro_recommended": false,
@@ -199,6 +220,7 @@
       "case_id": "case-007",
       "source_type": "supplied",
       "response_id": "1d2dc007-0757-480d-a086-6b6e2e13c463",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -212,7 +234,7 @@
       "proposed": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
-        "kasparro_negative": true
+        "kasparro_negative": false
       },
       "notes": "Neutral mention noting lack of pricing; disambiguates from Kaspr."
     },
@@ -220,6 +242,7 @@
       "case_id": "case-008",
       "source_type": "supplied",
       "response_id": "44a32b81-7166-44dc-bac3-8cd2ae40da73",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -233,7 +256,7 @@
       "proposed": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
-        "kasparro_negative": true
+        "kasparro_negative": false
       },
       "notes": "Balanced analysis explaining capability vs LLM non-determinism."
     },
@@ -241,6 +264,7 @@
       "case_id": "synthetic-001",
       "source_type": "synthetic",
       "response_id": "synth-echo-prompt-only",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": false,
         "kasparro_recommended": false,
@@ -252,7 +276,7 @@
         "kasparro_negative": false
       },
       "proposed": {
-        "kasparro_mentioned": true,
+        "kasparro_mentioned": false,
         "kasparro_recommended": false,
         "kasparro_negative": false
       },
@@ -262,6 +286,7 @@
       "case_id": "synthetic-002",
       "source_type": "synthetic",
       "response_id": "synth-adversarial-scam",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -278,6 +303,116 @@
         "kasparro_negative": true
       },
       "notes": "Synthetic edge case: Strong explicit negative sentiment with caution warning."
+    },
+    {
+      "case_id": "synthetic-003",
+      "source_type": "synthetic",
+      "response_id": "synth-competitor-rec",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "notes": "Synthetic edge case: Recommendation keyword targets Profound rather than Kasparro."
+    },
+    {
+      "case_id": "synthetic-004",
+      "source_type": "synthetic",
+      "response_id": "synth-competitor-neg",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "notes": "Synthetic edge case: Negative sentiment applies to competitor, not Kasparro."
+    },
+    {
+      "case_id": "synthetic-005",
+      "source_type": "synthetic",
+      "response_id": "synth-negated-rec",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "notes": "Synthetic edge case: Explicit negated recommendation with negative evidence claim."
+    },
+    {
+      "case_id": "synthetic-006",
+      "source_type": "synthetic",
+      "response_id": "synth-neutral-info-gap",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "notes": "Synthetic edge case: Neutral uncertainty when public information is limited."
+    },
+    {
+      "case_id": "synthetic-007",
+      "source_type": "synthetic",
+      "response_id": "synth-coexisting-rec-neg",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": true
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": true
+      },
+      "notes": "Synthetic edge case: Positive recommendation and negative caveat coexist."
     }
   ]
 }

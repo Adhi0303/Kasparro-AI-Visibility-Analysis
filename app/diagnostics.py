@@ -68,7 +68,7 @@ def get_default_diagnostics() -> List[Dict[str, Any]]:
                     "response_id": "08f81acc-0824-4e3a-a5d5-58446e2a6a90",
                     "engine": "chatgpt",
                     "prompt": "kasparro:ai_shortlisting:005 (does kasparro actually work or is ai visibility tracking just a gimmick?)",
-                    "excerpt": "Short answer: **AI visibility tracking is a real problem, but many tools oversell how precisely they can measure it.** Kasparro falls into a category of tools trying to solve a legitimate need, but I'd be skeptical of taking any single \"AI visibility"
+                    "excerpt": "Short answer: **AI visibility tracking is a real problem, but many tools oversell how precisely they can measure it.** Kasparro falls into a category of tools trying to solve a legitimate need, but I'd be skeptical of taking any single \"AI visibility score\" at face value."
                 }
             ],
             "possible_explanation": (
