@@ -215,7 +215,7 @@ def run_evaluation(
     split_suffix = "_held_out" if split == "held_out" else ""
     if execution_mode == "real_model":
         md_filename = f"eval_provider_report{split_suffix}.md"
-        json_filename = f"eval_provider_results{split_suffix}.json"
+        json_filename = "eval_provider_held_out_results.json" if split == "held_out" else "eval_provider_results.json"
         title = "# Provider Evaluation Report (Real-Model Execution)"
         mode_desc = (
             f"real_model (provider={exec_meta['provider']}, model={exec_meta['model']}, "
@@ -223,7 +223,7 @@ def run_evaluation(
         )
     else:
         md_filename = f"eval_comparison_report{split_suffix}.md"
-        json_filename = f"eval_results{split_suffix}.json"
+        json_filename = "eval_held_out_results.json" if split == "held_out" else "eval_results.json"
         title = "# Evaluation and Grader Comparison Report"
         mode_desc = f"replay (keyless deterministic contextual classifier, version={exec_meta['classifier_version']})"
 
