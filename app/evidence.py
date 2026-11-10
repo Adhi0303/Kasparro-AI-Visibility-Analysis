@@ -291,7 +291,7 @@ def validate_report_evidence(
 
 def render_report_markdown(
     report_payload: Dict[str, Any],
-    source_lookup: Dict[str, Dict[str, str]],
+    source_lookup: Optional[Dict[str, Dict[str, str]]] = None,
 ) -> str:
     """
     Renders a validated Markdown summary of an exported/approved report.
