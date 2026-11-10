@@ -102,7 +102,7 @@ class RequestSizeLimitMiddleware:
             if message["type"] != "http.request":
                 continue
             total_bytes += len(message.get("body", b""))
-            if total_bytes > self.max_body_bytes:
+            if total_bytes > max_body_bytes:
                 await self._respond(send, 413, "Request payload exceeds maximum allowed size")
                 return
             messages.append(message)
