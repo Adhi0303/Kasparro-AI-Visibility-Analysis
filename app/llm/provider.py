@@ -50,7 +50,7 @@ Note: Every 'excerpt' in 'evidence' MUST be an exact verbatim substring from the
 class ProviderEvidenceInput(BaseModel):
     model_config = ConfigDict(strict=True)
 
-    excerpt: StrictStr
+    excerpt: StrictStr = Field(min_length=1)
     location: Literal["answer_text"] = "answer_text"
     citation_id: Optional[StrictStr] = None
 
@@ -221,6 +221,24 @@ class ProviderClassifier(LLMBase):
                             f"Model JSON root must be an object, got {type(parsed).__name__}"
                         )
 
+                    # Keep empty evidence candidates visible to the central audit pipeline
+                    # without weakening the provider's strict public schema.
+                    malformed_candidates = []
+                    raw_evidence = parsed.get("evidence", [])
+                    if isinstance(raw_evidence, list):
+                        retained_evidence = []
+                        for item in raw_evidence:
+                            if isinstance(item, dict) and item.get("excerpt") == "":
+                                malformed_candidates.append(EvidenceItem(
+                                    excerpt="",
+                                    location=item.get("location", "answer_text"),
+                                    citation_id=item.get("citation_id"),
+                                    malformed_reason="Evidence excerpt must be a non-empty string",
+                                ))
+                            else:
+                                retained_evidence.append(item)
+                        parsed["evidence"] = retained_evidence
+
                     validated = ProviderClassificationOutput.model_validate(parsed)
                     return ClassificationResult(
                         response_id=response_id,
@@ -232,7 +250,7 @@ class ProviderClassifier(LLMBase):
                         kasparro_negative=validated.kasparro_negative,
                         competitors=list(validated.competitors),
                         recommendation_position=validated.recommendation_position,
-                        evidence=_to_candidate_evidence(validated.evidence),
+                        evidence=_to_candidate_evidence(validated.evidence) + malformed_candidates,
                         confidence=float(validated.confidence),
                         execution_mode="real_model",
                         classifier_version=self.classifier_version,
