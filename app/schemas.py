@@ -24,6 +24,17 @@ class DatasetImportRequest(BaseModel):
             raise ValueError("Path traversal segments ('..') are not permitted in source_directory")
         if os.path.isabs(v):
             raise ValueError("Absolute paths are not permitted for source_directory")
+
+        cwd = Path.cwd().resolve()
+        allowed_raw = os.getenv("ALLOWED_IMPORT_DIRS") or get_settings().ALLOWED_IMPORT_DIRS
+        allowed_dirs = [
+            (cwd / entry.strip()).resolve()
+            for entry in allowed_raw.split(",")
+            if entry.strip()
+        ]
+        resolved = (cwd / v).resolve()
+        if not any(resolved.is_relative_to(root) for root in allowed_dirs):
+            raise ValueError("source_directory must resolve inside an authorized import directory")
         return v
 
 
