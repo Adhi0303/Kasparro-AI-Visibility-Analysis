@@ -76,16 +76,27 @@ def validate_safe_source_directory(
     return resolved
 
 
+def _valid_string(value: Any, *, max_length: int, allow_empty: bool = False) -> bool:
+    return (
+        isinstance(value, str)
+        and (allow_empty or bool(value.strip()))
+        and len(value) <= max_length
+        and "\\x00" not in value
+    )
+
+
 def validate_prompt_record(record: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
     if not isinstance(record, dict):
         return False, "Record is not a valid JSON object"
     for field in ("prompt_id", "run_id", "text"):
         if field not in record or record[field] is None:
             return False, f"Missing required prompt field: {field}"
-    if not isinstance(record["prompt_id"], str) or not record["prompt_id"].strip():
-        return False, "prompt_id must be a non-empty string"
-    if not isinstance(record["text"], str) or not record["text"].strip():
-        return False, "Prompt text cannot be empty"
+    if not _valid_string(record["prompt_id"], max_length=128):
+        return False, "prompt_id must be a non-empty string of at most 128 characters"
+    if not _valid_string(record["run_id"], max_length=128):
+        return False, "run_id must be a non-empty string of at most 128 characters"
+    if not _valid_string(record["text"], max_length=50000):
+        return False, "Prompt text must be a non-empty string of at most 50000 characters"
     return True, None
 
 
@@ -95,35 +106,53 @@ def validate_response_record(record: Dict[str, Any]) -> Tuple[bool, Optional[str
     for field in ("response_id", "run_id", "prompt_id", "engine", "answer_text", "capture_status"):
         if field not in record or record[field] is None:
             return False, f"Missing required response field: {field}"
-    if not isinstance(record["response_id"], str) or not record["response_id"].strip():
-        return False, "response_id must be a non-empty string"
-    if not isinstance(record["prompt_id"], str) or not record["prompt_id"].strip():
-        return False, "prompt_id must be a non-empty string"
+    string_limits = {
+        "response_id": 128,
+        "run_id": 128,
+        "prompt_id": 128,
+        "engine": 32,
+        "capture_status": 32,
+        "answer_text": 200000,
+    }
+    for field, max_length in string_limits.items():
+        if not _valid_string(record[field], max_length=max_length):
+            return False, f"{field} must be a non-empty string of at most {max_length} characters"
     if record["engine"] not in VALID_ENGINES:
         return False, f"Invalid engine: {record['engine']}. Must be one of {VALID_ENGINES}"
     if record["capture_status"] != "captured":
         return False, f"Invalid capture_status: {record['capture_status']}. Must be 'captured'"
-    if not isinstance(record["answer_text"], str) or not record["answer_text"].strip():
-        return False, "answer_text cannot be empty"
     return True, None
 
 
 def validate_citation_record(record: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
     if not isinstance(record, dict):
         return False, "Record is not a valid JSON object"
-    for field in ("citation_id", "response_id", "prompt_id", "engine", "order", "citation_type", "url"):
+    required = ("citation_id", "response_id", "prompt_id", "engine", "order", "citation_type", "url")
+    for field in required:
         if field not in record or record[field] is None:
             return False, f"Missing required citation field: {field}"
-    if not isinstance(record["citation_id"], str) or not record["citation_id"].strip():
-        return False, "citation_id must be a non-empty string"
+    limits = {
+        "citation_id": 128,
+        "response_id": 128,
+        "prompt_id": 128,
+        "engine": 32,
+        "citation_type": 32,
+        "url": 2048,
+    }
+    for field, max_length in limits.items():
+        if not _valid_string(record[field], max_length=max_length):
+            return False, f"{field} must be a non-empty string of at most {max_length} characters"
     if record["engine"] not in VALID_ENGINES:
         return False, f"Invalid engine: {record['engine']}"
     if record["citation_type"] not in VALID_CITATION_TYPES:
         return False, f"Invalid citation_type: {record['citation_type']}"
     if isinstance(record["order"], bool) or not isinstance(record["order"], int) or record["order"] < 1:
         return False, "Order must be an integer >= 1"
-    if not isinstance(record["url"], str) or not record["url"].strip():
-        return False, "Citation URL cannot be empty"
+    if not record["url"].startswith(("https://", "http://")):
+        return False, "Citation URL must use http or https"
+    publication_date = record.get("publication_date")
+    if publication_date is not None and not _valid_string(publication_date, max_length=64):
+        return False, "publication_date must be a string of at most 64 characters"
     return True, None
 
 
