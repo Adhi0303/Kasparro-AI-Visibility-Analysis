@@ -113,7 +113,7 @@ uvicorn app.main:app --reload
 
 ## 4. Running Automated Tests
 
-Run the 76-test pytest suite:
+Run the complete pytest suite (the collected test count may change as regression coverage evolves):
 ```powershell
 pytest -v
 ```
@@ -131,7 +131,7 @@ Tests cover:
 
 ## 5. Running Evaluation & Grader
 
-Run the evaluation script comparing the proposed classifier against a rule-based baseline across gold-standard labeled cases:
+Run the regression benchmark comparing the replay/provider classifier against a simple keyword baseline on the checked-in labeled cases. This is a small regression set, not a held-out generalization benchmark:
 ```powershell
 python -m evaluation.run_eval
 ```
@@ -141,7 +141,7 @@ python -m evaluation.run_eval
 
 ## 6. Execution Modes (Replay vs. Real-Model)
 
-The system supports two execution modes configured in `.env`:
+The system supports two execution modes configured in `.env`. Replay is the default; live provider execution requires credentials and a compatible endpoint.
 
 ### Replay Mode (Default — No API Key Required)
 ```dotenv
@@ -159,8 +159,8 @@ LLM_API_KEY=your_api_key_here
 LLM_TIMEOUT_SECONDS=20
 LLM_MAX_RETRIES=2
 ```
-- Invokes external OpenAI-compatible chat completion endpoints.
-- Constrained system prompt returns strict JSON schema; enforces retry limits and validates evidence excerpts.
+- Invokes an OpenAI-compatible chat-completions endpoint. Provider compatibility depends on the endpoint supporting the expected response schema and JSON response mode.
+- Constrained system prompt requests structured JSON; strict Pydantic validation checks field types and label consistency, bounded retries handle transient failures, and evidence is independently audited against source text.
 
 ---
 
