@@ -1,9 +1,23 @@
 import json
 import logging
 import math
-from typing import List, Optional, Union
+import time
+from typing import List, Literal, Optional, Union
+from urllib.parse import urlsplit
+
 import httpx
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictFloat, StrictInt, StrictStr, ValidationError, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StrictBool,
+    StrictFloat,
+    StrictInt,
+    StrictStr,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 
 from app.llm.base import LLMBase, ClassificationResult, EvidenceItem
 from app.config import Settings
@@ -11,6 +25,8 @@ from app.config import Settings
 logger = logging.getLogger(__name__)
 
 DEFAULT_LLM_BASE_URL = "https://api.openai.com/v1/chat/completions"
+RETRYABLE_STATUS_CODES = {408, 409, 425, 429, 500, 502, 503, 504}
+MAX_BACKOFF_SECONDS = 4.0
 
 SYSTEM_PROMPT = """You are an objective AI visibility analyst.
 Analyze the provided AI-generated response text to assess brand visibility for 'Kasparro'.
@@ -34,16 +50,14 @@ Note: Every 'excerpt' in 'evidence' MUST be an exact verbatim substring from the
 class ProviderEvidenceInput(BaseModel):
     model_config = ConfigDict(strict=True)
 
-    excerpt: StrictStr
-    location: StrictStr = "answer_text"
+    excerpt: StrictStr = Field(min_length=1)
+    location: Literal["answer_text"] = "answer_text"
     citation_id: Optional[StrictStr] = None
 
 
 class ProviderClassificationOutput(BaseModel):
-    """
-    Strict Pydantic schema for OpenAI-compatible provider JSON output.
-    Rejects missing required fields and unsafe type coercions (e.g., "false" -> True).
-    """
+    """Strict provider response contract with cross-field consistency checks."""
+
     model_config = ConfigDict(strict=True)
 
     kasparro_absent: StrictBool
@@ -57,21 +71,31 @@ class ProviderClassificationOutput(BaseModel):
 
     @field_validator("confidence")
     @classmethod
-    def validate_confidence_bounds(cls, v: Union[float, int]) -> float:
-        if isinstance(v, bool):
+    def validate_confidence_bounds(cls, value: Union[float, int]) -> float:
+        if isinstance(value, bool):
             raise ValueError("confidence must be numeric, not bool")
-        val = float(v)
-        if not math.isfinite(val) or val < 0.0 or val > 1.0:
+        number = float(value)
+        if not math.isfinite(number) or not 0.0 <= number <= 1.0:
             raise ValueError("confidence must be a finite number between 0.0 and 1.0")
-        return val
+        return number
+
+    @model_validator(mode="after")
+    def validate_label_consistency(self):
+        if self.kasparro_absent == self.kasparro_mentioned:
+            raise ValueError(
+                "kasparro_absent and kasparro_mentioned must be logical opposites"
+            )
+        if self.kasparro_recommended and not self.kasparro_mentioned:
+            raise ValueError("a recommendation requires kasparro_mentioned=true")
+        if self.kasparro_negative and not self.kasparro_mentioned:
+            raise ValueError("negative characterization requires kasparro_mentioned=true")
+        if self.recommendation_position is not None and not self.kasparro_recommended:
+            raise ValueError("recommendation_position requires kasparro_recommended=true")
+        return self
 
 
 def _to_candidate_evidence(items: List[ProviderEvidenceInput]) -> List[EvidenceItem]:
-    """
-    Converts validated provider evidence objects into EvidenceItem candidates
-    without pre-filtering unverified strings or rewriting locations, allowing
-    centralized audit in execute_analysis() to record valid and rejected excerpts.
-    """
+    """Convert candidates without pre-filtering; centralized analysis audit records rejections."""
     return [
         EvidenceItem(
             excerpt=item.excerpt,
@@ -80,6 +104,16 @@ def _to_candidate_evidence(items: List[ProviderEvidenceInput]) -> List[EvidenceI
         )
         for item in items
     ]
+
+
+def _retry_delay(attempt: int, retry_after: Optional[str] = None) -> float:
+    """Bounded exponential backoff; honors a numeric Retry-After when supplied."""
+    if retry_after:
+        try:
+            return min(max(float(retry_after), 0.0), MAX_BACKOFF_SECONDS)
+        except (TypeError, ValueError):
+            pass
+    return min(0.5 * (2 ** max(attempt - 1, 0)), MAX_BACKOFF_SECONDS)
 
 
 class ProviderClassifier(LLMBase):
@@ -97,8 +131,21 @@ class ProviderClassifier(LLMBase):
             return "LLM_API_KEY is not configured in environment."
         if not self.model:
             return "LLM_MODEL cannot be empty."
-        if not (self.base_url.startswith("http://") or self.base_url.startswith("https://")):
-            return f"Invalid LLM_BASE_URL '{self.base_url}': must begin with http:// or https://"
+        try:
+            parsed = urlsplit(self.base_url)
+            valid_scheme = parsed.scheme in ("http", "https")
+            valid_host = bool(parsed.hostname)
+            has_credentials = parsed.username is not None or parsed.password is not None
+        except ValueError:
+            return "Invalid LLM_BASE_URL."
+        if not valid_scheme or not valid_host or has_credentials:
+            return "Invalid LLM_BASE_URL: provide an absolute HTTP(S) URL without embedded credentials."
+        if parsed.scheme == "http" and parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
+            return "LLM_BASE_URL must use HTTPS unless targeting localhost."
+        if not isinstance(self.timeout, (int, float)) or self.timeout <= 0:
+            return "LLM_TIMEOUT_SECONDS must be greater than zero."
+        if not isinstance(self.max_retries, int) or not 0 <= self.max_retries <= 5:
+            return "LLM_MAX_RETRIES must be between 0 and 5."
         return None
 
     def classify(
@@ -124,7 +171,6 @@ class ProviderClassifier(LLMBase):
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
-
         user_content = f"Response text to analyze:\n---\n{answer_text}\n---"
         if prompt_text and prompt_text.strip():
             user_content = (
@@ -142,39 +188,40 @@ class ProviderClassifier(LLMBase):
             "response_format": {"type": "json_object"},
         }
 
-        attempts = 0
-        last_error = ""
-        url = self.base_url
+        last_error = "Unknown provider error"
+        total_attempts = self.max_retries + 1
 
-        while attempts <= self.max_retries:
-            attempts += 1
+        for attempt in range(1, total_attempts + 1):
+            retry_after = None
+            retryable = True
             try:
                 with httpx.Client(timeout=self.timeout) as client:
-                    resp = client.post(url, headers=headers, json=payload)
-                    if resp.status_code != 200:
-                        last_error = f"HTTP {resp.status_code}: {resp.text[:200]}"
-                        continue
+                    response = client.post(self.base_url, headers=headers, json=payload)
+                    if response.status_code != 200:
+                        last_error = f"HTTP {response.status_code}: {response.text[:200]}"
+                        retry_after = getattr(response, "headers", {}).get("Retry-After")
+                        retryable = response.status_code in RETRYABLE_STATUS_CODES
+                        if not retryable:
+                            break
+                        raise RuntimeError("retryable provider HTTP response")
 
-                    data = resp.json()
+                    data = response.json()
                     choices = data.get("choices") if isinstance(data, dict) else None
                     if not isinstance(choices, list) or not choices:
-                        last_error = "Missing or empty 'choices' in provider response"
-                        continue
+                        raise ValueError("Missing or empty 'choices' in provider response")
 
                     message = choices[0].get("message") if isinstance(choices[0], dict) else None
-                    content = message.get("content") if isinstance(message, dict) else None
-                    if not isinstance(content, str) or not content.strip():
-                        last_error = "Missing or empty message content in provider response"
-                        continue
+                    response_content = message.get("content") if isinstance(message, dict) else None
+                    if not isinstance(response_content, str) or not response_content.strip():
+                        raise ValueError("Missing or empty message content in provider response")
 
-                    parsed = json.loads(content)
+                    parsed = json.loads(response_content)
                     if not isinstance(parsed, dict):
-                        last_error = f"Model JSON root must be an object, got {type(parsed).__name__}"
-                        continue
+                        raise ValueError(
+                            f"Model JSON root must be an object, got {type(parsed).__name__}"
+                        )
 
                     validated = ProviderClassificationOutput.model_validate(parsed)
-                    candidate_evidence = _to_candidate_evidence(validated.evidence)
-
                     return ClassificationResult(
                         response_id=response_id,
                         engine=engine,
@@ -185,23 +232,32 @@ class ProviderClassifier(LLMBase):
                         kasparro_negative=validated.kasparro_negative,
                         competitors=list(validated.competitors),
                         recommendation_position=validated.recommendation_position,
-                        evidence=candidate_evidence,
+                        evidence=_to_candidate_evidence(validated.evidence),
                         confidence=float(validated.confidence),
                         execution_mode="real_model",
                         classifier_version=self.classifier_version,
                     )
             except httpx.TimeoutException:
                 last_error = "Request timed out"
-            except (json.JSONDecodeError, ValidationError) as e:
-                last_error = f"Invalid provider classification payload: {str(e)}"
-            except Exception as e:
-                last_error = str(e)
+            except httpx.TransportError as exc:
+                last_error = f"Provider transport error: {type(exc).__name__}"
+            except (json.JSONDecodeError, ValidationError, ValueError) as exc:
+                last_error = f"Invalid provider classification payload: {str(exc)[:300]}"
+            except RuntimeError as exc:
+                if str(exc) != "retryable provider HTTP response":
+                    last_error = str(exc)
+            except Exception as exc:
+                last_error = f"Unexpected provider error: {type(exc).__name__}"
+                retryable = False
+
+            if attempt < total_attempts and retryable:
+                time.sleep(_retry_delay(attempt, retry_after))
 
         return ClassificationResult(
             response_id=response_id,
             engine=engine,
             status="failed",
-            failure_reason=f"Model call failed after {self.max_retries + 1} attempts: {last_error}",
+            failure_reason=f"Model call failed after {total_attempts} attempt(s): {last_error}",
             execution_mode="real_model",
             classifier_version=self.classifier_version,
         )
