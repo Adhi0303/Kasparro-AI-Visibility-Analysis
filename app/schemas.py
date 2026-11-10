@@ -1,13 +1,28 @@
 from datetime import datetime
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
+from typing import List, Optional, Dict, Any, Literal
+from pydantic import BaseModel, Field, field_validator
+import os
+from pathlib import Path
 
 
 # --- Ingestion Schemas ---
 
 class DatasetImportRequest(BaseModel):
-    dataset_name: str = Field(default="kasparro-historical-snapshot")
+    dataset_name: str = Field(default="kasparro-historical-snapshot", min_length=1, max_length=100)
     source_directory: str = Field(default="data")
+
+    @field_validator("source_directory")
+    @classmethod
+    def validate_directory_path(cls, v: str) -> str:
+        # Prevent path traversal attacks (e.g. ../../etc)
+        normalized = os.path.normpath(v)
+        if normalized.startswith("..") or os.path.isabs(v):
+            # Only allow subdirectories within current workspace or explicitly 'data'
+            resolved = Path(v).resolve()
+            cwd = Path.cwd().resolve()
+            if not str(resolved).startswith(str(cwd)):
+                raise ValueError("source_directory must be a relative path within the project workspace")
+        return v
 
 
 class InvalidRecordInfo(BaseModel):
@@ -30,10 +45,10 @@ class DatasetImportResponse(BaseModel):
 # --- Analysis Schemas ---
 
 class AnalysisRequest(BaseModel):
-    dataset_id: str
-    execution_mode: str = Field(default="replay")
-    classifier_version: str = Field(default="v1")
-    scoring_version: str = Field(default="v1")
+    dataset_id: str = Field(..., min_length=1)
+    execution_mode: Literal["replay", "real_model"] = Field(default="replay")
+    classifier_version: Literal["v1", "v2"] = Field(default="v1")
+    scoring_version: Literal["v1", "v2"] = Field(default="v1")
 
 
 class AnalysisStatusResponse(BaseModel):

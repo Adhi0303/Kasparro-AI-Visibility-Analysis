@@ -56,3 +56,30 @@ def test_provider_classifier_without_key():
     assert res.status == "failed"
     assert "not configured" in res.failure_reason
 
+
+def test_all_diagnostic_evidence_verbatim_integrity():
+    import json
+    import os
+    from app.diagnostics import get_default_diagnostics
+
+    responses_path = "data/responses.jsonl"
+    assert os.path.exists(responses_path), "data/responses.jsonl must exist"
+
+    with open(responses_path, "r", encoding="utf-8") as f:
+        responses = {json.loads(line)["response_id"]: json.loads(line) for line in f}
+
+    diagnostics = get_default_diagnostics()
+    assert len(diagnostics) == 3, "Expected 3 default diagnostics"
+
+    for d in diagnostics:
+        for ev in d["evidence"]:
+            rid = ev["response_id"]
+            excerpt = ev["excerpt"]
+            assert rid in responses, f"Response ID '{rid}' cited in diagnostic '{d['title']}' not found in dataset"
+            source_text = responses[rid].get("answer_text", "")
+            assert excerpt in source_text, (
+                f"Evidence excerpt in diagnostic '{d['title']}' is not a verbatim substring of response '{rid}':\n"
+                f"Excerpt: {repr(excerpt)}"
+            )
+
+
