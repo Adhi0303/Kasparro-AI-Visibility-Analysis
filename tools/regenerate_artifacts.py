@@ -538,7 +538,7 @@ def main() -> None:
                 "response_id": db_r.source_response_id,
                 "prompt_text": prompt_text,
                 "branded_query": bool(re.search(r"\bkasparro\b", prompt_text, re.IGNORECASE)),
-                "score": round(float(row.score), 1),
+                "score": float(row.score),
                 "mentioned": bool(labels.get("kasparro_mentioned")),
                 "recommended": bool(labels.get("kasparro_recommended")),
                 "negative": bool(labels.get("kasparro_negative")),
