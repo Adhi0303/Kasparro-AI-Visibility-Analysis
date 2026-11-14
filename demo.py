@@ -1,222 +1,260 @@
 """
-Kasparro AI Visibility Analysis — One-Click Demonstration Script
-Runs the entire end-to-end workflow in seconds:
-  1. Pack Integrity Verification
-  2. Database Initialization
-  3. Dataset Ingestion (150 responses, 2,439 citations)
-  4. Deterministic Visibility Scoring & Engine Benchmark Table
-  5. Report Lifecycle: Draft -> Submission -> Gate Check -> Approval -> Export
-  6. Visual Executive HTML Report reference
+Kasparro AI Visibility Analysis — One-Click Demonstration Script.
+
+The demo fails closed when pack validation, analysis metrics, or report lifecycle
+checks are incomplete. It does not substitute fabricated metric defaults.
 """
+from __future__ import annotations
 
-import os
-import sys
 import json
+import math
+import subprocess
+import sys
 import time
+from pathlib import Path
+from typing import Any, Dict
 
-# Ensure UTF-8 output on Windows terminals
-if sys.platform == "win32":
-    try:
-        sys.stdout.reconfigure(encoding="utf-8")
-        sys.stderr.reconfigure(encoding="utf-8")
-    except Exception:
-        pass
-
-# Ensure project root is on sys.path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
+from fastapi import HTTPException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.database import Base
-import app.models  # Register all models with Base
 
+ROOT = Path(__file__).resolve().parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from app.database import Base
+import app.models  # noqa: F401
+from app.export import export_approved_report
 from app.ingestion import import_dataset
 from app.classification import execute_analysis
 from app.reports import create_initial_report, submit_report_for_review
 from app.review import process_review_decision
-from app.export import export_approved_report
 from app.schemas import ReviewDecisionRequest
 
 
-def print_header(title: str):
+def print_header(title: str) -> None:
     print("\n" + "=" * 72)
     print(f" {title}")
     print("=" * 72)
 
 
-def main():
-    start_time = time.time()
+def require_mapping(value: Any, path: str) -> Dict[str, Any]:
+    if not isinstance(value, dict):
+        raise RuntimeError(f"Required analysis field '{path}' is missing or invalid")
+    return value
 
+
+def require_number(value: Any, path: str, *, minimum: float = 0.0,
+                   maximum: float | None = None) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise RuntimeError(f"Required analysis metric '{path}' is missing or non-numeric")
+    result = float(value)
+    if not math.isfinite(result):
+        raise RuntimeError(f"Required analysis metric '{path}' is not finite")
+    if result < minimum or (maximum is not None and result > maximum):
+        raise RuntimeError(f"Required analysis metric '{path}' is outside its valid range")
+    return result
+
+
+def require_rate(distribution: Dict[str, Any], key: str, context: str) -> float:
+    return require_number(distribution.get(key), f"{context}.{key}", minimum=0.0, maximum=1.0)
+
+
+def run_pack_integrity_check() -> str:
+    """Run the real pack checker; never print a success claim without executing it."""
+    checker = ROOT / "tools" / "check_pack.py"
+    if not checker.is_file():
+        raise RuntimeError(f"Pack checker is missing: {checker}")
+    completed = subprocess.run(
+        [sys.executable, str(checker)],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    return completed.stdout.strip()
+
+
+def expect_export_blocked(db: Any, report_id: str, expected_state: str) -> None:
+    try:
+        export_approved_report(db, report_id=report_id)
+    except HTTPException as exc:
+        if exc.status_code != 400:
+            raise RuntimeError(
+                f"Expected HTTP 400 when exporting {expected_state}, got HTTP {exc.status_code}"
+            ) from exc
+        print(f" [PASS] Export correctly blocked for {expected_state} (HTTP 400).")
+        return
+    raise RuntimeError(f"Export unexpectedly succeeded for {expected_state}")
+
+
+def main() -> None:
+    start_time = time.time()
     print_header("KASPARRO AI VISIBILITY ANALYSIS — END-TO-END DEMO")
     print(" Execution Mode : Keyless Replay (Deterministic, No API Keys Required)")
-    print(" Snapshot Date  : 31 July 2026 (Historical Capture)")
-    print(" Engines Tested : Google Gemini, OpenAI ChatGPT, Google AI Mode")
 
-    # -------------------------------------------------------------
-    # 1. Pack Integrity Verification
-    # -------------------------------------------------------------
+    # 1. Execute the actual pack integrity checker.
     print_header("STEP 1: Verifying Pack Integrity")
-    manifest_path = "PACK_MANIFEST.json"
-    if os.path.exists(manifest_path):
-        with open(manifest_path, "r", encoding="utf-8") as f:
-            manifest = json.load(f)
-        print(f" [PASS] PACK_MANIFEST.json loaded.")
-        print(f"        • Prompts  : {manifest.get('counts', {}).get('prompts', 50)}")
-        print(f"        • Responses: {manifest.get('counts', {}).get('responses', 150)}")
-        print(f"        • Citations: {manifest.get('counts', {}).get('citation_entries', 2439)}")
-        print(f"        • Checksum verification: ALL PASSED")
-    else:
-        print(" [!] PACK_MANIFEST.json not found in root, continuing with local dataset.")
+    pack_output = run_pack_integrity_check()
+    print(pack_output)
 
-    # -------------------------------------------------------------
-    # 2. Database Initialization
-    # -------------------------------------------------------------
+    run_metadata_path = ROOT / "data" / "run.json"
+    run_metadata = json.loads(run_metadata_path.read_text(encoding="utf-8"))
+    print(f" Snapshot Date  : {run_metadata.get('historical_capture_date', 'Not recorded')}")
+    print(f" Engines Tested : {', '.join(run_metadata.get('engines', {}).values())}")
+
+    # 2. Use an isolated in-memory database; no demo_run.db is left behind.
     print_header("STEP 2: Initializing Isolated SQLite Database")
-    demo_db_path = "demo_run.db"
-    if os.path.exists(demo_db_path):
-        try:
-            os.remove(demo_db_path)
-        except Exception:
-            pass
-
-    engine = create_engine(f"sqlite:///{demo_db_path}", echo=False)
+    engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(bind=engine)
-    Session = sessionmaker(bind=engine)
+    Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     db = Session()
-    print(f" [PASS] Created database: '{demo_db_path}' with 8 relational tables:")
-    for table_name in Base.metadata.tables.keys():
-        print(f"        • {table_name}")
-
-    # -------------------------------------------------------------
-    # 3. Dataset Ingestion
-    # -------------------------------------------------------------
-    print_header("STEP 3: Ingesting Historical Dataset Snapshot")
-    data_dir = "data"
-    print(f" [*] Ingesting files from '{data_dir}/'...")
-    import_res = import_dataset(db, dataset_name="kasparro-historical-snapshot", source_directory=data_dir)
-    print(f" [PASS] Ingestion Complete:")
-    print(f"        • Dataset ID        : {import_res.dataset_id}")
-    print(f"        • Status            : {import_res.validation_status}")
-    print(f"        • Prompts Loaded    : {import_res.imported_prompts}")
-    print(f"        • Responses Loaded  : {import_res.imported_responses}")
-    print(f"        • Citations Loaded  : {import_res.imported_citations}")
-
-    # -------------------------------------------------------------
-    # 4. AI Visibility Classification & Scoring
-    # -------------------------------------------------------------
-    print_header("STEP 4: Executing Deterministic AI Visibility Analysis")
-    print(" [*] Running replay classifier across 150 responses...")
-    analysis = execute_analysis(db, dataset_id=import_res.dataset_id, execution_mode="replay")
-    
-    # Load analysis configuration summary
-    config_summary = json.loads(analysis.configuration_json or "{}")
-    overall = config_summary.get("overall", {})
-    engine_aggs = config_summary.get("engine_aggregates", {})
-
-    print(f" [PASS] Analysis Run ID: {analysis.id}")
-    print(f"        • Status: {analysis.status.upper()}")
-    print(f"        • Overall Visibility Score: {overall.get('mean_score', 37.57)} / 100")
-
-    # Render Benchmark Table
-    print("\n" + "─" * 72)
-    print("  ENGINE VISIBILITY BENCHMARK TABLE (July 2026 Snapshot)")
-    print("─" * 72)
-    print(f"  {'Engine':<12} | {'Score':<7} | {'Inclusion':<11} | {'Recommend':<11} | {'Negative':<10}")
-    print("─" * 72)
-
-    engines = [
-        ("Gemini", "gemini"),
-        ("ChatGPT", "chatgpt"),
-        ("AI Mode", "aimode"),
-    ]
-
-    for name, code in engines:
-        agg = engine_aggs.get(code, {})
-        score = agg.get("mean_score", 0.0)
-        dist = agg.get("distribution", {})
-        inc = f"{dist.get('inclusion_rate', 0.0) * 100:.1f}%"
-        rec = f"{dist.get('recommendation_rate', 0.0) * 100:.1f}%"
-        neg = f"{dist.get('negative_rate', 0.0) * 100:.1f}%"
-        print(f"  {name:<12} | {score:<7.1f} | {inc:<11} | {rec:<11} | {neg:<10}")
-
-    overall_score = overall.get("mean_score", 37.57)
-    overall_dist = overall.get("distribution", {})
-    o_inc = f"{overall_dist.get('inclusion_rate', 0.48) * 100:.1f}%"
-    o_rec = f"{overall_dist.get('recommendation_rate', 0.16) * 100:.1f}%"
-    o_neg = f"{overall_dist.get('negative_rate', 0.06) * 100:.1f}%"
-    print("─" * 72)
-    print(f"  Combined     | {overall_score:<7.1f} | {o_inc:<11} | {o_rec:<11} | {o_neg:<10}")
-    print("─" * 72)
-
-    # -------------------------------------------------------------
-    # 5. Governance & Review Workflow Demonstration
-    # -------------------------------------------------------------
-    print_header("STEP 5: Demonstrating Report Lifecycle & Export Gate")
-
-    # A. Create Draft
-    report = create_initial_report(db, dataset_id=import_res.dataset_id, analysis_id=analysis.id)
-    version = report.versions[0]
-    print(f" [1/4] Analyst created Report #{report.id[:8]}... (Version 1: {version.status})")
-
-    # B. Test Export Gate on Draft (Expected to Fail)
     try:
-        export_approved_report(db, report_id=report.id)
-        print(" [!] ERROR: Export gate failed to block DRAFT report!")
-    except Exception as e:
-        print(f" [PASS] Gate Enforcement Check 1: Export blocked on DRAFT.")
-        print(f"        └─ HTTP 400 Response: \"{e.detail if hasattr(e, 'detail') else e}\"")
+        print(f" [PASS] Created isolated database with {len(Base.metadata.tables)} registered tables.")
 
-    # C. Submit for Review
-    submitted_version = submit_report_for_review(db, report_id=report.id)
-    print(f" [2/4] Analyst submitted report for review (Version 1: {submitted_version.status})")
+        # 3. Import only after the pack has passed its checksum and relationship checks.
+        print_header("STEP 3: Ingesting Historical Dataset Snapshot")
+        import_result = import_dataset(
+            db,
+            dataset_name="kasparro-historical-snapshot",
+            source_directory=str(ROOT / "data"),
+        )
+        if import_result.validation_status != "valid":
+            raise RuntimeError(f"Dataset import was not valid: {import_result.validation_status}")
+        print(" [PASS] Ingestion completed:")
+        print(f"        • Dataset ID       : {import_result.dataset_id}")
+        print(f"        • Prompts          : {import_result.imported_prompts}")
+        print(f"        • Responses        : {import_result.imported_responses}")
+        print(f"        • Citations        : {import_result.imported_citations}")
 
-    # D. Test Export Gate on Submitted (Expected to Fail)
-    try:
-        export_approved_report(db, report_id=report.id)
-        print(" [!] ERROR: Export gate failed to block SUBMITTED report!")
-    except Exception as e:
-        print(f" [PASS] Gate Enforcement Check 2: Export blocked on SUBMITTED.")
-        print(f"        └─ HTTP 400 Response: \"{e.detail if hasattr(e, 'detail') else e}\"")
+        # 4. Execute replay analysis and require the metrics that the demo displays.
+        print_header("STEP 4: Executing Deterministic AI Visibility Analysis")
+        print(f" [*] Running replay classifier across {import_result.imported_responses} imported responses...")
+        analysis = execute_analysis(
+            db,
+            dataset_id=import_result.dataset_id,
+            execution_mode="replay",
+        )
+        if analysis.status != "completed":
+            raise RuntimeError(f"Analysis did not complete: status={analysis.status}")
 
-    # E. Reviewer Approves
-    decision_req = ReviewDecisionRequest(
-        version_id=submitted_version.id,
-        decision="approve",
-        comment="Verified 150 responses. Diagnostics match verbatim excerpts."
-    )
-    approved_version = process_review_decision(
-        db, report_id=report.id, decision_req=decision_req, reviewer_id="reviewer-lead"
-    )
-    print(f" [3/4] Reviewer approved report (Version 1: {approved_version.status})")
-    print(f"        └─ Reviewer Note: \"{decision_req.comment}\"")
+        config_summary = json.loads(analysis.configuration_json or "{}")
+        overall = require_mapping(config_summary.get("overall"), "overall")
+        engine_aggregates = require_mapping(
+            config_summary.get("engine_aggregates"),
+            "engine_aggregates",
+        )
+        overall_score = require_number(
+            overall.get("mean_score"),
+            "overall.mean_score",
+            minimum=0,
+            maximum=100,
+        )
+        overall_distribution = require_mapping(overall.get("distribution"), "overall.distribution")
+        overall_inclusion = require_rate(overall_distribution, "inclusion_rate", "overall.distribution")
+        overall_recommendation = require_rate(overall_distribution, "recommendation_rate", "overall.distribution")
+        overall_negative = require_rate(overall_distribution, "negative_rate", "overall.distribution")
 
-    # F. Export Approved Report (Expected to Succeed)
-    export_payload = export_approved_report(db, report_id=report.id)
-    content = export_payload.get("content", {})
-    print(f" [4/4] Final Approved Report exported successfully!")
-    print(f"        • Export Status: SUCCESS")
-    print(f"        • Version ID   : {export_payload.get('version_id')}")
-    print(f"        • Content Hash : {export_payload.get('content_hash')[:24]}...")
-    print(f"        • Diagnostics  : {len(content.get('diagnostics', []))} evidence-backed findings")
-    print(f"        • Remedies     : {len(content.get('remedies', []))} prioritized action items")
+        total_eligible = int(require_number(overall.get("total_eligible"), "overall.total_eligible"))
+        total_successful = int(require_number(overall.get("total_successful"), "overall.total_successful"))
+        total_failed = int(require_number(overall.get("total_failed"), "overall.total_failed"))
+        total_skipped = int(require_number(overall.get("total_skipped"), "overall.total_skipped"))
+        if total_successful + total_failed + total_skipped != total_eligible:
+            raise RuntimeError("Analysis response counts are inconsistent")
 
-    # Clean up demo database
-    db.close()
-    try:
-        os.remove(demo_db_path)
-    except Exception:
-        pass
+        print(f" [PASS] Analysis Run ID: {analysis.id}")
+        print(f"        • Status                  : {analysis.status.upper()}")
+        print(f"        • Overall Visibility Score: {overall_score:.2f} / 100")
+        print(f"        • Eligible Responses      : {total_eligible}")
+        print(f"        • Successful              : {total_successful}")
+        print(f"        • Failed                  : {total_failed}")
+        print(f"        • Skipped                 : {total_skipped}")
+
+        print("\n" + "─" * 72)
+        print("  ENGINE VISIBILITY BENCHMARK TABLE")
+        print("─" * 72)
+        print(f"  {'Engine':<18} | {'Score':<8} | {'Inclusion':<11} | {'Recommend':<11} | {'Negative':<10}")
+        print("─" * 72)
+
+        for engine_code, engine_name in (
+            ("gemini", "Google Gemini"),
+            ("chatgpt", "OpenAI ChatGPT"),
+            ("aimode", "Google AI Mode"),
+        ):
+            metrics = require_mapping(engine_aggregates.get(engine_code), f"engine_aggregates.{engine_code}")
+            distribution = require_mapping(
+                metrics.get("distribution"),
+                f"engine_aggregates.{engine_code}.distribution",
+            )
+            score = require_number(
+                metrics.get("mean_score"),
+                f"engine_aggregates.{engine_code}.mean_score",
+                minimum=0,
+                maximum=100,
+            )
+            inc = require_rate(distribution, "inclusion_rate", f"{engine_code}.distribution")
+            rec = require_rate(distribution, "recommendation_rate", f"{engine_code}.distribution")
+            neg = require_rate(distribution, "negative_rate", f"{engine_code}.distribution")
+            print(
+                f"  {engine_name:<18} | {score:<8.1f} | {inc * 100:<10.1f}% | "
+                f"{rec * 100:<10.1f}% | {neg * 100:<9.1f}%"
+            )
+
+        print("─" * 72)
+        print(
+            f"  {'Combined':<18} | {overall_score:<8.1f} | {overall_inclusion * 100:<10.1f}% | "
+            f"{overall_recommendation * 100:<10.1f}% | {overall_negative * 100:<9.1f}%"
+        )
+        print("─" * 72)
+
+        # 5. Verify the report lifecycle with exact expected error semantics.
+        print_header("STEP 5: Demonstrating Report Lifecycle & Export Gate")
+        report = create_initial_report(db, dataset_id=import_result.dataset_id, analysis_id=analysis.id)
+        expect_export_blocked(db, report.id, "DRAFT")
+
+        submitted_version = submit_report_for_review(db, report_id=report.id)
+        expect_export_blocked(db, report.id, "SUBMITTED")
+
+        decision_request = ReviewDecisionRequest(
+            version_id=submitted_version.id,
+            decision="approve",
+            comment="Verified against the current analysis and validated source evidence.",
+        )
+        approved_version = process_review_decision(
+            db,
+            report_id=report.id,
+            decision_req=decision_request,
+            reviewer_id="demo-reviewer",
+        )
+        if approved_version.status != "APPROVED":
+            raise RuntimeError(f"Report approval did not complete: {approved_version.status}")
+
+        export_payload = export_approved_report(db, report_id=report.id)
+        exported_content = require_mapping(export_payload.get("content"), "export.content")
+        content_hash = export_payload.get("content_hash")
+        if not isinstance(content_hash, str) or len(content_hash) != 64:
+            raise RuntimeError("Approved export did not contain a valid SHA-256 content hash")
+        print(" [PASS] Approved report exported successfully.")
+        print(f"        • Export Version : {export_payload.get('version_id')}")
+        print(f"        • Content Hash   : {content_hash}")
+        print(f"        • Diagnostics    : {len(exported_content.get('diagnostics', []))}")
+        print(f"        • Remedies       : {len(exported_content.get('remedies', []))}")
+
+    finally:
+        db.close()
+        engine.dispose()
 
     elapsed = time.time() - start_time
-    print_header(f"DEMO COMPLETE IN {elapsed:.2f} SECONDS — ALL CHECKS PASSED!")
+    print_header(f"DEMO COMPLETED IN {elapsed:.2f} SECONDS")
     print("""
-Key Deliverables to Explore:
-  1. Interactive HTML Report : evaluation/results/report.html
-     (Open in Brave or Chrome for the 50-prompt scatter chart & filters)
-  2. Automated Test Suite    : pytest -v (76/76 tests passing)
-  3. Classifier Evaluation   : python -m evaluation.run_eval
-  4. Final Export JSON       : evaluation/results/final_report.json
-  5. Architecture & Rationale: README.md and DECISION_NOTE.md
+Next verification commands:
+  1. Automated tests          : pytest -v
+  2. Regression evaluation    : python -m evaluation.run_eval --mode replay --split regression
+  3. Held-out candidate check : python -m evaluation.run_eval --mode replay --split held_out
+  4. Regenerate report assets : python tools/regenerate_artifacts.py
+
+Test counts and CI status are intentionally not hardcoded in this demo.
 """)
 
 
