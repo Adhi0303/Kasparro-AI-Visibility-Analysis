@@ -282,7 +282,7 @@ def test_demo_manifest_count_keys_match_assignment_pack():
     counts = require_mapping(manifest.get("counts"), "pack counts")
     assert require_number(counts, "prompts", "pack counts") > 0
     assert require_number(counts, "responses", "pack counts") > 0
-    assert require_number(counts, "citation_entries", "pack counts") > 0
+    assert require_number(counts, "citations", "pack counts") > 0
 
 
 
