@@ -167,6 +167,17 @@ def test_dashboard_handles_empty_prompt_cohort_as_unavailable():
     assert "0</td>" in html
 
 
+def test_dashboard_restores_interactive_engine_and_cohort_filters():
+    html = render_dashboard_html(_report(), _evaluation(), _prompt_scores())
+
+    assert 'id="chart-engine-filter"' in html
+    assert 'id="chart-cohort-filter"' in html
+    assert 'class="chart-point"' in html
+    assert 'addEventListener("change", applyFilters)' in html
+    assert 'data-engine="gemini"' in html
+    assert 'data-cohort="branded"' in html
+
+
 
 def test_committed_dashboard_matches_report_and_evaluation_json():
     import json
