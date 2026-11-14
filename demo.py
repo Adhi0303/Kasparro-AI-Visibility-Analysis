@@ -13,6 +13,9 @@ import os
 import sys
 import json
 import time
+import math
+import subprocess
+from pathlib import Path
 
 # Ensure UTF-8 output on Windows terminals
 if sys.platform == "win32":
@@ -44,6 +47,26 @@ def print_header(title: str):
     print("=" * 72)
 
 
+
+def require_mapping(value, label):
+    if not isinstance(value, dict):
+        raise RuntimeError(f"Missing or invalid {label}; refusing to display fallback metrics.")
+    return value
+
+
+def require_number(mapping, key, label):
+    value = mapping.get(key)
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+        raise RuntimeError(f"Missing or invalid metric {label}.{key}; refusing to display a fallback.")
+    return float(value)
+
+
+def require_rate(distribution, key, label):
+    value = require_number(distribution, key, label)
+    if not 0.0 <= value <= 1.0:
+        raise RuntimeError(f"Metric {label}.{key} must be between 0 and 1.")
+    return value
+
 def main():
     start_time = time.time()
 
@@ -57,16 +80,29 @@ def main():
     # -------------------------------------------------------------
     print_header("STEP 1: Verifying Pack Integrity")
     manifest_path = "PACK_MANIFEST.json"
-    if os.path.exists(manifest_path):
-        with open(manifest_path, "r", encoding="utf-8") as f:
-            manifest = json.load(f)
-        print(f" [PASS] PACK_MANIFEST.json loaded.")
-        print(f"        • Prompts  : {manifest.get('counts', {}).get('prompts', 50)}")
-        print(f"        • Responses: {manifest.get('counts', {}).get('responses', 150)}")
-        print(f"        • Citations: {manifest.get('counts', {}).get('citation_entries', 2439)}")
-        print(f"        • Checksum verification: ALL PASSED")
-    else:
-        print(" [!] PACK_MANIFEST.json not found in root, continuing with local dataset.")
+    if not os.path.isfile(manifest_path):
+        raise FileNotFoundError("PACK_MANIFEST.json is required for the demo integrity check.")
+
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        manifest = json.load(f)
+    counts = require_mapping(manifest.get("counts"), "pack counts")
+    for count_key in ("prompts", "responses", "citations"):
+        count = counts.get(count_key)
+        if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+            raise RuntimeError(f"PACK_MANIFEST.json contains an invalid {count_key} count.")
+
+    pack_check = subprocess.run(
+        [sys.executable, str(Path(__file__).resolve().parent / "tools" / "check_pack.py")],
+        cwd=str(Path(__file__).resolve().parent),
+        check=False,
+    )
+    if pack_check.returncode != 0:
+        raise RuntimeError("Assignment pack integrity verification failed.")
+
+    print(" [PASS] PACK_MANIFEST.json and source checksums verified.")
+    print(f"        • Prompts  : {counts['prompts']}")
+    print(f"        • Responses: {counts['responses']}")
+    print(f"        • Citations: {counts['citations']}")
 
     # -------------------------------------------------------------
     # 2. Database Initialization
@@ -108,14 +144,25 @@ def main():
     print(" [*] Running replay classifier across 150 responses...")
     analysis = execute_analysis(db, dataset_id=import_res.dataset_id, execution_mode="replay")
     
-    # Load analysis configuration summary
-    config_summary = json.loads(analysis.configuration_json or "{}")
-    overall = config_summary.get("overall", {})
-    engine_aggs = config_summary.get("engine_aggregates", {})
+    # Load and validate the analysis summary; never substitute plausible defaults.
+    if analysis.status != "completed":
+        raise RuntimeError(f"Analysis did not complete successfully (status={analysis.status!r}).")
+    try:
+        config_summary = json.loads(analysis.configuration_json or "")
+    except (TypeError, json.JSONDecodeError) as exc:
+        raise RuntimeError("Analysis configuration JSON is missing or invalid.") from exc
+
+    overall = require_mapping(config_summary.get("overall"), "overall analysis summary")
+    engine_aggs = require_mapping(config_summary.get("engine_aggregates"), "engine aggregates")
+    overall_score = require_number(overall, "mean_score", "overall")
+    overall_dist = require_mapping(overall.get("distribution"), "overall distribution")
+    o_inc = require_rate(overall_dist, "inclusion_rate", "overall distribution")
+    o_rec = require_rate(overall_dist, "recommendation_rate", "overall distribution")
+    o_neg = require_rate(overall_dist, "negative_rate", "overall distribution")
 
     print(f" [PASS] Analysis Run ID: {analysis.id}")
     print(f"        • Status: {analysis.status.upper()}")
-    print(f"        • Overall Visibility Score: {overall.get('mean_score', 37.57)} / 100")
+    print(f"        • Overall Visibility Score: {overall_score:.2f} / 100")
 
     # Render Benchmark Table
     print("\n" + "─" * 72)
@@ -131,19 +178,17 @@ def main():
     ]
 
     for name, code in engines:
-        agg = engine_aggs.get(code, {})
-        score = agg.get("mean_score", 0.0)
-        dist = agg.get("distribution", {})
-        inc = f"{dist.get('inclusion_rate', 0.0) * 100:.1f}%"
-        rec = f"{dist.get('recommendation_rate', 0.0) * 100:.1f}%"
-        neg = f"{dist.get('negative_rate', 0.0) * 100:.1f}%"
+        agg = require_mapping(engine_aggs.get(code), f"{code} engine aggregate")
+        score = require_number(agg, "mean_score", f"{code} engine aggregate")
+        dist = require_mapping(agg.get("distribution"), f"{code} distribution")
+        inc = f"{require_rate(dist, 'inclusion_rate', code) * 100:.1f}%"
+        rec = f"{require_rate(dist, 'recommendation_rate', code) * 100:.1f}%"
+        neg = f"{require_rate(dist, 'negative_rate', code) * 100:.1f}%"
         print(f"  {name:<12} | {score:<7.1f} | {inc:<11} | {rec:<11} | {neg:<10}")
 
-    overall_score = overall.get("mean_score", 37.57)
-    overall_dist = overall.get("distribution", {})
-    o_inc = f"{overall_dist.get('inclusion_rate', 0.48) * 100:.1f}%"
-    o_rec = f"{overall_dist.get('recommendation_rate', 0.16) * 100:.1f}%"
-    o_neg = f"{overall_dist.get('negative_rate', 0.06) * 100:.1f}%"
+    o_inc = f"{o_inc * 100:.1f}%"
+    o_rec = f"{o_rec * 100:.1f}%"
+    o_neg = f"{o_neg * 100:.1f}%"
     print("─" * 72)
     print(f"  Combined     | {overall_score:<7.1f} | {o_inc:<11} | {o_rec:<11} | {o_neg:<10}")
     print("─" * 72)
@@ -213,8 +258,8 @@ def main():
 Key Deliverables to Explore:
   1. Interactive HTML Report : evaluation/results/report.html
      (Open in Brave or Chrome for the 50-prompt scatter chart & filters)
-  2. Automated Test Suite    : pytest -v (76/76 tests passing)
-  3. Classifier Evaluation   : python -m evaluation.run_eval
+  2. Automated Test Suite    : Run separately with pytest -v; counts come from the test runner
+  3. Classifier Evaluation   : python -m evaluation.run_eval --mode replay --split regression
   4. Final Export JSON       : evaluation/results/final_report.json
   5. Architecture & Rationale: README.md and DECISION_NOTE.md
 """)
