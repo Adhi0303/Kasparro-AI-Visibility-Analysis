@@ -171,6 +171,8 @@ def validate_artifact_directory(results_dir: Path, data_dir: Path) -> List[str]:
         regression = _load_json(results_dir / "eval_results.json")
         held_out = _load_json(results_dir / "eval_held_out_results.json")
         prompt_scores = _load_json(results_dir / "prompt_scores.json")
+        regression_markdown = (results_dir / "eval_comparison_report.md").read_text(encoding="utf-8")
+        held_out_markdown = (results_dir / "eval_comparison_report_held_out.md").read_text(encoding="utf-8")
         html_text = (results_dir / "report.html").read_text(encoding="utf-8")
         source_responses = _load_jsonl(data_dir / "responses.jsonl")
     except (OSError, ValueError, json.JSONDecodeError) as exc:
@@ -250,6 +252,12 @@ def validate_artifact_directory(results_dir: Path, data_dir: Path) -> List[str]:
         if marker not in html_text:
             errors.append(f"Dashboard is missing required dynamic element: {marker}")
 
+    visible_html = re.sub(
+        r'<script id="kasparro-report-data" type="application/json">.*?</script>',
+        "",
+        html_text,
+        flags=re.DOTALL,
+    )
     stale_markers = (
         "76 Tests Collected",
         "21/21 Tests Pass",
@@ -257,8 +265,20 @@ def validate_artifact_directory(results_dir: Path, data_dir: Path) -> List[str]:
         "37.57",
     )
     for marker in stale_markers:
-        if marker in html_text:
+        if marker in visible_html:
             errors.append(f"Dashboard contains stale hardcoded claim: {marker}")
+
+    for split_name, markdown, result in (
+        ("regression", regression_markdown, regression),
+        ("held_out", held_out_markdown, held_out),
+    ):
+        counts = result.get("counts", {})
+        if f"- **Evaluation Split:** {split_name}" not in markdown:
+            errors.append(f"{split_name} Markdown report is missing its split label.")
+        if f"- **Total Cases:** {counts.get('total_cases')}" not in markdown:
+            errors.append(f"{split_name} Markdown report total does not match its JSON result.")
+        if f"- **Failed/Skipped Evaluations:** {counts.get('failed_cases')}" not in markdown:
+            errors.append(f"{split_name} Markdown report failure count does not match its JSON result.")
 
     prompt_score_count = sum(len(rows) for rows in prompt_scores.values() if isinstance(rows, list))
     expected_successful = final_report.get("counts", {}).get("successful_responses")
