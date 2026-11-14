@@ -55,7 +55,7 @@ def extract_embedded_report_data(html_text: str) -> Dict[str, Any]:
 
 
 def _pct(count: int, denominator: int) -> int:
-    return int(round((count * 100) / denominator)) if denominator else 0
+    return int(round((count / denominator) * 100)) if denominator else 0
 
 
 def compute_dashboard_scopes(
@@ -223,7 +223,22 @@ def validate_artifact_directory(results_dir: Path, data_dir: Path) -> List[str]:
                             f"final_report dashboard_scopes.{scope_name}.{engine_name}.{metric_name} "
                             "does not match prompt_scores.json."
                         )
-        matrix_match = re.search(r"const datasetMatrix\s*=\s*(\{.*?\});", html_text, flags=re.DOTALL)
+        scoring = final_report.get("scoring", {})
+        engine_aggregates = scoring.get("engine_aggregates", {})
+        for engine_name in ("gemini", "chatgpt", "aimode"):
+            aggregate = engine_aggregates.get(engine_name, {})
+            dashboard_metrics = expected_scopes["all"][engine_name]
+            if round(float(aggregate.get("mean_score", -1)), 1) != dashboard_metrics["score"]:
+                errors.append(f"Dashboard {engine_name} score differs from canonical scoring aggregate.")
+            distribution = aggregate.get("distribution", {})
+            for label, metric_key in (
+                ("inclusion_rate", "inc"),
+                ("recommendation_rate", "rec"),
+                ("negative_rate", "neg"),
+            ):
+                if int(round(float(distribution.get(label, -1)) * 100)) != dashboard_metrics[metric_key]:
+                    errors.append(f"Dashboard {engine_name} {metric_key} rate differs from canonical scoring aggregate.")
+        matrix_match = re.search(r"const datasetMatrix\\s*=\\s*(\\{.*?\\});", html_text, flags=re.DOTALL)
         if not matrix_match:
             errors.append("Dashboard is missing its generated datasetMatrix.")
         else:
