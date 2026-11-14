@@ -211,6 +211,16 @@ def validate_artifact_directory(results_dir: Path, data_dir: Path) -> List[str]:
 
     try:
         expected_scopes = compute_dashboard_scopes(prompt_scores)
+        report_scopes = final_report.get("dashboard_scopes", {})
+        for scope_name, engines in expected_scopes.items():
+            for engine_name, expected_metrics in engines.items():
+                stored_metrics = report_scopes.get(scope_name, {}).get(engine_name, {})
+                for metric_name, expected_value in expected_metrics.items():
+                    if stored_metrics.get(metric_name) != expected_value:
+                        errors.append(
+                            f"final_report dashboard_scopes.{scope_name}.{engine_name}.{metric_name} "
+                            "does not match prompt_scores.json."
+                        )
         matrix_match = re.search(r"const datasetMatrix\s*=\s*(\{.*?\});", html_text, flags=re.DOTALL)
         if not matrix_match:
             errors.append("Dashboard is missing its generated datasetMatrix.")
