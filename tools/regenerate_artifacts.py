@@ -245,6 +245,7 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
   setText("report-location", report.provenance.location + " (" + report.provenance.language + ")");
   setText("report-provider", report.provenance.provider);
   setText("report-source-hash", report.provenance.source_hash);
+  setText("report-provenance-generated-at", report.generated_at);
   const evaluation = report.evaluation || {};
   const regression = evaluation.regression || {};
   const heldOut = evaluation.held_out || {};
@@ -270,6 +271,106 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
       " evaluated; " + heldOut.counts.failed_cases + " failed. Labels are provisional single-annotator synthetic annotations."
     : "Held-out evaluation output was not generated.";
   setText("eval-held-out-summary", heldOutText);
+
+  const makeText = (tag, className, value) => {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    element.textContent = value === null || value === undefined ? "" : String(value);
+    return element;
+  };
+  const renderDiagnostics = () => {
+    const container = document.getElementById("diagnostics-container");
+    if (!container) return;
+    const diagnostics = Array.isArray(report.diagnostics) ? report.diagnostics : [];
+    container.replaceChildren();
+    let evidenceBackedCount = 0;
+    diagnostics.forEach((diagnostic, index) => {
+      const validEvidence = (Array.isArray(diagnostic.evidence) ? diagnostic.evidence : [])
+        .filter(item => item && item.validation_status === "valid" &&
+          typeof item.excerpt === "string" && item.excerpt.length > 0);
+      if (validEvidence.length) evidenceBackedCount += 1;
+      const card = makeText("div", "diag-card reveal" + (index ? " reveal-delay-" + Math.min(index, 2) : ""), "");
+      const stripe = document.createElement("div");
+      stripe.className = "diag-stripe";
+      stripe.style.background = ["linear-gradient(90deg,var(--indigo),#7c5cdb)",
+        "linear-gradient(90deg,var(--rose),#f0748a)",
+        "linear-gradient(90deg,var(--amber),#f0c040)"][index % 3];
+      const body = makeText("div", "diag-body", "");
+      const headingRow = document.createElement("div");
+      headingRow.style.display = "grid";
+      headingRow.style.gridTemplateColumns = "1fr";
+      headingRow.style.gap = "16px";
+      const headingBox = document.createElement("div");
+      headingBox.appendChild(makeText("div", "diag-num", "D" + (index + 1)));
+      headingBox.appendChild(makeText("h3", "diag-title", diagnostic.title || "Untitled finding"));
+      headingBox.appendChild(makeText("p", "diag-desc", diagnostic.observed_pattern || "No observed-pattern description supplied."));
+      if (diagnostic.comparison) headingBox.appendChild(makeText("p", "diag-desc", diagnostic.comparison));
+      if (diagnostic.possible_explanation) headingBox.appendChild(makeText("p", "diag-desc", diagnostic.possible_explanation));
+      headingRow.appendChild(headingBox);
+      body.appendChild(headingRow);
+
+      const evidenceGrid = makeText("div", "grid-2", "");
+      evidenceGrid.style.marginTop = "12px";
+      if (!validEvidence.length) {
+        evidenceGrid.appendChild(makeText("p", "diag-desc", "No validated verbatim evidence is available for this finding."));
+      } else {
+        validEvidence.forEach(item => {
+          const quote = makeText("div", "quote-block", "");
+          quote.appendChild(makeText("p", "", "“" + item.excerpt + "”"));
+          const meta = makeText("div", "quote-meta", "");
+          meta.appendChild(makeText("span", "pill", String(item.engine || "SOURCE").toUpperCase()));
+          meta.appendChild(makeText("span", "", item.prompt || item.response_id || "Source response"));
+          const offsetText = Number.isInteger(item.start_offset) && Number.isInteger(item.end_offset)
+            ? " · chars " + item.start_offset + "–" + item.end_offset
+            : "";
+          meta.appendChild(makeText("code", "", String(item.response_id || "unknown response") + offsetText));
+          quote.appendChild(meta);
+          evidenceGrid.appendChild(quote);
+        });
+      }
+      body.appendChild(evidenceGrid);
+
+      const footer = makeText("div", "diag-footer", "");
+      footer.appendChild(makeText("span", "diag-tag", "Validated evidence · " + validEvidence.length + " excerpt(s)"));
+      if (diagnostic.confidence_and_limitations) footer.appendChild(makeText("span", "diag-tag", diagnostic.confidence_and_limitations));
+      if (diagnostic.validation_needed) footer.appendChild(makeText("span", "diag-tag", "Validation: " + diagnostic.validation_needed));
+      body.appendChild(footer);
+      card.appendChild(stripe);
+      card.appendChild(body);
+      container.appendChild(card);
+    });
+    setText("diagnostics-heading", evidenceBackedCount + " Evidence-Backed Diagnostics");
+  };
+
+  const renderRemedies = () => {
+    const container = document.getElementById("remedies-container");
+    if (!container) return;
+    const remedies = Array.isArray(report.remedies) ? report.remedies : [];
+    container.replaceChildren();
+    remedies.forEach((remedy, index) => {
+      const card = makeText("div", "remedy-card reveal" + (index ? " reveal-delay-" + Math.min(index, 2) : ""), "");
+      const number = makeText("div", "remedy-num", "R" + (index + 1));
+      const content = makeText("div", "remedy-content", "");
+      content.appendChild(makeText("h3", "remedy-title", remedy.title || "Untitled remedy"));
+      if (remedy.problem) content.appendChild(makeText("p", "remedy-desc", remedy.problem));
+      content.appendChild(makeText("p", "remedy-desc", remedy.action || "No action description supplied."));
+      if (remedy.expected_benefit) content.appendChild(makeText("p", "remedy-desc", "Expected benefit: " + remedy.expected_benefit));
+      if (Array.isArray(remedy.supporting_evidence) && remedy.supporting_evidence.length) {
+        content.appendChild(makeText("p", "remedy-desc", "Supporting response IDs: " + remedy.supporting_evidence.join(", ")));
+      }
+      const footer = makeText("div", "remedy-footer", "");
+      footer.appendChild(makeText("strong", "", "Validation: "));
+      footer.appendChild(document.createTextNode(remedy.validation || "No validation plan supplied."));
+      content.appendChild(footer);
+      card.appendChild(number);
+      card.appendChild(content);
+      container.appendChild(card);
+    });
+    setText("remedies-heading", remedies.length + " Prioritised Action Items");
+  };
+
+  renderDiagnostics();
+  renderRemedies();
 })();
 </script>
 """
