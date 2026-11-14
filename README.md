@@ -287,6 +287,10 @@ curl -X GET "http://127.0.0.1:8000/reports/<REPORT_ID>/export" `
 
 ---
 
+## Reviewer Walkthrough
+
+See [`docs/ENGINEERING_WALKTHROUGH.md`](docs/ENGINEERING_WALKTHROUGH.md) for a concise spec-to-code walkthrough, exact demo commands, live Gemini and repeatability results, failure/fix evidence, and known scope boundaries.
+
 ## 8. Detailed Technical Documentation (`docs/`)
 
 The repository includes a dedicated documentation suite in the [`docs/`](docs/README.md) directory, structured into focused, single-topic guides:
