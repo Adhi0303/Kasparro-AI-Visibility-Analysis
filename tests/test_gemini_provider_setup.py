@@ -167,3 +167,65 @@ def test_provider_smoke_test_rejects_missing_api_key():
                 LLM_API_KEY="",
             )
         )
+
+
+def test_gemini_provider_sends_bearer_auth_and_json_chat_completion(monkeypatch):
+    import json
+    import app.llm.provider as provider_module
+
+    calls = []
+
+    class FakeResponse:
+        status_code = 200
+        headers = {}
+
+        def json(self):
+            output = {
+                "kasparro_absent": False,
+                "kasparro_mentioned": True,
+                "kasparro_recommended": True,
+                "kasparro_negative": False,
+                "competitors": [],
+                "recommendation_position": None,
+                "evidence": [{
+                    "excerpt": "Kasparro is worth considering.",
+                    "location": "answer_text",
+                }],
+                "confidence": 0.93,
+            }
+            return {
+                "choices": [{"message": {"content": json.dumps(output)}}],
+            }
+
+    class FakeClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def post(self, url, headers, json):
+            calls.append({"url": url, "headers": headers, "payload": json})
+            return FakeResponse()
+
+    monkeypatch.setattr(provider_module.httpx, "Client", FakeClient)
+    classifier = ProviderClassifier(
+        Settings(LLM_PROVIDER="gemini", LLM_API_KEY="local-test-key", LLM_MAX_RETRIES=0)
+    )
+    result = classifier.classify(
+        "gemini-smoke-response",
+        "chatgpt",
+        "Kasparro is worth considering.",
+    )
+
+    assert len(calls) == 1
+    assert calls[0]["url"] == DEFAULT_GEMINI_BASE_URL
+    assert calls[0]["headers"]["Authorization"] == "Bearer local-test-key"
+    assert calls[0]["payload"]["model"] == "gemini-3.5-flash-lite"
+    assert calls[0]["payload"]["response_format"] == {"type": "json_object"}
+    assert result.status == "success"
+    assert result.execution_mode == "real_model"
+    assert result.kasparro_recommended is True
