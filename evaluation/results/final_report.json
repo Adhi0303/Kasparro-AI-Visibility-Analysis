@@ -1,16 +1,17 @@
 {
-  "title": "Kasparro AI Visibility Analysis & Human Review Final Report",
+  "title": "Kasparro AI Visibility Analysis & Human Review",
   "pack_version": "1.0.0",
-  "generated_at": "2026-11-10T09:34:38.634027+00:00",
+  "generated_at": "2026-11-14T07:03:44.628747+00:00",
   "provenance": {
-    "run_id": "520896c4-5f85-4bef-a192-1ae56f5e6660",
-    "dataset_id": "31a3aab0-d33f-4345-bd13-9305dde786e8",
+    "run_id": "717139a4-ad46-4b69-94f5-3dca5b3dbe57",
+    "dataset_id": "65201f92-01d5-40fd-b502-9439b355d9f4",
     "dataset_name": "kasparro-historical-snapshot",
     "source_hash": "142de02b3da907cb2f18847d73862b894164cb0bf94515d1adc4df6d21d1d4d7",
     "historical_capture_date": "2026-07-31",
     "location": "India",
     "language": "en",
-    "provider": "DataForSEO"
+    "provider": "DataForSEO",
+    "source_run_id": "4a4b71d9-9b0d-4497-85f1-7db5c4e21472"
   },
   "counts": {
     "supplied_prompts": 50,
@@ -65,7 +66,7 @@
         "distribution": {
           "inclusion_rate": 0.44,
           "recommendation_rate": 0.12,
-          "negative_rate": 0
+          "negative_rate": 0.0
         }
       }
     },
@@ -91,7 +92,7 @@
         "distribution": {
           "inclusion_rate": 0.75,
           "recommendation_rate": 0.0833,
-          "negative_rate": 0
+          "negative_rate": 0.0
         }
       },
       "capability_evaluation": {
@@ -103,7 +104,7 @@
         "distribution": {
           "inclusion_rate": 0.4,
           "recommendation_rate": 0.0333,
-          "negative_rate": 0
+          "negative_rate": 0.0
         }
       },
       "trust_and_legitimacy": {
@@ -127,9 +128,149 @@
         "distribution": {
           "inclusion_rate": 0.4848,
           "recommendation_rate": 0.0909,
-          "negative_rate": 0
+          "negative_rate": 0.0
         }
       }
+    }
+  },
+  "evaluation": {
+    "regression": {
+      "counts": {
+        "total_cases": 20,
+        "supplied_cases": 8,
+        "synthetic_cases": 12,
+        "held_out_cases": 0,
+        "split": "regression",
+        "annotation_status": "regression_reference_labels",
+        "annotation_note": "Regression labels are development references, not an independent held-out benchmark.",
+        "evaluated_cases": 20,
+        "failed_cases": 0
+      },
+      "baseline_metrics": {
+        "total_cases": 20,
+        "exact_matches": 10,
+        "agreement_rate": 0.5,
+        "per_label": {
+          "kasparro_mentioned": {
+            "support": 20,
+            "positive_support": 15,
+            "negative_support": 5,
+            "true_positives": 15,
+            "false_positives": 2,
+            "true_negatives": 3,
+            "false_negatives": 0,
+            "precision": 0.8824,
+            "recall": 1.0,
+            "specificity": 0.6,
+            "accuracy": 0.9,
+            "balanced_accuracy": 0.8,
+            "f1": 0.9375
+          },
+          "kasparro_recommended": {
+            "support": 20,
+            "positive_support": 3,
+            "negative_support": 17,
+            "true_positives": 3,
+            "false_positives": 5,
+            "true_negatives": 12,
+            "false_negatives": 0,
+            "precision": 0.375,
+            "recall": 1.0,
+            "specificity": 0.7059,
+            "accuracy": 0.75,
+            "balanced_accuracy": 0.8529,
+            "f1": 0.5455
+          },
+          "kasparro_negative": {
+            "support": 20,
+            "positive_support": 5,
+            "negative_support": 15,
+            "true_positives": 2,
+            "false_positives": 2,
+            "true_negatives": 13,
+            "false_negatives": 3,
+            "precision": 0.5,
+            "recall": 0.4,
+            "specificity": 0.8667,
+            "accuracy": 0.75,
+            "balanced_accuracy": 0.6334,
+            "f1": 0.4444
+          }
+        }
+      },
+      "proposed_metrics": {
+        "total_cases": 20,
+        "exact_matches": 20,
+        "agreement_rate": 1.0,
+        "per_label": {
+          "kasparro_mentioned": {
+            "support": 20,
+            "positive_support": 15,
+            "negative_support": 5,
+            "true_positives": 15,
+            "false_positives": 0,
+            "true_negatives": 5,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "specificity": 1.0,
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0,
+            "f1": 1.0
+          },
+          "kasparro_recommended": {
+            "support": 20,
+            "positive_support": 3,
+            "negative_support": 17,
+            "true_positives": 3,
+            "false_positives": 0,
+            "true_negatives": 17,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "specificity": 1.0,
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0,
+            "f1": 1.0
+          },
+          "kasparro_negative": {
+            "support": 20,
+            "positive_support": 5,
+            "negative_support": 15,
+            "true_positives": 5,
+            "false_positives": 0,
+            "true_negatives": 15,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "specificity": 1.0,
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0,
+            "f1": 1.0
+          }
+        }
+      },
+      "execution_metadata": {
+        "execution_mode": "replay",
+        "provider": "deterministic_replay",
+        "model": "contextual-rules-v1",
+        "base_url": null,
+        "classifier_version": "v1"
+      }
+    },
+    "held_out": {
+      "counts": {
+        "total_cases": 30,
+        "supplied_cases": 0,
+        "synthetic_cases": 30,
+        "held_out_cases": 30,
+        "split": "held_out",
+        "annotation_status": "provisional_single_annotator",
+        "annotation_note": "Held-out labels are provisional single-annotator labels and are not independently adjudicated.",
+        "evaluated_cases": 30,
+        "failed_cases": 0
+      },
+      "annotation_note": "Held-out labels are provisional single-annotator labels and are not independently adjudicated."
     }
   },
   "diagnostics": [
@@ -327,92 +468,5 @@
       }
     ],
     "rejected": []
-  },
-  "evaluation": {
-    "regression": {
-      "counts": {
-        "total_cases": 20,
-        "supplied_cases": 8,
-        "synthetic_cases": 12,
-        "evaluated_cases": 20,
-        "failed_cases": 0
-      },
-      "execution_metadata": {
-        "execution_mode": "replay",
-        "provider": "deterministic_replay",
-        "model": "contextual-rules-v1",
-        "base_url": null,
-        "classifier_version": "v1"
-      },
-      "baseline_metrics": {
-        "total_cases": 20,
-        "exact_matches": 10,
-        "agreement_rate": 0.5,
-        "per_label": {
-          "kasparro_mentioned": {
-            "true_positives": 15,
-            "false_positives": 2,
-            "true_negatives": 3,
-            "false_negatives": 0,
-            "precision": 0.8824,
-            "recall": 1,
-            "f1": 0.9375
-          },
-          "kasparro_recommended": {
-            "true_positives": 3,
-            "false_positives": 5,
-            "true_negatives": 12,
-            "false_negatives": 0,
-            "precision": 0.375,
-            "recall": 1,
-            "f1": 0.5455
-          },
-          "kasparro_negative": {
-            "true_positives": 2,
-            "false_positives": 2,
-            "true_negatives": 13,
-            "false_negatives": 3,
-            "precision": 0.5,
-            "recall": 0.4,
-            "f1": 0.4444
-          }
-        }
-      },
-      "proposed_metrics": {
-        "total_cases": 20,
-        "exact_matches": 20,
-        "agreement_rate": 1,
-        "per_label": {
-          "kasparro_mentioned": {
-            "true_positives": 15,
-            "false_positives": 0,
-            "true_negatives": 5,
-            "false_negatives": 0,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
-          },
-          "kasparro_recommended": {
-            "true_positives": 3,
-            "false_positives": 0,
-            "true_negatives": 17,
-            "false_negatives": 0,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
-          },
-          "kasparro_negative": {
-            "true_positives": 5,
-            "false_positives": 0,
-            "true_negatives": 15,
-            "false_negatives": 0,
-            "precision": 1,
-            "recall": 1,
-            "f1": 1
-          }
-        }
-      }
-    },
-    "interpretation": "The checked-in classifier evaluation is a 20-case regression set (8 supplied and 12 synthetic). It is not an independent held-out accuracy estimate."
   }
 }

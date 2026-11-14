@@ -1,0 +1,968 @@
+{
+  "timestamp": "2026-11-14T07:03:41.639672+00:00",
+  "execution_metadata": {
+    "execution_mode": "replay",
+    "provider": "deterministic_replay",
+    "model": "contextual-rules-v1",
+    "base_url": null,
+    "classifier_version": "v1"
+  },
+  "counts": {
+    "total_cases": 30,
+    "supplied_cases": 0,
+    "synthetic_cases": 30,
+    "held_out_cases": 30,
+    "split": "held_out",
+    "annotation_status": "provisional_single_annotator",
+    "annotation_note": "Held-out labels are provisional single-annotator labels and are not independently adjudicated.",
+    "evaluated_cases": 30,
+    "failed_cases": 0
+  },
+  "baseline_metrics": {
+    "total_cases": 30,
+    "exact_matches": 14,
+    "agreement_rate": 0.4667,
+    "per_label": {
+      "kasparro_mentioned": {
+        "support": 30,
+        "positive_support": 21,
+        "negative_support": 9,
+        "true_positives": 21,
+        "false_positives": 6,
+        "true_negatives": 3,
+        "false_negatives": 0,
+        "precision": 0.7778,
+        "recall": 1.0,
+        "specificity": 0.3333,
+        "accuracy": 0.8,
+        "balanced_accuracy": 0.6666,
+        "f1": 0.875
+      },
+      "kasparro_recommended": {
+        "support": 30,
+        "positive_support": 5,
+        "negative_support": 25,
+        "true_positives": 0,
+        "false_positives": 1,
+        "true_negatives": 24,
+        "false_negatives": 5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 0.96,
+        "accuracy": 0.8,
+        "balanced_accuracy": 0.48,
+        "f1": null
+      },
+      "kasparro_negative": {
+        "support": 30,
+        "positive_support": 3,
+        "negative_support": 27,
+        "true_positives": 0,
+        "false_positives": 3,
+        "true_negatives": 24,
+        "false_negatives": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 0.8889,
+        "accuracy": 0.8,
+        "balanced_accuracy": 0.4445,
+        "f1": null
+      }
+    }
+  },
+  "baseline_metrics_all_cases": {
+    "total_cases": 30,
+    "exact_matches": 14,
+    "agreement_rate": 0.4667,
+    "per_label": {
+      "kasparro_mentioned": {
+        "support": 30,
+        "positive_support": 21,
+        "negative_support": 9,
+        "true_positives": 21,
+        "false_positives": 6,
+        "true_negatives": 3,
+        "false_negatives": 0,
+        "precision": 0.7778,
+        "recall": 1.0,
+        "specificity": 0.3333,
+        "accuracy": 0.8,
+        "balanced_accuracy": 0.6666,
+        "f1": 0.875
+      },
+      "kasparro_recommended": {
+        "support": 30,
+        "positive_support": 5,
+        "negative_support": 25,
+        "true_positives": 0,
+        "false_positives": 1,
+        "true_negatives": 24,
+        "false_negatives": 5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 0.96,
+        "accuracy": 0.8,
+        "balanced_accuracy": 0.48,
+        "f1": null
+      },
+      "kasparro_negative": {
+        "support": 30,
+        "positive_support": 3,
+        "negative_support": 27,
+        "true_positives": 0,
+        "false_positives": 3,
+        "true_negatives": 24,
+        "false_negatives": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 0.8889,
+        "accuracy": 0.8,
+        "balanced_accuracy": 0.4445,
+        "f1": null
+      }
+    }
+  },
+  "proposed_metrics": {
+    "total_cases": 30,
+    "exact_matches": 19,
+    "agreement_rate": 0.6333,
+    "per_label": {
+      "kasparro_mentioned": {
+        "support": 30,
+        "positive_support": 21,
+        "negative_support": 9,
+        "true_positives": 21,
+        "false_positives": 6,
+        "true_negatives": 3,
+        "false_negatives": 0,
+        "precision": 0.7778,
+        "recall": 1.0,
+        "specificity": 0.3333,
+        "accuracy": 0.8,
+        "balanced_accuracy": 0.6666,
+        "f1": 0.875
+      },
+      "kasparro_recommended": {
+        "support": 30,
+        "positive_support": 5,
+        "negative_support": 25,
+        "true_positives": 3,
+        "false_positives": 0,
+        "true_negatives": 25,
+        "false_negatives": 2,
+        "precision": 1.0,
+        "recall": 0.6,
+        "specificity": 1.0,
+        "accuracy": 0.9333,
+        "balanced_accuracy": 0.8,
+        "f1": 0.75
+      },
+      "kasparro_negative": {
+        "support": 30,
+        "positive_support": 3,
+        "negative_support": 27,
+        "true_positives": 1,
+        "false_positives": 2,
+        "true_negatives": 25,
+        "false_negatives": 2,
+        "precision": 0.3333,
+        "recall": 0.3333,
+        "specificity": 0.9259,
+        "accuracy": 0.8667,
+        "balanced_accuracy": 0.6296,
+        "f1": 0.3333
+      }
+    }
+  },
+  "coverage_metrics": {
+    "total_cases": 30,
+    "successful_classifier_calls": 30,
+    "failed_classifier_calls": 0,
+    "coverage_rate": 1.0,
+    "coverage_adjusted_exact_match_rate": 0.6333,
+    "exact_matches_on_successful_calls": 19
+  },
+  "failures": [],
+  "cases": [
+    {
+      "case_id": "heldout-001",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-001",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "mention-neutral"
+    },
+    {
+      "case_id": "heldout-002",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-002",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "mention-no-recommendation"
+    },
+    {
+      "case_id": "heldout-003",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-003",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "recommend-direct"
+    },
+    {
+      "case_id": "heldout-004",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-004",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "recommend-qualified"
+    },
+    {
+      "case_id": "heldout-005",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-005",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "negative-service"
+    },
+    {
+      "case_id": "heldout-006",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-006",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "negative-pricing"
+    },
+    {
+      "case_id": "heldout-007",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-007",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 0,
+        "rejected_count": 0
+      },
+      "notes": "absence-competitors"
+    },
+    {
+      "case_id": "heldout-008",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-008",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 0,
+        "rejected_count": 0
+      },
+      "notes": "absence-general"
+    },
+    {
+      "case_id": "heldout-009",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-009",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "comparison-kasparro-wins"
+    },
+    {
+      "case_id": "heldout-010",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-010",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "comparison-competitor-wins"
+    },
+    {
+      "case_id": "heldout-011",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-011",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "negative-competitor-only"
+    },
+    {
+      "case_id": "heldout-012",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-012",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "quote-negative"
+    },
+    {
+      "case_id": "heldout-013",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-013",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "quote-positive"
+    },
+    {
+      "case_id": "heldout-014",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-014",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "negated-negative"
+    },
+    {
+      "case_id": "heldout-015",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-015",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "negated-recommendation"
+    },
+    {
+      "case_id": "heldout-016",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-016",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "prompt-echo-only"
+    },
+    {
+      "case_id": "heldout-017",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-017",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "prompt-brand-echo"
+    },
+    {
+      "case_id": "heldout-018",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-018",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 0,
+        "rejected_count": 0
+      },
+      "notes": "prompt-echo-no-response-mention"
+    },
+    {
+      "case_id": "heldout-019",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-019",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "recommend-competitor-only"
+    },
+    {
+      "case_id": "heldout-020",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-020",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "negative-competitor-only"
+    },
+    {
+      "case_id": "heldout-021",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-021",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "recommend-conditional"
+    },
+    {
+      "case_id": "heldout-022",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-022",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "negative-conditional"
+    },
+    {
+      "case_id": "heldout-023",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-023",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "multi-brand-pronoun-kasparro"
+    },
+    {
+      "case_id": "heldout-024",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-024",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "multi-brand-pronoun-competitor"
+    },
+    {
+      "case_id": "heldout-025",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-025",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "negative-attributed"
+    },
+    {
+      "case_id": "heldout-026",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-026",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "positive-not-recommend"
+    },
+    {
+      "case_id": "heldout-027",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-027",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "not-mention-homonym"
+    },
+    {
+      "case_id": "heldout-028",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-028",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "brand-mention-unrelated"
+    },
+    {
+      "case_id": "heldout-029",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-029",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "recommend-list-position"
+    },
+    {
+      "case_id": "heldout-030",
+      "source_type": "held_out_synthetic",
+      "response_id": "heldout-response-030",
+      "status": "success",
+      "expected": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "baseline": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
+      "notes": "neutral-no-evidence"
+    }
+  ]
+}

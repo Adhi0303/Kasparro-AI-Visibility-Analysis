@@ -1,17 +1,29 @@
 # Evaluation and Grader Comparison Report
 
-- **Generated:** 2026-11-10T09:35:10.739473+00:00
+- **Generated:** 2026-11-14T07:03:41.597684+00:00
 - **Pack Version:** 1.0.0
-- **Total Cases:** 20 (8 supplied, 12 synthetic)
+- **Evaluation Split:** regression
+- **Total Cases:** 20 (8 supplied, 12 synthetic; 0 held-out synthetic)
 - **Successful Evaluations:** 20
 - **Failed/Skipped Evaluations:** 0
 - **Execution Mode:** replay (keyless deterministic contextual classifier, version=v1)
+- **Annotation Status:** regression_reference_labels
 
 ---
 
 ## 1. Executive Summary
 
-This evaluation benchmarks the **replay** classifier (`contextual-rules-v1`) against a **Naive Rule-Based Baseline** across 20 successfully evaluated gold-standard cases.
+This evaluation compares the **replay** classifier (`contextual-rules-v1`) with a **Naive Rule-Based Baseline** on the 20 cases where classifier execution succeeded. It does not describe provisional labels as independently validated ground truth.
+
+## 2. Execution Coverage
+
+- **Total cases:** 20
+- **Successful classifier calls:** 20
+- **Failed/skipped classifier calls:** 0
+- **Execution coverage:** 100.0%
+- **Coverage-adjusted exact-match agreement:** 100.0% (20/20)
+
+Classification metrics and the baseline comparison below use the matched successful subset. Coverage-adjusted agreement uses the full cohort, treating failed classifier calls as unmatched rather than silently excluding them.
 
 | Metric | Rule-Based Baseline | Evaluated Classifier | Delta |
 |---|---|---|---|
@@ -23,7 +35,7 @@ This evaluation benchmarks the **replay** classifier (`contextual-rules-v1`) aga
 
 ---
 
-## 2. Per-Label Breakdown
+## 3. Per-Label Breakdown
 
 ### Mention Detection (`kasparro_mentioned`)
 - **Baseline:** Precision: 0.8824, Recall: 1.0
@@ -39,13 +51,13 @@ This evaluation benchmarks the **replay** classifier (`contextual-rules-v1`) aga
 
 ---
 
-## 3. Failure, Diagnosis, Fix, and Regression
+## 4. Failure, Diagnosis, Fix, and Regression
 
 As required by Section 16 of the assignment brief, actual failures observed during implementation are documented in `DECISION_NOTE.md` and verified via regression tests in `tests/test_analysis.py` (`test_all_diagnostic_evidence_verbatim_integrity` and contextual target-attribution tests).
 
 ---
 
-## 4. Evaluation Cases Detail
+## 5. Evaluation Cases Detail
 
 ```json
 [
