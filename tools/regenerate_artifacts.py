@@ -162,7 +162,7 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
         flags=re.DOTALL,
     )
     html_text = re.sub(
-        r'<div id="report-not-generated"[^>]*>.*?</div>\\s*',
+        r'<div id="report-not-generated"[^>]*>.*?</div>\s*',
         "",
         html_text,
         flags=re.DOTALL,
@@ -328,10 +328,10 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
     setText("eval-proposed-" + name + "-f1", value.f1 === null ? "N/A" : Number(value.f1).toFixed(3));
     setBar("eval-proposed-" + name + "-bar", value.f1 === null ? 0 : Number(value.f1) * 100);
   }
+  const dashboardScopes = report.dashboard_scopes || {};
   setText("chartSubtitle", "Showing " + (report.counts.supplied_prompts || 0) + " prompts across " +
     engineNames.length + " engines");
   setText("gapPill", Number((dashboardScopes.unbranded || {}).all?.inc || 0).toFixed(1) + "% Unbranded Inclusion");
-  const dashboardScopes = report.dashboard_scopes || {};
   const brandedOverall = (dashboardScopes.branded || {}).all || {};
   const unbrandedOverall = (dashboardScopes.unbranded || {}).all || {};
   setText("gap-branded-title", "Branded Queries (" + (brandedOverall.prompts_count || 0) + " Prompts)");
@@ -461,10 +461,10 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
 })();
 </script>
 """
-    data_block = f'<script id="kasparro-report-data" type="application/json">{json_payload}</script>\\n'
+    data_block = f'<script id="kasparro-report-data" type="application/json">{json_payload}</script>\n'
     if "</body>" not in html_text:
         raise ValueError("Dashboard template is missing </body>; cannot inject canonical report data.")
-    return html_text.replace("</body>", data_block + bootstrap + "\\n</body>", 1)
+    return html_text.replace("</body>", data_block + bootstrap + "\n</body>", 1)
 
 
 def main() -> None:
