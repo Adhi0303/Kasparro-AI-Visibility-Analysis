@@ -238,7 +238,7 @@ def validate_artifact_directory(results_dir: Path, data_dir: Path) -> List[str]:
             ):
                 if int(round(float(distribution.get(label, -1)) * 100)) != dashboard_metrics[metric_key]:
                     errors.append(f"Dashboard {engine_name} {metric_key} rate differs from canonical scoring aggregate.")
-        matrix_match = re.search(r"const datasetMatrix\\s*=\\s*(\\{.*?\\});", html_text, flags=re.DOTALL)
+        matrix_match = re.search(r"const datasetMatrix\s*=\s*(\{.*?\});", html_text, flags=re.DOTALL)
         if not matrix_match:
             errors.append("Dashboard is missing its generated datasetMatrix.")
         else:
