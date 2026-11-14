@@ -183,7 +183,7 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
     element.style.width = pct + "%";
     element.setAttribute("data-width", String(pct));
   };
-  const percent = value => (Number(value) * 100).toFixed(1) + "%";
+  const percent = value => (typeof value === "number" && Number.isFinite(value)) ? (value * 100).toFixed(1) + "%" : "N/A";
   const scoring = report.scoring || {};
   const engines = scoring.engine_aggregates || {};
   const engineKeys = ["gemini", "chatgpt", "aimode"];
@@ -718,9 +718,9 @@ def main() -> None:
         }
         # Keep dashboard group statistics in the canonical report payload as well.
         final_report["dashboard_scopes"] = {
-            "all": scope_all,
-            "branded": scope_branded,
-            "unbranded": scope_unbranded,
+            "all": matrix_group(scope_all),
+            "branded": matrix_group(scope_branded),
+            "unbranded": matrix_group(scope_unbranded),
             "competitors": "See source-backed diagnostics and response evidence.",
         }
         with (RESULTS_DIR / "final_report.json").open("w", encoding="utf-8") as report_file:
