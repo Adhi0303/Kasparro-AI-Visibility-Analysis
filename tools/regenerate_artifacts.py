@@ -228,6 +228,13 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
     setAttribute("bar-" + prefix + "-rec", "data-hover-body", "Kasparro was recommended in " + Math.round(rec * successfulCount / 100) + " of " + successfulCount + " successful responses.");
     setAttribute("bar-" + prefix + "-neg", "data-hover-title", engineLabel + " · Negative Characterization Rate: " + neg.toFixed(1) + "%");
     setAttribute("bar-" + prefix + "-neg", "data-hover-body", "Kasparro was negatively characterized in " + Math.round(neg * successfulCount / 100) + " of " + successfulCount + " successful responses.");
+    const row = document.querySelector('.interactive-row[data-engine="' + key + '"]');
+    if (row) {
+      row.setAttribute("data-hover-title", engineLabel + " · " + score.toFixed(1) + "/100");
+      row.setAttribute("data-hover-body", "Successful responses: " + successfulCount +
+        " · Mentioned: " + inc.toFixed(1) + "% · Recommended: " + rec.toFixed(1) +
+        "% · Negative: " + neg.toFixed(1) + "%.");
+    }
     const cardSuffix = key === "gemini" ? "gemini-card" : (key === "chatgpt" ? "chatgpt-card" : "aimode-card");
     const engineCard = document.querySelector(".engine-card." + cardSuffix);
     if (engineCard) {
