@@ -677,7 +677,7 @@ def main() -> None:
                 "icon": "🚨",
                 "title": "No Kasparro Mentions in Unbranded Responses",
                 "desc": (
-                    f"Kasparro appeared in <strong>{unbranded_mentions} of {unbranded_response_count}</strong> "
+                    f"Kasparro appeared in {unbranded_mentions} of {unbranded_response_count} "
                     f"unbranded responses ({scope_unbranded['all']['inc']}% inclusion)."
                 ),
             }
@@ -687,7 +687,7 @@ def main() -> None:
                 "icon": "📊",
                 "title": "Kasparro Appears in Unbranded Responses",
                 "desc": (
-                    f"Kasparro appeared in <strong>{unbranded_mentions} of {unbranded_response_count}</strong> "
+                    f"Kasparro appeared in {unbranded_mentions} of {unbranded_response_count} "
                     f"unbranded responses ({scope_unbranded['all']['inc']}% inclusion)."
                 ),
             }
@@ -705,9 +705,9 @@ def main() -> None:
                     "title": "Branded Prompt Visibility",
                     "desc": (
                         f"When the prompt names Kasparro, it appears in "
-                        f"<strong>{branded_mentions} of {branded_response_count}</strong> responses "
+                        f"{branded_mentions} of {branded_response_count} responses "
                         f"({branded_inc_pct}% inclusion). ChatGPT negative/caution rate: "
-                        f"<strong>{gpt_branded_neg_count}/{gpt_branded_count} ({gpt_branded_neg_pct}%)</strong>."
+                        f"{gpt_branded_neg_count}/{gpt_branded_count} ({gpt_branded_neg_pct}%)."
                     ),
                 },
             },
@@ -716,6 +716,16 @@ def main() -> None:
                 "alert": unbranded_alert,
             },
         }
+        # Keep dashboard group statistics in the canonical report payload as well.
+        final_report["dashboard_scopes"] = {
+            "all": scope_all,
+            "branded": scope_branded,
+            "unbranded": scope_unbranded,
+            "competitors": "See source-backed diagnostics and response evidence.",
+        }
+        with (RESULTS_DIR / "final_report.json").open("w", encoding="utf-8") as report_file:
+            json.dump(final_report, report_file, indent=2, ensure_ascii=False)
+
         new_matrix = "    const datasetMatrix = " + _safe_script_json(matrix) + ";"
         html_text, matrix_substitutions = re.subn(
             r"    const datasetMatrix = \{.*?    \};",
