@@ -203,6 +203,9 @@ def test_annotation_finalization_rejects_same_reviewer_identity(tmp_path):
     packet = [{
         "annotator_id": "same_reviewer",
         "case_id": "case-1",
+        "engine": "chatgpt",
+        "prompt_text": "Should I consider Kasparro?",
+        "response_text": "Kasparro is worth considering for B2B SaaS teams.",
         "labels": {
             "kasparro_mentioned": True,
             "kasparro_recommended": False,
