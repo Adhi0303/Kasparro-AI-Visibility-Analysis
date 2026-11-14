@@ -1,223 +1,197 @@
 {
-  "timestamp": "2026-11-10T10:22:28.569324+00:00",
+  "timestamp": "2026-11-14T09:18:33.521679+00:00",
   "execution_metadata": {
     "execution_mode": "real_model",
-    "provider": "openai",
-    "model": "gpt-4o-mini",
-    "base_url": "https://api.openai.com/v1/chat/completions",
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
     "classifier_version": "v1"
   },
   "counts": {
     "total_cases": 20,
     "supplied_cases": 8,
     "synthetic_cases": 12,
-    "evaluated_cases": 0,
-    "failed_cases": 20
+    "held_out_cases": 0,
+    "split": "regression",
+    "annotation_status": "regression_reference_labels",
+    "annotation_note": "Regression labels are development references, not an independent held-out benchmark.",
+    "evaluated_cases": 18,
+    "failed_cases": 2
   },
   "baseline_metrics": {
-    "total_cases": 0,
-    "exact_matches": 0,
-    "agreement_rate": 0.0,
+    "total_cases": 18,
+    "exact_matches": 8,
+    "agreement_rate": 0.4444,
     "per_label": {
       "kasparro_mentioned": {
-        "support": 0,
-        "positive_support": 0,
-        "negative_support": 0,
-        "true_positives": 0,
-        "false_positives": 0,
-        "true_negatives": 0,
+        "support": 18,
+        "positive_support": 13,
+        "negative_support": 5,
+        "true_positives": 13,
+        "false_positives": 2,
+        "true_negatives": 3,
         "false_negatives": 0,
-        "precision": null,
-        "recall": null,
-        "specificity": null,
-        "accuracy": null,
-        "balanced_accuracy": null,
-        "f1": null
+        "precision": 0.8667,
+        "recall": 1.0,
+        "specificity": 0.6,
+        "accuracy": 0.8889,
+        "balanced_accuracy": 0.8,
+        "f1": 0.9286
       },
       "kasparro_recommended": {
-        "support": 0,
-        "positive_support": 0,
-        "negative_support": 0,
-        "true_positives": 0,
-        "false_positives": 0,
-        "true_negatives": 0,
+        "support": 18,
+        "positive_support": 2,
+        "negative_support": 16,
+        "true_positives": 2,
+        "false_positives": 5,
+        "true_negatives": 11,
         "false_negatives": 0,
-        "precision": null,
-        "recall": null,
-        "specificity": null,
-        "accuracy": null,
-        "balanced_accuracy": null,
-        "f1": null
+        "precision": 0.2857,
+        "recall": 1.0,
+        "specificity": 0.6875,
+        "accuracy": 0.7222,
+        "balanced_accuracy": 0.8438,
+        "f1": 0.4444
       },
       "kasparro_negative": {
-        "support": 0,
-        "positive_support": 0,
-        "negative_support": 0,
-        "true_positives": 0,
-        "false_positives": 0,
-        "true_negatives": 0,
+        "support": 18,
+        "positive_support": 5,
+        "negative_support": 13,
+        "true_positives": 2,
+        "false_positives": 2,
+        "true_negatives": 11,
+        "false_negatives": 3,
+        "precision": 0.5,
+        "recall": 0.4,
+        "specificity": 0.8462,
+        "accuracy": 0.7222,
+        "balanced_accuracy": 0.6231,
+        "f1": 0.4444
+      }
+    }
+  },
+  "baseline_metrics_all_cases": {
+    "total_cases": 20,
+    "exact_matches": 10,
+    "agreement_rate": 0.5,
+    "per_label": {
+      "kasparro_mentioned": {
+        "support": 20,
+        "positive_support": 15,
+        "negative_support": 5,
+        "true_positives": 15,
+        "false_positives": 2,
+        "true_negatives": 3,
         "false_negatives": 0,
-        "precision": null,
-        "recall": null,
-        "specificity": null,
-        "accuracy": null,
-        "balanced_accuracy": null,
-        "f1": null
+        "precision": 0.8824,
+        "recall": 1.0,
+        "specificity": 0.6,
+        "accuracy": 0.9,
+        "balanced_accuracy": 0.8,
+        "f1": 0.9375
+      },
+      "kasparro_recommended": {
+        "support": 20,
+        "positive_support": 3,
+        "negative_support": 17,
+        "true_positives": 3,
+        "false_positives": 5,
+        "true_negatives": 12,
+        "false_negatives": 0,
+        "precision": 0.375,
+        "recall": 1.0,
+        "specificity": 0.7059,
+        "accuracy": 0.75,
+        "balanced_accuracy": 0.8529,
+        "f1": 0.5455
+      },
+      "kasparro_negative": {
+        "support": 20,
+        "positive_support": 5,
+        "negative_support": 15,
+        "true_positives": 2,
+        "false_positives": 2,
+        "true_negatives": 13,
+        "false_negatives": 3,
+        "precision": 0.5,
+        "recall": 0.4,
+        "specificity": 0.8667,
+        "accuracy": 0.75,
+        "balanced_accuracy": 0.6334,
+        "f1": 0.4444
       }
     }
   },
   "proposed_metrics": {
-    "total_cases": 0,
-    "exact_matches": 0,
-    "agreement_rate": 0.0,
+    "total_cases": 18,
+    "exact_matches": 13,
+    "agreement_rate": 0.7222,
     "per_label": {
       "kasparro_mentioned": {
-        "support": 0,
-        "positive_support": 0,
-        "negative_support": 0,
-        "true_positives": 0,
-        "false_positives": 0,
-        "true_negatives": 0,
+        "support": 18,
+        "positive_support": 13,
+        "negative_support": 5,
+        "true_positives": 13,
+        "false_positives": 2,
+        "true_negatives": 3,
         "false_negatives": 0,
-        "precision": null,
-        "recall": null,
-        "specificity": null,
-        "accuracy": null,
-        "balanced_accuracy": null,
-        "f1": null
+        "precision": 0.8667,
+        "recall": 1.0,
+        "specificity": 0.6,
+        "accuracy": 0.8889,
+        "balanced_accuracy": 0.8,
+        "f1": 0.9286
       },
       "kasparro_recommended": {
-        "support": 0,
-        "positive_support": 0,
-        "negative_support": 0,
-        "true_positives": 0,
+        "support": 18,
+        "positive_support": 2,
+        "negative_support": 16,
+        "true_positives": 2,
         "false_positives": 0,
-        "true_negatives": 0,
+        "true_negatives": 16,
         "false_negatives": 0,
-        "precision": null,
-        "recall": null,
-        "specificity": null,
-        "accuracy": null,
-        "balanced_accuracy": null,
-        "f1": null
+        "precision": 1.0,
+        "recall": 1.0,
+        "specificity": 1.0,
+        "accuracy": 1.0,
+        "balanced_accuracy": 1.0,
+        "f1": 1.0
       },
       "kasparro_negative": {
-        "support": 0,
-        "positive_support": 0,
-        "negative_support": 0,
-        "true_positives": 0,
-        "false_positives": 0,
-        "true_negatives": 0,
-        "false_negatives": 0,
-        "precision": null,
-        "recall": null,
-        "specificity": null,
-        "accuracy": null,
-        "balanced_accuracy": null,
-        "f1": null
+        "support": 18,
+        "positive_support": 5,
+        "negative_support": 13,
+        "true_positives": 3,
+        "false_positives": 1,
+        "true_negatives": 12,
+        "false_negatives": 2,
+        "precision": 0.75,
+        "recall": 0.6,
+        "specificity": 0.9231,
+        "accuracy": 0.8333,
+        "balanced_accuracy": 0.7615,
+        "f1": 0.6667
       }
     }
   },
+  "coverage_metrics": {
+    "total_cases": 20,
+    "successful_classifier_calls": 18,
+    "failed_classifier_calls": 2,
+    "coverage_rate": 0.9,
+    "coverage_adjusted_exact_match_rate": 0.65,
+    "exact_matches_on_successful_calls": 13
+  },
   "failures": [
-    {
-      "case_id": "case-001",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "case-002",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "case-003",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "case-004",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "case-005",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "case-006",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "case-007",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "case-008",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "synthetic-001",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "synthetic-002",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "synthetic-003",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "synthetic-004",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "synthetic-005",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "synthetic-006",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "synthetic-007",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "synthetic-008",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
     {
       "case_id": "synthetic-009",
       "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "synthetic-010",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
+      "failure_reason": "Model call failed after 3 attempt(s): HTTP 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/d"
     },
     {
       "case_id": "synthetic-011",
       "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
-    },
-    {
-      "case_id": "synthetic-012",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment."
+      "failure_reason": "Model call failed after 3 attempt(s): HTTP 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/d"
     }
   ],
   "cases": [
@@ -225,8 +199,7 @@
       "case_id": "case-001",
       "source_type": "supplied",
       "response_id": "ac5bdf24-6a6e-49a0-abf5-2755ff3b42bc",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -237,15 +210,22 @@
         "kasparro_recommended": true,
         "kasparro_negative": true
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 2,
+        "rejected_count": 0
+      },
       "notes": "ChatGPT cautions buyer about lack of verifiable third-party case studies and cites ScamAdviser."
     },
     {
       "case_id": "case-002",
       "source_type": "supplied",
       "response_id": "a3fdd8bb-bcd9-4608-9786-ad4b3a2c7dc2",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -256,15 +236,22 @@
         "kasparro_recommended": true,
         "kasparro_negative": false
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Google AI Mode notes Kasparro is not a recognized top-tier tool in the space."
     },
     {
       "case_id": "case-003",
       "source_type": "supplied",
       "response_id": "b40168e8-acf4-4430-b22d-8c484fab846f",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": true,
@@ -275,15 +262,22 @@
         "kasparro_recommended": true,
         "kasparro_negative": false
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 1
+      },
       "notes": "Gemini presents Kasparro as a viable solution provider."
     },
     {
       "case_id": "case-004",
       "source_type": "supplied",
       "response_id": "0f38b477-9f3c-44a8-9d10-0b6016db6150",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": false,
         "kasparro_recommended": false,
@@ -294,15 +288,22 @@
         "kasparro_recommended": false,
         "kasparro_negative": false
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 0,
+        "rejected_count": 0
+      },
       "notes": "Unbranded prompt asking for best software; Gemini recommends Profound, Peec AI, Otterly. Kasparro absent."
     },
     {
       "case_id": "case-005",
       "source_type": "supplied",
       "response_id": "0697376e-335d-45ef-a593-bc12c5e1ecf3",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": false,
         "kasparro_recommended": false,
@@ -313,15 +314,22 @@
         "kasparro_recommended": false,
         "kasparro_negative": false
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 0,
+        "rejected_count": 0
+      },
       "notes": "Unbranded prompt on growth marketer tools; Google AI Mode cites Profound and First Page Sage. Kasparro absent."
     },
     {
       "case_id": "case-006",
       "source_type": "supplied",
       "response_id": "0e2c8f07-c483-493d-a9fc-467efc857faa",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": false,
         "kasparro_recommended": false,
@@ -332,15 +340,22 @@
         "kasparro_recommended": false,
         "kasparro_negative": false
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": false,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 0,
+        "rejected_count": 0
+      },
       "notes": "Unbranded prompt on how B2B SaaS tracks ChatGPT recommendations; Kasparro absent."
     },
     {
       "case_id": "case-007",
       "source_type": "supplied",
       "response_id": "1d2dc007-0757-480d-a086-6b6e2e13c463",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -351,15 +366,22 @@
         "kasparro_recommended": false,
         "kasparro_negative": false
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Neutral mention noting lack of pricing; disambiguates from Kaspr."
     },
     {
       "case_id": "case-008",
       "source_type": "supplied",
       "response_id": "44a32b81-7166-44dc-bac3-8cd2ae40da73",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -370,15 +392,22 @@
         "kasparro_recommended": true,
         "kasparro_negative": true
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 2,
+        "rejected_count": 0
+      },
       "notes": "Balanced analysis explaining capability vs LLM non-determinism."
     },
     {
       "case_id": "synthetic-001",
       "source_type": "synthetic",
       "response_id": "synth-echo-prompt-only",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": false,
         "kasparro_recommended": false,
@@ -389,15 +418,22 @@
         "kasparro_recommended": false,
         "kasparro_negative": false
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Synthetic edge case: Brand name appears only in prompt echo/recap, not in model recommendation."
     },
     {
       "case_id": "synthetic-002",
       "source_type": "synthetic",
       "response_id": "synth-adversarial-scam",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -408,15 +444,22 @@
         "kasparro_recommended": false,
         "kasparro_negative": false
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Synthetic edge case: Strong explicit negative sentiment with caution warning."
     },
     {
       "case_id": "synthetic-003",
       "source_type": "synthetic",
       "response_id": "synth-competitor-rec",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -427,15 +470,22 @@
         "kasparro_recommended": true,
         "kasparro_negative": false
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Synthetic edge case: Recommendation keyword targets Profound rather than Kasparro."
     },
     {
       "case_id": "synthetic-004",
       "source_type": "synthetic",
       "response_id": "synth-competitor-neg",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -446,15 +496,22 @@
         "kasparro_recommended": false,
         "kasparro_negative": false
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Synthetic edge case: Negative sentiment applies to competitor, not Kasparro."
     },
     {
       "case_id": "synthetic-005",
       "source_type": "synthetic",
       "response_id": "synth-negated-rec",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -465,15 +522,22 @@
         "kasparro_recommended": false,
         "kasparro_negative": true
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": true
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Synthetic edge case: Explicit negated recommendation with negative evidence claim."
     },
     {
       "case_id": "synthetic-006",
       "source_type": "synthetic",
       "response_id": "synth-neutral-info-gap",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -484,15 +548,22 @@
         "kasparro_recommended": false,
         "kasparro_negative": false
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Synthetic edge case: Neutral uncertainty when public information is limited."
     },
     {
       "case_id": "synthetic-007",
       "source_type": "synthetic",
       "response_id": "synth-coexisting-rec-neg",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": true,
@@ -503,15 +574,22 @@
         "kasparro_recommended": true,
         "kasparro_negative": false
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": true,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Synthetic edge case: Positive recommendation and negative caveat coexist."
     },
     {
       "case_id": "synthetic-008",
       "source_type": "synthetic",
       "response_id": "synth-prompt-context-echo",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": false,
         "kasparro_recommended": false,
@@ -522,7 +600,15 @@
         "kasparro_recommended": false,
         "kasparro_negative": false
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Module 2 edge case: Literal prompt repetition using prompt_text without genuine Kasparro discussion."
     },
     {
@@ -530,7 +616,7 @@
       "source_type": "synthetic",
       "response_id": "synth-passive-endorsement",
       "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "failure_reason": "Model call failed after 3 attempt(s): HTTP 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/d",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": true,
@@ -548,8 +634,7 @@
       "case_id": "synthetic-010",
       "source_type": "synthetic",
       "response_id": "synth-double-negation",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -560,7 +645,15 @@
         "kasparro_recommended": false,
         "kasparro_negative": true
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Module 2 edge case: Negated negative allegation & double negation."
     },
     {
@@ -568,7 +661,7 @@
       "source_type": "synthetic",
       "response_id": "synth-ambiguous-pronoun",
       "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "failure_reason": "Model call failed after 3 attempt(s): HTTP 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/d",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -586,8 +679,7 @@
       "case_id": "synthetic-012",
       "source_type": "synthetic",
       "response_id": "synth-subject-shift",
-      "status": "failed",
-      "failure_reason": "LLM_API_KEY is not configured in environment.",
+      "status": "success",
       "expected": {
         "kasparro_mentioned": true,
         "kasparro_recommended": false,
@@ -598,7 +690,15 @@
         "kasparro_recommended": true,
         "kasparro_negative": false
       },
-      "proposed": null,
+      "proposed": {
+        "kasparro_mentioned": true,
+        "kasparro_recommended": false,
+        "kasparro_negative": false
+      },
+      "evidence_validation": {
+        "accepted_count": 1,
+        "rejected_count": 0
+      },
       "notes": "Module 2 edge case: Subject shift to Profound before 'It is widely recommended'."
     }
   ]

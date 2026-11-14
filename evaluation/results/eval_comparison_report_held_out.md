@@ -1,6 +1,6 @@
 # Evaluation and Grader Comparison Report
 
-- **Generated:** 2026-11-14T07:03:41.639672+00:00
+- **Generated:** 2026-11-14T09:17:18.369064+00:00
 - **Pack Version:** 1.0.0
 - **Evaluation Split:** held_out
 - **Total Cases:** 30 (0 supplied, 30 synthetic; 30 held-out synthetic)
@@ -28,10 +28,9 @@ Classification metrics and the baseline comparison below use the matched success
 | Metric | Rule-Based Baseline | Evaluated Classifier | Delta |
 |---|---|---|---|
 | **Exact-Match Agreement** | 46.7% (14/30) | 63.3% (19/30) | +16.7% |
-| **Mention Precision** | 0.7778 | 0.7778 | Context-aware prompt echo filtering |
-| **Mention Recall** | 1.0 | 1.0 | Genuine brand discussion retained |
-| **Recommendation F1** | None | 0.75 | Target-aware recommendation attribution |
-| **Negative F1** | None | 0.3333 | Target-aware sentiment & neutrality handling |
+| **Mention P / R / F1** | 0.7778 / 1.0 / 0.875 | 0.7778 / 1.0 / 0.875 | — |
+| **Recommendation P / R / F1** | 0.0 / 0.0 / None | 1.0 / 0.6 / 0.75 | — |
+| **Negative P / R / F1** | 0.0 / 0.0 / None | 0.3333 / 0.3333 / 0.3333 | — |
 
 ---
 

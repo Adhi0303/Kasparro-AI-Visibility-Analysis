@@ -1,0 +1,1160 @@
+{
+  "generated_at": "2026-11-14T09:16:18.132024+00:00",
+  "study": "real_model_repeatability",
+  "split": "regression",
+  "case_file": "evaluation/cases.jsonl",
+  "repeats_per_case": 3,
+  "execution_metadata": {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "classifier_version": "v1"
+  },
+  "counts": {
+    "cases": 20,
+    "total_calls": 60,
+    "successful_calls": 54,
+    "failed_calls": 6,
+    "call_coverage": 0.9,
+    "cases_with_at_least_two_successes": 18,
+    "stable_cases": 16,
+    "stability_rate_among_repeatable_cases": 0.8889
+  },
+  "latency_seconds": {
+    "mean": 2.9654,
+    "median": 2.1269,
+    "p95": 6.6953
+  },
+  "per_repeat_metrics": [
+    {
+      "repeat": 1,
+      "successful_cases": 19,
+      "failed_cases": 1,
+      "baseline_metrics_same_subset": {
+        "total_cases": 19,
+        "exact_matches": 9,
+        "agreement_rate": 0.4737,
+        "per_label": {
+          "kasparro_mentioned": {
+            "support": 19,
+            "positive_support": 14,
+            "negative_support": 5,
+            "true_positives": 14,
+            "false_positives": 2,
+            "true_negatives": 3,
+            "false_negatives": 0,
+            "precision": 0.875,
+            "recall": 1.0,
+            "specificity": 0.6,
+            "accuracy": 0.8947,
+            "balanced_accuracy": 0.8,
+            "f1": 0.9333
+          },
+          "kasparro_recommended": {
+            "support": 19,
+            "positive_support": 2,
+            "negative_support": 17,
+            "true_positives": 2,
+            "false_positives": 5,
+            "true_negatives": 12,
+            "false_negatives": 0,
+            "precision": 0.2857,
+            "recall": 1.0,
+            "specificity": 0.7059,
+            "accuracy": 0.7368,
+            "balanced_accuracy": 0.8529,
+            "f1": 0.4444
+          },
+          "kasparro_negative": {
+            "support": 19,
+            "positive_support": 5,
+            "negative_support": 14,
+            "true_positives": 2,
+            "false_positives": 2,
+            "true_negatives": 12,
+            "false_negatives": 3,
+            "precision": 0.5,
+            "recall": 0.4,
+            "specificity": 0.8571,
+            "accuracy": 0.7368,
+            "balanced_accuracy": 0.6285,
+            "f1": 0.4444
+          }
+        }
+      },
+      "provider_metrics": {
+        "total_cases": 19,
+        "exact_matches": 14,
+        "agreement_rate": 0.7368,
+        "per_label": {
+          "kasparro_mentioned": {
+            "support": 19,
+            "positive_support": 14,
+            "negative_support": 5,
+            "true_positives": 14,
+            "false_positives": 2,
+            "true_negatives": 3,
+            "false_negatives": 0,
+            "precision": 0.875,
+            "recall": 1.0,
+            "specificity": 0.6,
+            "accuracy": 0.8947,
+            "balanced_accuracy": 0.8,
+            "f1": 0.9333
+          },
+          "kasparro_recommended": {
+            "support": 19,
+            "positive_support": 2,
+            "negative_support": 17,
+            "true_positives": 2,
+            "false_positives": 1,
+            "true_negatives": 16,
+            "false_negatives": 0,
+            "precision": 0.6667,
+            "recall": 1.0,
+            "specificity": 0.9412,
+            "accuracy": 0.9474,
+            "balanced_accuracy": 0.9706,
+            "f1": 0.8
+          },
+          "kasparro_negative": {
+            "support": 19,
+            "positive_support": 5,
+            "negative_support": 14,
+            "true_positives": 4,
+            "false_positives": 1,
+            "true_negatives": 13,
+            "false_negatives": 1,
+            "precision": 0.8,
+            "recall": 0.8,
+            "specificity": 0.9286,
+            "accuracy": 0.8947,
+            "balanced_accuracy": 0.8643,
+            "f1": 0.8
+          }
+        }
+      }
+    },
+    {
+      "repeat": 2,
+      "successful_cases": 18,
+      "failed_cases": 2,
+      "baseline_metrics_same_subset": {
+        "total_cases": 18,
+        "exact_matches": 10,
+        "agreement_rate": 0.5556,
+        "per_label": {
+          "kasparro_mentioned": {
+            "support": 18,
+            "positive_support": 15,
+            "negative_support": 3,
+            "true_positives": 15,
+            "false_positives": 0,
+            "true_negatives": 3,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "specificity": 1.0,
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0,
+            "f1": 1.0
+          },
+          "kasparro_recommended": {
+            "support": 18,
+            "positive_support": 3,
+            "negative_support": 15,
+            "true_positives": 3,
+            "false_positives": 5,
+            "true_negatives": 10,
+            "false_negatives": 0,
+            "precision": 0.375,
+            "recall": 1.0,
+            "specificity": 0.6667,
+            "accuracy": 0.7222,
+            "balanced_accuracy": 0.8334,
+            "f1": 0.5455
+          },
+          "kasparro_negative": {
+            "support": 18,
+            "positive_support": 5,
+            "negative_support": 13,
+            "true_positives": 2,
+            "false_positives": 2,
+            "true_negatives": 11,
+            "false_negatives": 3,
+            "precision": 0.5,
+            "recall": 0.4,
+            "specificity": 0.8462,
+            "accuracy": 0.7222,
+            "balanced_accuracy": 0.6231,
+            "f1": 0.4444
+          }
+        }
+      },
+      "provider_metrics": {
+        "total_cases": 18,
+        "exact_matches": 14,
+        "agreement_rate": 0.7778,
+        "per_label": {
+          "kasparro_mentioned": {
+            "support": 18,
+            "positive_support": 15,
+            "negative_support": 3,
+            "true_positives": 15,
+            "false_positives": 0,
+            "true_negatives": 3,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "specificity": 1.0,
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0,
+            "f1": 1.0
+          },
+          "kasparro_recommended": {
+            "support": 18,
+            "positive_support": 3,
+            "negative_support": 15,
+            "true_positives": 3,
+            "false_positives": 1,
+            "true_negatives": 14,
+            "false_negatives": 0,
+            "precision": 0.75,
+            "recall": 1.0,
+            "specificity": 0.9333,
+            "accuracy": 0.9444,
+            "balanced_accuracy": 0.9667,
+            "f1": 0.8571
+          },
+          "kasparro_negative": {
+            "support": 18,
+            "positive_support": 5,
+            "negative_support": 13,
+            "true_positives": 3,
+            "false_positives": 1,
+            "true_negatives": 12,
+            "false_negatives": 2,
+            "precision": 0.75,
+            "recall": 0.6,
+            "specificity": 0.9231,
+            "accuracy": 0.8333,
+            "balanced_accuracy": 0.7615,
+            "f1": 0.6667
+          }
+        }
+      }
+    },
+    {
+      "repeat": 3,
+      "successful_cases": 17,
+      "failed_cases": 3,
+      "baseline_metrics_same_subset": {
+        "total_cases": 17,
+        "exact_matches": 10,
+        "agreement_rate": 0.5882,
+        "per_label": {
+          "kasparro_mentioned": {
+            "support": 17,
+            "positive_support": 14,
+            "negative_support": 3,
+            "true_positives": 14,
+            "false_positives": 0,
+            "true_negatives": 3,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "specificity": 1.0,
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0,
+            "f1": 1.0
+          },
+          "kasparro_recommended": {
+            "support": 17,
+            "positive_support": 3,
+            "negative_support": 14,
+            "true_positives": 3,
+            "false_positives": 4,
+            "true_negatives": 10,
+            "false_negatives": 0,
+            "precision": 0.4286,
+            "recall": 1.0,
+            "specificity": 0.7143,
+            "accuracy": 0.7647,
+            "balanced_accuracy": 0.8572,
+            "f1": 0.6
+          },
+          "kasparro_negative": {
+            "support": 17,
+            "positive_support": 5,
+            "negative_support": 12,
+            "true_positives": 2,
+            "false_positives": 1,
+            "true_negatives": 11,
+            "false_negatives": 3,
+            "precision": 0.6667,
+            "recall": 0.4,
+            "specificity": 0.9167,
+            "accuracy": 0.7647,
+            "balanced_accuracy": 0.6583,
+            "f1": 0.5
+          }
+        }
+      },
+      "provider_metrics": {
+        "total_cases": 17,
+        "exact_matches": 13,
+        "agreement_rate": 0.7647,
+        "per_label": {
+          "kasparro_mentioned": {
+            "support": 17,
+            "positive_support": 14,
+            "negative_support": 3,
+            "true_positives": 14,
+            "false_positives": 0,
+            "true_negatives": 3,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "specificity": 1.0,
+            "accuracy": 1.0,
+            "balanced_accuracy": 1.0,
+            "f1": 1.0
+          },
+          "kasparro_recommended": {
+            "support": 17,
+            "positive_support": 3,
+            "negative_support": 14,
+            "true_positives": 3,
+            "false_positives": 2,
+            "true_negatives": 12,
+            "false_negatives": 0,
+            "precision": 0.6,
+            "recall": 1.0,
+            "specificity": 0.8571,
+            "accuracy": 0.8824,
+            "balanced_accuracy": 0.9285,
+            "f1": 0.75
+          },
+          "kasparro_negative": {
+            "support": 17,
+            "positive_support": 5,
+            "negative_support": 12,
+            "true_positives": 4,
+            "false_positives": 1,
+            "true_negatives": 11,
+            "false_negatives": 1,
+            "precision": 0.8,
+            "recall": 0.8,
+            "specificity": 0.9167,
+            "accuracy": 0.8824,
+            "balanced_accuracy": 0.8583,
+            "f1": 0.8
+          }
+        }
+      }
+    }
+  ],
+  "per_case": {
+    "case-001": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.8696
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.8479
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.9832
+        }
+      ]
+    },
+    "case-002": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": true
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.7591
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": true
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.9605
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": true
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.1543
+        }
+      ]
+    },
+    "case-003": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": true,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.1519
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": true,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.0699
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": true,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.4346
+        }
+      ]
+    },
+    "case-004": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": false,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.868
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": false,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.9199
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": false,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.8995
+        }
+      ]
+    },
+    "case-005": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": false,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.1884
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": false,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.567
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": false,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.7122
+        }
+      ]
+    },
+    "case-006": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": false,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.183
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": false,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.3729
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": false,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.0555
+        }
+      ]
+    },
+    "case-007": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.1406
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.0505
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.6807
+        }
+      ]
+    },
+    "case-008": {
+      "successful_runs": 2,
+      "failed_runs": 1,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.8029
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.9449
+        },
+        {
+          "repeat": 3,
+          "status": "failed",
+          "prediction": null,
+          "failure_reason": "Model call failed after 3 attempt(s): HTTP 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/d",
+          "latency_seconds": 5.6433
+        }
+      ]
+    },
+    "synthetic-001": {
+      "successful_runs": 1,
+      "failed_runs": 2,
+      "stable_across_successful_runs": null,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 3.7628
+        },
+        {
+          "repeat": 2,
+          "status": "failed",
+          "prediction": null,
+          "failure_reason": "Model call failed after 3 attempt(s): HTTP 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/d",
+          "latency_seconds": 5.037
+        },
+        {
+          "repeat": 3,
+          "status": "failed",
+          "prediction": null,
+          "failure_reason": "Model call failed after 3 attempt(s): HTTP 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/d",
+          "latency_seconds": 5.1312
+        }
+      ]
+    },
+    "synthetic-002": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": true
+          },
+          "failure_reason": null,
+          "latency_seconds": 3.822
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": true
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.6238
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": true
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.9912
+        }
+      ]
+    },
+    "synthetic-003": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": true
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.9686
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": true
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.0477
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": true
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.892
+        }
+      ]
+    },
+    "synthetic-004": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": false,
+      "distinct_prediction_count": 2,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 3.0459
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.822
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": true,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.5745
+        }
+      ]
+    },
+    "synthetic-005": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": true
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.213
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": true
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.6533
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": true
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.0479
+        }
+      ]
+    },
+    "synthetic-006": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.6222
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.6773
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.1133
+        }
+      ]
+    },
+    "synthetic-007": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": false,
+      "distinct_prediction_count": 2,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": true,
+            "kasparro_negative": true
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.2387
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": true,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 3.5945
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": true,
+            "kasparro_negative": true
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.7443
+        }
+      ]
+    },
+    "synthetic-008": {
+      "successful_runs": 1,
+      "failed_runs": 2,
+      "stable_across_successful_runs": null,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 5.3097
+        },
+        {
+          "repeat": 2,
+          "status": "failed",
+          "prediction": null,
+          "failure_reason": "Model call failed after 3 attempt(s): HTTP 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/d",
+          "latency_seconds": 4.725
+        },
+        {
+          "repeat": 3,
+          "status": "failed",
+          "prediction": null,
+          "failure_reason": "Model call failed after 3 attempt(s): HTTP 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/d",
+          "latency_seconds": 4.8002
+        }
+      ]
+    },
+    "synthetic-009": {
+      "successful_runs": 2,
+      "failed_runs": 1,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "failed",
+          "prediction": null,
+          "failure_reason": "Model call failed after 3 attempt(s): HTTP 429: [{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/d",
+          "latency_seconds": 4.135
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": true,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 6.0897
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": true,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 6.6953
+        }
+      ]
+    },
+    "synthetic-010": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.5233
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.9022
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 4.0939
+        }
+      ]
+    },
+    "synthetic-011": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": true,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 2.4825
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": true,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 12.5231
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": true,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.6774
+        }
+      ]
+    },
+    "synthetic-012": {
+      "successful_runs": 3,
+      "failed_runs": 0,
+      "stable_across_successful_runs": true,
+      "distinct_prediction_count": 1,
+      "runs": [
+        {
+          "repeat": 1,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 11.198
+        },
+        {
+          "repeat": 2,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.4973
+        },
+        {
+          "repeat": 3,
+          "status": "success",
+          "prediction": {
+            "kasparro_mentioned": true,
+            "kasparro_recommended": false,
+            "kasparro_negative": false
+          },
+          "failure_reason": null,
+          "latency_seconds": 1.3872
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Repeated calls measure provider output stability under the same saved inputs and current configuration; they do not establish generalization.",
+    "A case is counted as stable only when at least two calls succeeded and every successful prediction matched exactly.",
+    "Latency includes client-side request time and excludes external billing reconciliation.",
+    "Baseline and provider metrics are paired on the same successful cases within each repeat."
+  ]
+}
