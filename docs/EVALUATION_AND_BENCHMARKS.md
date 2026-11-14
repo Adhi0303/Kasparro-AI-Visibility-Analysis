@@ -55,6 +55,34 @@ The outputs are written to separate files for each execution mode and split (for
 1. **Deterministic Replay (`execution_mode="replay"`):** Keyless contextual rules in `app/llm/replay.py`. It verifies deterministic behavior; it is not live LLM reasoning.
 2. **Real-Model Provider (`execution_mode="real_model"`):** `app/llm/provider.py` calls an OpenAI-compatible chat-completions endpoint. It validates strict response types and cross-field label consistency, retries selected transient HTTP/transport failures with bounded backoff, and leaves evidence verification to the centralized source-audit pipeline. Compatibility depends on the endpoint supporting `choices[0].message.content` and JSON-object response mode.
 
+### Gemini API configuration
+
+Google's Gemini OpenAI-compatibility endpoint is supported by the existing HTTP adapter. Configure a local `.env` with:
+
+```dotenv
+EXECUTION_MODE=real_model
+LLM_PROVIDER=gemini
+LLM_MODEL=gemini-3.5-flash-lite
+LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/chat/completions
+LLM_API_KEY=your_local_gemini_api_key
+```
+
+The adapter uses `Authorization: Bearer` authentication for this endpoint. The full chat-completions URL is used because the code posts directly with `httpx`; it does not rely on an SDK to append the endpoint path. When `LLM_PROVIDER=gemini` and no model or base URL override is supplied, the adapter defaults to `gemini-3.5-flash-lite` and the Gemini OpenAI-compatible endpoint. A custom `LLM_BASE_URL` always takes precedence.
+
+Run a one-response live check before a larger evaluation:
+
+```bash
+python -m evaluation.provider_smoke_test
+```
+
+The smoke test calls the provider once for one archived response, displays model/response metadata, elapsed time and evidence-validation counts, and does not print credentials or the source answer. It does not prove model quality. Run the regression comparison only after the smoke test passes:
+
+```bash
+python -m evaluation.run_eval --mode real_model --split regression
+```
+
+Keep `.env` local; never commit API keys or store them in GitHub for this workflow. The repository's `.gitignore` excludes `.env`.
+
 Example provider evaluation on the held-out candidate set (requires configured credentials and compatible endpoint):
 
 ```bash

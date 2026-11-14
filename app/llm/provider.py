@@ -25,6 +25,13 @@ from app.config import Settings
 logger = logging.getLogger(__name__)
 
 DEFAULT_LLM_BASE_URL = "https://api.openai.com/v1/chat/completions"
+DEFAULT_GEMINI_BASE_URL = (
+    "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+)
+DEFAULT_PROVIDER_BASE_URLS = {
+    "openai": DEFAULT_LLM_BASE_URL,
+    "gemini": DEFAULT_GEMINI_BASE_URL,
+}
 RETRYABLE_STATUS_CODES = {408, 409, 425, 429, 500, 502, 503, 504}
 MAX_BACKOFF_SECONDS = 4.0
 
@@ -118,10 +125,12 @@ def _retry_delay(attempt: int, retry_after: Optional[str] = None) -> float:
 
 class ProviderClassifier(LLMBase):
     def __init__(self, settings: Settings, classifier_version: str = "v1"):
-        self.provider = (settings.LLM_PROVIDER or "openai").strip()
-        self.model = (settings.LLM_MODEL or "gpt-4o-mini").strip()
+        self.provider = (settings.LLM_PROVIDER or "openai").strip().lower()
+        default_model = "gemini-3.5-flash-lite" if self.provider == "gemini" else "gpt-4o-mini"
+        self.model = (settings.LLM_MODEL or default_model).strip()
         self.api_key = settings.LLM_API_KEY
-        self.base_url = (settings.LLM_BASE_URL or DEFAULT_LLM_BASE_URL).strip()
+        default_base_url = DEFAULT_PROVIDER_BASE_URLS.get(self.provider, DEFAULT_LLM_BASE_URL)
+        self.base_url = (settings.LLM_BASE_URL or default_base_url).strip()
         self.timeout = settings.LLM_TIMEOUT_SECONDS
         self.max_retries = settings.LLM_MAX_RETRIES
         self.classifier_version = classifier_version

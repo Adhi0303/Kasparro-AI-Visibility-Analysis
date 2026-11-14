@@ -176,16 +176,48 @@ EXECUTION_MODE=replay
 - Accurately parses regex patterns, extracts verbatim substrings, and tests simulated provider outages.
 
 ### Real-Model Adapter Mode
+
+The adapter supports OpenAI-compatible chat-completions endpoints. Gemini has a provider-specific default endpoint and model, so it can be configured without changing the Python code.
+
+#### Gemini API (Google AI Studio)
+
+After copying `.env.example` to `.env`, set these values locally:
+
 ```dotenv
 EXECUTION_MODE=real_model
-LLM_PROVIDER=openai
-LLM_MODEL=gpt-4o-mini
-LLM_API_KEY=your_api_key_here
-LLM_TIMEOUT_SECONDS=20
+LLM_PROVIDER=gemini
+LLM_MODEL=gemini-3.5-flash-lite
+LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/chat/completions
+LLM_API_KEY=your_local_gemini_api_key
+LLM_TIMEOUT_SECONDS=30
 LLM_MAX_RETRIES=2
 ```
-- Invokes an OpenAI-compatible chat-completions endpoint. Provider compatibility depends on the endpoint supporting the expected response schema and JSON response mode.
-- Constrained system prompt requests structured JSON; strict Pydantic validation checks field types and label consistency, bounded retries handle transient failures, and evidence is independently audited against source text.
+
+The endpoint uses the Gemini OpenAI-compatibility layer and Bearer-key authentication. The full `/chat/completions` path is intentional because this project uses `httpx` directly rather than an SDK that appends that path. The adapter also selects the Gemini endpoint and `gemini-3.5-flash-lite` model automatically when `LLM_PROVIDER=gemini` and the corresponding overrides are omitted.
+
+**Never commit `.env`, paste the key into source code, or add it to GitHub Actions variables for this local smoke test.** The repository's `.gitignore` excludes `.env`.
+
+Before running a full evaluation, make exactly one classification request against an archived response:
+
+```powershell
+python -m evaluation.provider_smoke_test
+```
+
+To choose a specific archived response:
+
+```powershell
+python -m evaluation.provider_smoke_test --response-id <RESPONSE_ID>
+```
+
+The smoke test reports the provider/model, selected response ID, classification, elapsed time and accepted/rejected evidence counts. It does not print the API key or full archived answer, and it does not start the full evaluation. A successful response confirms the live adapter path works; it does not by itself establish model quality.
+
+After the smoke test passes, run the small regression comparison:
+
+```powershell
+python -m evaluation.run_eval --mode real_model --split regression
+```
+
+For an OpenAI-compatible provider instead, set `LLM_PROVIDER=openai`, its model, key and endpoint in `.env`. The default OpenAI endpoint remains unchanged. The constrained system prompt requests structured JSON; strict Pydantic validation checks field types and label consistency, bounded retries handle transient failures, and evidence is independently audited against source text.
 
 ---
 
