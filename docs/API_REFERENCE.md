@@ -2,6 +2,8 @@
 
 The service exposes a versioned REST API built on FastAPI. Interactive OpenAPI/Swagger documentation is served at `/docs` when the server is running.
 
+> **Example data notice:** IDs, timestamps, aggregate metrics and development tokens in this reference are illustrative examples. Use the live response from the running application for current IDs and metrics. The tokens shown in examples are development-only and must be replaced outside local development.
+
 ## 1. Authentication & Role-Based Access Control (RBAC)
 
 Authentication is enforced via Bearer Tokens passed in the `Authorization` header:
