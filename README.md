@@ -297,6 +297,7 @@ The repository includes a dedicated documentation suite in the [`docs/`](docs/RE
 | [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) | **REST API Reference & Integration** | Complete OpenAPI/FastAPI endpoint specifications (`/datasets`, `/analyses`, `/reports`, `/decision`, `/export`), Bearer token RBAC authentication, and end-to-end cURL workflows. |
 | [`docs/HUMAN_REVIEW_LIFECYCLE.md`](docs/HUMAN_REVIEW_LIFECYCLE.md) | **Human Review & Governance** | Analyst vs Reviewer workflow, state machine transitions (`DRAFT → SUBMITTED → APPROVED/REJECTED`), cryptographic SHA-256 content hashing, version immutability, and export gate enforcement. |
 | [`docs/EVALUATION_AND_BENCHMARKS.md`](docs/EVALUATION_AND_BENCHMARKS.md) | **Evaluation & Benchmark Insights** | Evaluation methodology for 20 regression cases and 30 provisional held-out synthetic cases, including per-label metrics, split isolation, annotation limitations, and evidence traceability. |
+| [`docs/P4_FINAL_ANALYSIS_AUDIT.md`](docs/P4_FINAL_ANALYSIS_AUDIT.md) | **Final Analysis & Reporting Audit** | End-to-end verification of 150 archived responses, independent metric recalculation, grounded diagnostics, prioritized remedies, and execution tier reconciliation. |
 
 
 

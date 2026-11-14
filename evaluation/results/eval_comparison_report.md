@@ -1,6 +1,6 @@
 # Evaluation and Grader Comparison Report
 
-- **Generated:** 2026-11-14T09:17:09.976917+00:00
+- **Generated:** 2026-11-14T10:16:44.076006+00:00
 - **Pack Version:** 1.0.0
 - **Evaluation Split:** regression
 - **Total Cases:** 20 (8 supplied, 12 synthetic; 0 held-out synthetic)

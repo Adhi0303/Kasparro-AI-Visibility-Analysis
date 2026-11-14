@@ -475,8 +475,8 @@ def render_dashboard_html(
     remedies_html = []
     for remedy in final_report.get("remedies") or []:
         title = html.escape(str(remedy.get("title") or remedy.get("action") or "Recommended action"))
-        description = html.escape(str(remedy.get("description") or remedy.get("rationale") or ""))
-        validation = html.escape(str(remedy.get("validation_target") or remedy.get("success_metric") or ""))
+        description = html.escape(str(remedy.get("action") or remedy.get("description") or remedy.get("rationale") or ""))
+        validation = html.escape(str(remedy.get("validation") or remedy.get("validation_target") or remedy.get("success_metric") or ""))
         remedies_html.append(
             f'<article class="remedy"><h3>{title}</h3><p>{description}</p>'
             + (f'<p class="muted"><strong>Validation:</strong> {validation}</p>' if validation else "")

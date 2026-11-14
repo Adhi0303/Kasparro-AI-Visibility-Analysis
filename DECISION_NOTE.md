@@ -21,10 +21,11 @@ $$\text{score} = 100 \times (0.30 \times \text{inclusion} + 0.40 \times \text{re
 ### Handling Failures & Denominators
 - Failed or skipped classifications are **never** scored as 0.0; they receive `score = null` and `status = unavailable`.
 - Aggregate denominators clearly report:
-  - **Eligible responses:** 150
-  - **Successfully scored responses:** 150
+  - **Eligible responses:** 150 (50 per engine: Google AI Mode, ChatGPT, Gemini)
+  - **Successfully scored responses:** 150 (100% complete)
   - **Failed responses:** 0
   - **Skipped responses:** 0
+- Response-accounting audit confirmed: exactly 50 prompts, 150 archived responses, exactly 150 unique UUIDs, 0 duplicate/missing response IDs, and 150 successful scores forming the canonical scoring denominator.
 
 ---
 
@@ -67,6 +68,7 @@ As required by the assignment brief, one critical failure observed during develo
 - **Diagnosis:** LLM-generated summaries were transcribed into diagnostic data fixtures without automated substring verification against source `answer_text` records.
 - **Fix:** Replaced all excerpts with verified verbatim substrings from the source responses and added an automated regression test (`test_all_diagnostic_evidence_verbatim_integrity`) in `tests/test_analysis.py` that asserts `excerpt in answer_text` across all diagnostics.
 - **Verification:** Command `pytest tests/test_analysis.py -k test_all_diagnostic_evidence_verbatim_integrity` passed with 100% string-matching.
+- **End-to-End Evidence Integrity Audit (P3):** Audited all 6 evidence citations across the 3 final diagnostics against the original 150-response archive. Confirmed 6/6 exact verbatim matches, 0 offset mismatches, 0 invalid response IDs, and centralized canonical slicing via `_audit_evidence_candidates` ensuring fabricated or altered quotations are rejected.
 
 ---
 
@@ -81,11 +83,46 @@ From the analysis of the 150 archived responses:
 | **Gemini** | 50 | **34.93** | 44.0% | **12.0%** | 0.0% |
 | **Overall** | **150** | **33.04** | **48.0%** | **6.0%** | **3.33%** |
 
-### Top Evidence-Backed Remedy
-**Action:** Publish 3 Verified Third-Party B2B Case Studies with Before/After GEO Metrics.  
-**Supporting Evidence:** ChatGPT answers directly cite ScamAdviser and flag Kasparro for lacking independent evidence (e.g., Response `ac5bdf24-6a6e-49a0-abf5-2755ff3b42bc`, `5492b420-7fa5-4de4-ab2c-6c4412e5b18d`).
-**Expected Benefit:** Replaces cautionary third-party citations with verified proof points, resolving the 6.0% negative sentiment in ChatGPT.
-**Validation Plan:** Track ChatGPT answers across prompts 001–005 over a 30-day monitoring window. Target: 0 ScamAdviser citations.
+### Verified Prioritized Remedies
+
+1. **Remedy 1 (Top Remedy): Publish Verified Third-Party Case Studies with Before/After GEO Metrics**
+   - **Problem Addressed:** Negative or cautionary characterization reached 6.0% on ChatGPT, with citations explicitly noting a lack of verified independent evidence (Diagnostic 2).
+   - **Supporting Evidence:** Responses `ac5bdf24-6a6e-49a0-abf5-2755ff3b42bc`, `5492b420-7fa5-4de4-ab2c-6c4412e5b18d`, `08f81acc-0824-4e3a-a5d5-58446e2a6a90`.
+   - **Recommended Action:** Produce and publish 3 detailed customer case studies on independent third-party platforms with verifiable before-and-after AI visibility metrics.
+   - **Expected Benefit:** Displaces cautionary ScamAdviser citations with verifiable proof points, reducing ChatGPT negative characterization.
+   - **Effort:** Medium (Customer approvals and content packaging).
+   - **Uncertainty:** Search index ingestion cycles vary across crawlers.
+   - **Measurable Validation:** Re-evaluate branded trust prompts after publication; target: 0 ScamAdviser citations.
+
+2. **Remedy 2: Establish Official Profiles on Software Review Directories (G2, Capterra, ProductHunt)**
+   - **Problem Addressed:** Kasparro appeared in 0/75 unbranded category discovery queries, whereas competitors (Profound, Peec AI, Otterly) were consistently recommended from directory citations (Diagnostic 1).
+   - **Supporting Evidence:** Responses `0f38b477-9f3c-44a8-9d10-0b6016db6150`, `11010066-8ed2-4741-856e-9259ae1a377b`.
+   - **Recommended Action:** Claim and populate verified vendor profiles under AI Search Optimization and collect verified customer reviews.
+   - **Expected Benefit:** Directly increases unbranded discovery inclusion by establishing directory entity presence.
+   - **Effort:** Low (Profile creation and customer review collection).
+   - **Uncertainty:** Review directory verification requires minimum review thresholds.
+   - **Measurable Validation:** Re-run unbranded discovery prompts; track change in unbranded inclusion rate.
+
+3. **Remedy 3: Implement Organization Schema.org Markup & Brand Disambiguation from 'Kaspr'**
+   - **Problem Addressed:** Phonetic entity overlap with 'Kaspr' and 'Gaspar AI' appeared in 20 responses/citations, splitting brand attribution (Diagnostic 3).
+   - **Supporting Evidence:** Responses `136b8240-008c-46ff-b744-592c4d859e98`, `1d2dc007-0757-480d-a086-6b6e2e13c463`.
+   - **Recommended Action:** Deploy JSON-LD Organization schema on kasparro.com with explicit `sameAs` links and publish an entity clarification page distinguishing Kasparro (AISO) from Kaspr (B2B contact data).
+   - **Expected Benefit:** Clarifies entity resolution for knowledge graph crawlers and resolves name collisions.
+   - **Effort:** Low (Technical schema markup deployment).
+   - **Uncertainty:** Knowledge graph updates propagate over multiple crawl cycles.
+   - **Measurable Validation:** Verify Google Rich Results validation passes; monitor disambiguation citations.
+
+### Clean Execution Mode Separation
+
+The assignment architecture enforces strict boundaries between data tiers to prevent conflating replay results with live LLM accuracy:
+
+| Execution Tier | Scope / Dataset | Classifier Engine | Primary Outputs & Metrics |
+|---|---|---|---|
+| **1. Historical Snapshot** | 150 archived responses (31 July 2026) | Static Dataset / Replay | Overall score: 33.04; Inclusion: 48.0%; Rec: 6.0%; Neg: 3.33% (`final_report.json`, `report.html`) |
+| **2. Deterministic Replay** | 20 regression + 30 held-out cases | Regex / Rule-based (v1) | Regression: 100.0% agreement; Held-out: 63.3% agreement (`eval_results.json`, `eval_held_out_results.json`) |
+| **3. Real-Model Provider** | 20 regression cases + 60 repeatability calls | Live Gemini API (`gemini-3.5-flash-lite`) | Single pass: 73.7% agreement (+21.1% over baseline), 95.0% coverage (1 HTTP 429 quota failure); Repeatability: 88.89% stability, 90.0% coverage (6 quota failures) (`eval_provider_results.json`, `repeatability_regression.json`) |
+
+*For complete reconciliation audit details, see [`docs/P4_FINAL_ANALYSIS_AUDIT.md`](docs/P4_FINAL_ANALYSIS_AUDIT.md).*
 
 ---
 
