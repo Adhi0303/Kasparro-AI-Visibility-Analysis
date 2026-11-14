@@ -227,6 +227,11 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
     setBar("t-" + prefix + "-neg-bar", Number(aggregate.distribution.negative_rate) * 100);
   }
   const counts = report.counts || {};
+  const engineNames = Object.keys(scoring.engine_aggregates || {});
+  setText("report-meta-counts", counts.supplied_prompts + " Prompts · " + engineNames.length + " Engines");
+  setText("report-hero-subtitle",
+    "A validated analysis of " + counts.successful_responses + " AI-generated responses across " +
+    engineNames.length + " answer engines, measuring brand inclusion, recommendations and credibility signals.");
   const statNodes = document.querySelectorAll(".stat-grid .stat-value.num");
   const statTargets = [counts.supplied_prompts, counts.supplied_responses, counts.supplied_citations,
     counts.eligible_responses ? (counts.successful_responses / counts.eligible_responses) * 100 : 0];
@@ -853,8 +858,41 @@ def main() -> None:
             else:
                 html_text = html_text.replace(old_s, new_s)
 
+        # Embed the exact JSON payload from which dashboard metrics and findings are rendered.
+        html_text = _inject_report_payload(html_text, final_report)
+
+        stale_markers = (
+            "76 Tests Collected",
+            "21/21 Tests Pass",
+            "37.57",
+            "Tests Collected &amp; Verified",
+        )
+        stale_found = [marker for marker in stale_markers if marker in html_text]
+        if stale_found:
+            raise ValueError(
+                "Generated dashboard still contains stale hardcoded claims: "
+                + ", ".join(stale_found)
+            )
+
+        required_html_markers = (
+            'id="kasparro-report-data"',
+            'id="diagnostics-container"',
+            'id="remedies-container"',
+            'id="report-generated-mode"',
+            'id="eval-held-out-summary"',
+        )
+        missing_html_markers = [marker for marker in required_html_markers if marker not in html_text]
+        if missing_html_markers:
+            raise ValueError(
+                "Generated dashboard is missing required dynamic report targets: "
+                + ", ".join(missing_html_markers)
+            )
+
         html_path.write_text(html_text, encoding="utf-8")
-        print("Regenerated final_report.json, prompt_scores.json, report.html, eval_results.json, eval_comparison_report.md successfully.")
+        print(
+            "Regenerated final_report.json, prompt_scores.json, report.html, "
+            "regression evaluation and held-out evaluation artifacts successfully."
+        )
     finally:
         db.close()
 
