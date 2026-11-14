@@ -183,6 +183,10 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
     element.style.width = pct + "%";
     element.setAttribute("data-width", String(pct));
   };
+  const setAttribute = (id, name, value) => {
+    const element = document.getElementById(id);
+    if (element && value !== null && value !== undefined) element.setAttribute(name, String(value));
+  };
   const percent = value => (typeof value === "number" && Number.isFinite(value)) ? (value * 100).toFixed(1) + "%" : "N/A";
   const scoring = report.scoring || {};
   const engines = scoring.engine_aggregates || {};
@@ -214,6 +218,25 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
     setText("engine-" + prefix + "-inc", inc.toFixed(0) + "%");
     setText("engine-" + prefix + "-rec", rec.toFixed(0) + "%");
     setText("engine-" + prefix + "-neg", neg.toFixed(0) + "%");
+    const engineLabel = key === "aimode" ? "Google AI Mode" : (key === "chatgpt" ? "ChatGPT" : "Gemini");
+    const successfulCount = Number(aggregate.total_successful || 0);
+    setAttribute("bar-" + prefix + "-score", "data-hover-title", engineLabel + " · Visibility Score: " + score.toFixed(1));
+    setAttribute("bar-" + prefix + "-score", "data-hover-body", "Calculated from " + successfulCount + " successful classifications in this analysis run.");
+    setAttribute("bar-" + prefix + "-inc", "data-hover-title", engineLabel + " · Inclusion Rate: " + inc.toFixed(1) + "%");
+    setAttribute("bar-" + prefix + "-inc", "data-hover-body", "Kasparro was mentioned in " + Math.round(inc * successfulCount / 100) + " of " + successfulCount + " successful responses.");
+    setAttribute("bar-" + prefix + "-rec", "data-hover-title", engineLabel + " · Recommendation Rate: " + rec.toFixed(1) + "%");
+    setAttribute("bar-" + prefix + "-rec", "data-hover-body", "Kasparro was recommended in " + Math.round(rec * successfulCount / 100) + " of " + successfulCount + " successful responses.");
+    setAttribute("bar-" + prefix + "-neg", "data-hover-title", engineLabel + " · Negative Characterization Rate: " + neg.toFixed(1) + "%");
+    setAttribute("bar-" + prefix + "-neg", "data-hover-body", "Kasparro was negatively characterized in " + Math.round(neg * successfulCount / 100) + " of " + successfulCount + " successful responses.");
+    const engineCard = document.querySelector(".engine-card." + prefix + "-card");
+    if (engineCard) {
+      const badge = engineCard.querySelector(".engine-header .pill");
+      if (badge) badge.textContent = "Run summary";
+      engineCard.setAttribute("data-hover-title", engineLabel + " · " + score.toFixed(1) + "/100");
+      engineCard.setAttribute("data-hover-body",
+        "Mentioned: " + inc.toFixed(1) + "% · Recommended: " + rec.toFixed(1) +
+        "% · Negative: " + neg.toFixed(1) + "% · Successful responses: " + successfulCount + ".");
+    }
   }
   const all = scoring.overall_distribution || {};
   const overallScore = Number(scoring.overall_mean_score);
