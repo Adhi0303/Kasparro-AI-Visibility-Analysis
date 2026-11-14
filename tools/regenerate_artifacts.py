@@ -291,6 +291,8 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
   });
   setText("report-generated-at", "Generated " + report.generated_at);
   setText("report-provenance-generated-at", report.generated_at);
+  setText("report-scoring-version", scoring.scoring_version);
+  setText("report-classifier-version", scoring.classifier_version + " (" + scoring.execution_mode + ")");
   setText("report-generated-mode", "Scoring " + scoring.scoring_version + " · Classifier " +
     scoring.classifier_version + " · " + scoring.execution_mode + " · Metrics from generated analysis");
   setText("report-run-id", report.provenance.run_id);
