@@ -1571,7 +1571,7 @@
               <svg viewBox="0 0 16 16" fill="currentColor">
                 <path d="M3 8l4 4 6-7" />
               </svg>
-              76 Tests Collected &amp; Verified
+              Source-validated analysis data
             </span>
           </div>
 
@@ -3363,7 +3363,7 @@
       <div class="section-header reveal">
         <span class="label">Classifier Evaluation</span>
         <h2>Baseline vs. Proposed Classifier</h2>
-        <p>20 human-labelled gold cases (8 supplied responses + 12 synthetic edge cases) graded against two classifiers to measure accuracy, precision, recall, and F1 score.</p>
+        <p id="eval-description">Regression evaluation results are generated from the current labeled case set.</p>
       </div>
 
       <div class="eval-compare">
@@ -3380,29 +3380,29 @@
                   stroke-dasharray="213.6" stroke-dashoffset="213.6" transform="rotate(-90 45 45)" class="gauge-arc"
                   data-target-pct="50" data-circum="213.6" />
               </svg>
-              <div class="eval-score" style="color:var(--amber)">50%</div>
+              <div class="eval-score" id="eval-baseline-agreement" style="color:var(--amber)">—</div>
             </div>
-            <div style="font-size:.8rem;color:var(--text-p);font-weight:500">Agreement Rate · 10/20 exact matches</div>
+            <div style="font-size:.8rem;color:var(--text-p);font-weight:500"><span id="eval-baseline-count">Agreement rate pending</span></div>
           </div>
           <div class="metric-row">
             <span class="metric-name">kasparro_mentioned F1</span>
             <div>
-              <div class="metric-val">0.938</div>
-              <div class="f1-bar" style="width:0" data-width="93.8"></div>
+              <div class="metric-val" id="eval-baseline-kasparro_mentioned-f1">—</div>
+              <div class="f1-bar" id="eval-baseline-kasparro_mentioned-bar" style="width:0" data-width="0"></div>
             </div>
           </div>
           <div class="metric-row">
             <span class="metric-name">kasparro_recommended F1</span>
             <div>
-              <div class="metric-val" style="color:var(--rose)">0.545</div>
-              <div class="f1-bar" style="width:0;background:var(--rose)" data-width="54.5"></div>
+              <div class="metric-val" id="eval-baseline-kasparro_recommended-f1" style="color:var(--rose)">—</div>
+              <div class="f1-bar" id="eval-baseline-kasparro_recommended-bar" style="width:0;background:var(--rose)" data-width="0"></div>
             </div>
           </div>
           <div class="metric-row">
             <span class="metric-name">kasparro_negative F1</span>
             <div>
-              <div class="metric-val" style="color:var(--amber)">0.444</div>
-              <div class="f1-bar" style="width:0;background:var(--amber)" data-width="44.4"></div>
+              <div class="metric-val" id="eval-baseline-kasparro_negative-f1" style="color:var(--amber)">—</div>
+              <div class="f1-bar" id="eval-baseline-kasparro_negative-bar" style="width:0;background:var(--amber)" data-width="0"></div>
             </div>
           </div>
         </div>
@@ -3411,7 +3411,7 @@
         <div class="eval-card reveal reveal-delay-1" style="border-color:var(--green);border-width:2px">
           <div style="text-align:center;margin-bottom:20px">
             <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;color:var(--text-m);margin-bottom:12px">
-              PROPOSED CLASSIFIER · <span style="color:var(--green)">+50%</span></div>
+              PROPOSED CLASSIFIER</div>
             <div class="eval-ring">
               <svg width="90" height="90" viewBox="0 0 90 90">
                 <circle cx="45" cy="45" r="34" fill="none" stroke="var(--border)" stroke-width="8" />
@@ -3419,34 +3419,35 @@
                   stroke-dasharray="213.6" stroke-dashoffset="213.6" transform="rotate(-90 45 45)" class="gauge-arc"
                   data-target-pct="100" data-circum="213.6" />
               </svg>
-              <div class="eval-score" style="color:var(--green)">100%</div>
+              <div class="eval-score" id="eval-proposed-agreement" style="color:var(--green)">—</div>
             </div>
-            <div style="font-size:.8rem;color:var(--text-p);font-weight:500">Agreement Rate · 20/20 exact matches</div>
+            <div style="font-size:.8rem;color:var(--text-p);font-weight:500"><span id="eval-proposed-count">Agreement rate pending</span></div>
           </div>
           <div class="metric-row">
             <span class="metric-name">kasparro_mentioned F1</span>
             <div>
-              <div class="metric-val">1.000</div>
-              <div class="f1-bar" style="width:0" data-width="100.0"></div>
+              <div class="metric-val" id="eval-proposed-kasparro_mentioned-f1">—</div>
+              <div class="f1-bar" id="eval-proposed-kasparro_mentioned-bar" style="width:0" data-width="0"></div>
             </div>
           </div>
           <div class="metric-row">
             <span class="metric-name">kasparro_recommended F1</span>
             <div>
-              <div class="metric-val" style="color:var(--green)">1.000</div>
-              <div class="f1-bar" style="width:0;background:var(--green)" data-width="100"></div>
+              <div class="metric-val" id="eval-proposed-kasparro_recommended-f1" style="color:var(--green)">—</div>
+              <div class="f1-bar" id="eval-proposed-kasparro_recommended-bar" style="width:0;background:var(--green)" data-width="0"></div>
             </div>
           </div>
           <div class="metric-row">
             <span class="metric-name">kasparro_negative F1</span>
             <div>
-              <div class="metric-val" style="color:var(--amber)">1.000</div>
-              <div class="f1-bar" style="width:0;background:var(--green)" data-width="100.0"></div>
+              <div class="metric-val" id="eval-proposed-kasparro_negative-f1" style="color:var(--amber)">—</div>
+              <div class="f1-bar" id="eval-proposed-kasparro_negative-bar" style="width:0;background:var(--green)" data-width="0"></div>
             </div>
           </div>
         </div>
 
       </div>
+        <p id="eval-held-out-summary" class="section-note" style="margin-top:18px">Held-out evaluation has not yet been generated.</p>
     </div>
   </section>
 
@@ -3467,27 +3468,27 @@
               <tbody>
                 <tr>
                   <td>Run ID</td>
-                  <td>4a4b71d9…e21472</td>
+                  <td id="report-run-id">Generated from current run</td>
                 </tr>
                 <tr>
                   <td>Dataset ID</td>
-                  <td>67181111…945f4a</td>
+                  <td id="report-dataset-id">Generated from current dataset</td>
                 </tr>
                 <tr>
                   <td>Dataset Name</td>
-                  <td>kasparro-historical-snapshot</td>
+                  <td id="report-dataset-name">kasparro-historical-snapshot</td>
                 </tr>
                 <tr>
                   <td>Historical Capture</td>
-                  <td>2026-07-31</td>
+                  <td id="report-capture-date">2026-07-31</td>
                 </tr>
                 <tr>
                   <td>Location</td>
-                  <td>India (en)</td>
+                  <td id="report-location">India (en)</td>
                 </tr>
                 <tr>
                   <td>Data Provider</td>
-                  <td>DataForSEO</td>
+                  <td id="report-provider">DataForSEO</td>
                 </tr>
                 <tr>
                   <td>Pack Version</td>
@@ -3503,11 +3504,11 @@
                 </tr>
                 <tr>
                   <td>Source Hash</td>
-                  <td style="word-break:break-all">142de02b3da907cb…</td>
+                  <td id="report-source-hash" style="word-break:break-all">Generated from current dataset</td>
                 </tr>
                 <tr>
                   <td>Generated At</td>
-                  <td>2026-10-28T15:35:43Z</td>
+                  <td id="report-provenance-generated-at">Generated from current run</td>
                 </tr>
                 <tr>
                   <td>Report Status</td>
@@ -3555,8 +3556,8 @@
           <div style="margin-top:4px">Historical Snapshot · 31 July 2026 · India (en) · DataForSEO</div>
         </div>
         <div style="text-align:right">
-          <div>Generated 28 Oct 2026 · Pack v1.0.0</div>
-          <div style="margin-top:4px">Scoring v1 · Classifier v1 · Replay Mode · 21/21 Tests Pass</div>
+          <div id="report-generated-at">Generated from current run · Pack v1.0.0</div>
+          <div id="report-generated-mode" style="margin-top:4px">Scoring v1 · Classifier v1 · Replay Mode · Metrics from generated analysis</div>
         </div>
       </div>
     </div>
