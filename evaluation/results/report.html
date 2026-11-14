@@ -201,8 +201,9 @@ blockquote{margin:12px 0;padding:12px 15px;background:#f7f9fc;border-left:3px so
  const applyFilters=()=>{
   const engine=engineSelect.value,cohort=cohortSelect.value;
   points.forEach(point=>{
-   point.hidden=!( (engine==="all"||point.dataset.engine===engine) &&
-                   (cohort==="all"||point.dataset.cohort===cohort) );
+   const visible=(engine==="all"||point.dataset.engine===engine) &&
+                 (cohort==="all"||point.dataset.cohort===cohort);
+   point.style.display=visible?"":"none";
   });
  };
  engineSelect.addEventListener("change",applyFilters);
