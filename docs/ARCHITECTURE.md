@@ -2,7 +2,7 @@
 
 ## 1. High-Level Architecture Overview
 
-The Kasparro AI Visibility Analysis & Human Review service is a production-grade FastAPI backend designed for reproducible, evidence-backed evaluation of brand visibility across Generative AI answer engines (OpenAI ChatGPT, Google Gemini, and Google AI Mode).
+The Kasparro AI Visibility Analysis & Human Review service is an assignment-scale FastAPI backend designed for reproducible, evidence-backed evaluation of brand visibility across Generative AI answer engines (OpenAI ChatGPT, Google Gemini, and Google AI Mode).
 
 ```mermaid
 flowchart TD
@@ -14,7 +14,7 @@ flowchart TD
     subgraph Processing ["2. Analysis & Classification"]
         DB_INGEST --> ROUTER{"Execution Mode"}
         ROUTER -->|"Replay"| REPLAY["Deterministic Replay Classifier\n(Keyless Heuristics & Failure Stubs)"]
-        ROUTER -->|"Provider"| ADAPTER["Real-Model Adapter\n(OpenAI / Google API + Retries)"]
+        ROUTER -->|"Provider"| ADAPTER["Real-Model Adapter\n(OpenAI-compatible Chat Completions)"]
         REPLAY --> RESULTS["Response Results\n(Mention, Rec, Neg, Position, Citations)"]
         ADAPTER --> RESULTS
         RESULTS --> SCORER["Deterministic Scoring Engine\n(Formula v1 + Aggregate Rollups)"]
@@ -155,13 +155,13 @@ Kasparro_AI_Engineer_Fresher/
 │   ├── run.json            # Capture metadata (July 31, 2026, DataForSEO, India, English)
 │   └── READ_ME.txt         # Dataset documentation
 ├── evaluation/             # Independent evaluation suite
-│   ├── cases.jsonl         # 20 labeled gold cases (8 supplied + 12 synthetic edge cases)
-│   ├── grader.py           # Multi-label precision, recall, and agreement metrics calculator
-│   ├── run_eval.py         # Comparative benchmark script (Baseline vs Proposed)
+│   ├── cases.jsonl         # 20 supplied/synthetic regression cases\n│   ├── held_out_cases.jsonl # 30 provisional synthetic held-out scenarios\n│   ├── split_manifest.json # Split definitions and annotation limitations
+│   ├── grader.py           # Multi-label confusion counts, per-label metrics, and agreement calculator
+│   ├── run_eval.py         # Separate regression and held-out benchmark runs
 │   └── results/            # Benchmark outputs, final_report.json, and report.html
 ├── fixtures/               # Test fixtures and simulated failure conditions
-├── tests/                  # 76 unit and integration pytest test cases
-├── tools/                  # Pack integrity verification and artifact regeneration scripts
+├── tests/                  # Unit, integration, security, provider, and report regression tests
+├── tools/                  # Pack checks, report regeneration, and artifact consistency validation
 ├── demo.py                 # One-click end-to-end demonstration script
 ├── README.md               # Quick-start manual and API usage guide
 └── DECISION_NOTE.md        # Architectural decisions, trade-offs, and disclosures
@@ -178,3 +178,7 @@ Kasparro_AI_Engineer_Fresher/
 3. **Failures as First-Class Citizens**:
    A failed API call or malformed response is never treated as a 0% visibility score or as an absent mention. It receives `status: failed`, records an explicit `failure_reason`, and is excluded from scoring denominators to avoid statistical distortion.
 
+
+## 5. Generated Report Integrity
+
+The interactive dashboard is a generated view of `evaluation/results/final_report.json`, the per-response `prompt_scores.json`, and the regression/held-out evaluation outputs. Run `python tools/regenerate_artifacts.py` after changing source data or analysis code, then run `python tools/validate_artifacts.py` to verify dashboard/JSON/Markdown consistency and source offsets for every displayed diagnostic excerpt. Dashboard metrics are not intended to be edited independently in HTML.

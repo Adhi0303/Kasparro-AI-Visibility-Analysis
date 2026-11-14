@@ -1493,6 +1493,10 @@
 
 <body>
 
+  <div id="report-not-generated" role="status" style="position:sticky;top:0;z-index:9999;padding:10px 18px;background:#7c2d12;color:#fff;text-align:center;font:600 13px/1.4 system-ui,sans-serif">
+    TEMPLATE NOTICE: this checked-in HTML is a report template. Run <code>python tools/regenerate_artifacts.py</code> and <code>python tools/validate_artifacts.py</code> before using or sharing its metrics.
+  </div>
+
   <!-- Floating Hover Popover -->
   <div id="hoverPopover">
     <span class="pop-badge" id="popBadge">ENGINE VERDICT</span>
@@ -1542,7 +1546,7 @@
         <div>
           <div class="hero-kicker"><span class="dot"></span>AI VISIBILITY BENCHMARK · JULY 2026</div>
           <h1>How AI engines <em>talk about</em> Kasparro</h1>
-          <p class="hero-sub">
+          <p class="hero-sub" id="report-hero-subtitle">
             A systematic empirical analysis of 150 AI-generated responses across ChatGPT, Gemini,
             and Google AI Mode — evaluating brand inclusion, recommendation conversion, and
             credibility flags across 50 buyer queries.
@@ -1559,7 +1563,7 @@
                 <path
                   d="M2 4.5A2.5 2.5 0 014.5 2h7A2.5 2.5 0 0114 4.5v7a2.5 2.5 0 01-2.5 2.5h-7A2.5 2.5 0 012 11.5v-7z" />
               </svg>
-              50 Prompts · 3 Engines
+              <span id="report-meta-counts">Prompts and engines from generated dataset</span>
             </span>
             <span class="meta-chip">
               <svg viewBox="0 0 16 16" fill="currentColor">
@@ -1571,7 +1575,7 @@
               <svg viewBox="0 0 16 16" fill="currentColor">
                 <path d="M3 8l4 4 6-7" />
               </svg>
-              76 Tests Collected &amp; Verified
+              Source-validated analysis data
             </span>
           </div>
 
@@ -2738,41 +2742,40 @@
           </div>
 
           <div class="gap-comparison">
-            <div class="gap-block" data-hover-title="Branded Prompts (001-025)"
+            <div class="gap-block" id="gap-branded-card" data-hover-title="Branded Prompt Visibility"
               data-hover-body="When buyers explicitly query Kasparro by name, models include the brand in 72 of 75 responses (96% inclusion). However, 24% of ChatGPT responses flag skepticism.">
               <div class="gap-top">
-                <span class="gap-title">Branded Queries (25 Prompts)</span>
-                <span style="font-size:.84rem;font-weight:700;color:var(--indigo)">96.0% Branded Inclusion</span>
+                <span class="gap-title" id="gap-branded-title">Branded Queries</span>
+                <span id="gap-branded-pct" style="font-size:.84rem;font-weight:700;color:var(--indigo)">Branded Inclusion</span>
               </div>
               <div class="gap-bar-track">
-                <div class="gap-bar-fill" style="width:96.0%;background:var(--indigo)"></div>
+                <div class="gap-bar-fill" id="gap-branded-bar" style="width:0%;background:var(--indigo)"></div>
               </div>
               <div class="gap-meta">
-                <span>Mentioned: <strong>72/75 answers</strong></span>
-                <span>Recommendation: <strong>12%</strong></span>
+                <span>Mentioned: <strong id="gap-branded-count">Awaiting generated metrics</strong></span>
+                <span>Recommendation: <strong id="gap-branded-rec">Awaiting generated metrics</strong></span>
               </div>
             </div>
 
             <div class="gap-block" style="border-left:3px solid var(--rose)"
-              data-hover-title="Unbranded Category Discovery (026-050)"
+              id="gap-unbranded-card" data-hover-title="Unbranded Category Discovery"
               data-hover-body="When buyers ask generic questions ('best AI visibility tools', 'how to track ChatGPT mentions'), Kasparro is completely absent (0/75 responses). Competitors Profound & Peec AI dominate.">
               <div class="gap-top">
-                <span class="gap-title" style="color:var(--rose)">Unbranded Queries (25 Prompts)</span>
-                <span style="font-size:.84rem;font-weight:800;color:var(--rose)">0.0% Recall</span>
+                <span class="gap-title" id="gap-unbranded-title" style="color:var(--rose)">Unbranded Queries</span>
+                <span id="gap-unbranded-pct" style="font-size:.84rem;font-weight:800;color:var(--rose)">Inclusion</span>
               </div>
               <div class="gap-bar-track">
-                <div class="gap-bar-fill" style="width:0%;background:var(--rose)"></div>
+                <div class="gap-bar-fill" id="gap-unbranded-bar" style="width:0%;background:var(--rose)"></div>
               </div>
               <div class="gap-meta">
-                <span>Mentioned: <strong style="color:var(--rose)">0/75 answers</strong></span>
-                <span>Competitors: <strong>Profound, Peec AI</strong></span>
+                <span>Mentioned: <strong id="gap-unbranded-count" style="color:var(--rose)">Awaiting generated metrics</strong></span>
+                <span id="gap-unbranded-competitors">Competitor context is available in source-backed diagnostics.</span>
               </div>
             </div>
 
             <div
               style="background:var(--surface-2);border-radius:10px;padding:12px 14px;font-size:.78rem;color:var(--text-p)">
-              💡 <strong>Strategic takeaway:</strong> Kasparro does not suffer from a brand reputation problem as much
-              as a <em>discoverability void</em>. Building G2/Capterra profiles directly bridges this gap.
+              <span id="gap-strategic-takeaway">Strategic interpretation will be generated from the current report data.</span>
             </div>
           </div>
         </div>
@@ -2984,29 +2987,29 @@
               <div class="engine-icon" style="background:var(--gem-lt)">🔮</div>
               <div>
                 <div class="label" style="color:var(--gem)">GEMINI</div>
-                <div style="font-size:.78rem;color:var(--text-m)">Google · 50 responses</div>
+                <div id="engine-gem-count" style="font-size:.78rem;color:var(--text-m)">Google · responses pending</div>
               </div>
             </div>
             <span class="pill pill-green">Top Conviction</span>
           </div>
-          <div class="engine-score-big" style="color:var(--gem)">34.9 <span class="engine-out">/100</span></div>
+          <div class="engine-score-big" style="color:var(--gem)"><span id="engine-gem-score">—</span> <span class="engine-out">/100</span></div>
           <div class="engine-bar-wrap">
-            <div class="engine-bar-row"><span>Visibility Score</span><span>34.9</span></div>
+            <div class="engine-bar-row"><span>Visibility Score</span><span id="engine-gem-score-label">—</span></div>
             <div class="bar-track">
-              <div class="bar-fill" style="width:0%;background:var(--gem)" data-width="34.9"></div>
+              <div id="engine-gem-score-bar" class="bar-fill" style="width:0%;background:var(--gem)" data-width="0"></div>
             </div>
           </div>
           <div class="engine-stats">
             <div class="e-stat">
-              <div class="v" style="color:var(--gem)">44%</div>
+              <div id="engine-gem-inc" class="v" style="color:var(--gem)">—</div>
               <div class="k">Inclusion</div>
             </div>
             <div class="e-stat">
-              <div class="v" style="color:var(--green)">12%</div>
+              <div id="engine-gem-rec" class="v" style="color:var(--green)">—</div>
               <div class="k">Recommend</div>
             </div>
             <div class="e-stat">
-              <div class="v" style="color:var(--green)">0%</div>
+              <div id="engine-gem-neg" class="v" style="color:var(--green)">—</div>
               <div class="k">Negative</div>
             </div>
           </div>
@@ -3019,29 +3022,29 @@
               <div class="engine-icon" style="background:var(--gpt-lt)">🤖</div>
               <div>
                 <div class="label" style="color:var(--gpt)">CHATGPT</div>
-                <div style="font-size:.78rem;color:var(--text-m)">OpenAI · 50 responses</div>
+                <div id="engine-gpt-count" style="font-size:.78rem;color:var(--text-m)">OpenAI · responses pending</div>
               </div>
             </div>
             <span class="pill pill-rose">Highest Skepticism</span>
           </div>
-          <div class="engine-score-big" style="color:var(--gpt)">31.4 <span class="engine-out">/100</span></div>
+          <div class="engine-score-big" style="color:var(--gpt)"><span id="engine-gpt-score">—</span> <span class="engine-out">/100</span></div>
           <div class="engine-bar-wrap">
-            <div class="engine-bar-row"><span>Visibility Score</span><span>31.4</span></div>
+            <div class="engine-bar-row"><span>Visibility Score</span><span id="engine-gpt-score-label">—</span></div>
             <div class="bar-track">
-              <div class="bar-fill" style="width:0%;background:var(--gpt)" data-width="31.4"></div>
+              <div id="engine-gpt-score-bar" class="bar-fill" style="width:0%;background:var(--gpt)" data-width="0"></div>
             </div>
           </div>
           <div class="engine-stats">
             <div class="e-stat">
-              <div class="v" style="color:var(--gpt)">50%</div>
+              <div id="engine-gpt-inc" class="v" style="color:var(--gpt)">—</div>
               <div class="k">Inclusion</div>
             </div>
             <div class="e-stat">
-              <div class="v" style="color:var(--amber)">2%</div>
+              <div id="engine-gpt-rec" class="v" style="color:var(--amber)">—</div>
               <div class="k">Recommend</div>
             </div>
             <div class="e-stat">
-              <div class="v" style="color:var(--rose)">6%</div>
+              <div id="engine-gpt-neg" class="v" style="color:var(--rose)">—</div>
               <div class="k">Negative</div>
             </div>
           </div>
@@ -3054,29 +3057,29 @@
               <div class="engine-icon" style="background:var(--aim-lt)">🔍</div>
               <div>
                 <div class="label" style="color:var(--aim)">AI MODE</div>
-                <div style="font-size:.78rem;color:var(--text-m)">Google Search · 50 responses</div>
+                <div id="engine-aim-count" style="font-size:.78rem;color:var(--text-m)">Google Search · responses pending</div>
               </div>
             </div>
             <span class="pill pill-amber">Low Intent</span>
           </div>
-          <div class="engine-score-big" style="color:var(--aim)">32.8 <span class="engine-out">/100</span></div>
+          <div class="engine-score-big" style="color:var(--aim)"><span id="engine-aim-score">—</span> <span class="engine-out">/100</span></div>
           <div class="engine-bar-wrap">
-            <div class="engine-bar-row"><span>Visibility Score</span><span>32.8</span></div>
+            <div class="engine-bar-row"><span>Visibility Score</span><span id="engine-aim-score-label">—</span></div>
             <div class="bar-track">
-              <div class="bar-fill" style="width:0%;background:var(--aim)" data-width="32.8"></div>
+              <div id="engine-aim-score-bar" class="bar-fill" style="width:0%;background:var(--aim)" data-width="0"></div>
             </div>
           </div>
           <div class="engine-stats">
             <div class="e-stat">
-              <div class="v" style="color:var(--aim)">50%</div>
+              <div id="engine-aim-inc" class="v" style="color:var(--aim)">—</div>
               <div class="k">Inclusion</div>
             </div>
             <div class="e-stat">
-              <div class="v" style="color:var(--rose)">4%</div>
+              <div id="engine-aim-rec" class="v" style="color:var(--rose)">—</div>
               <div class="k">Recommend</div>
             </div>
             <div class="e-stat">
-              <div class="v" style="color:var(--amber)">4%</div>
+              <div id="engine-aim-neg" class="v" style="color:var(--amber)">—</div>
               <div class="k">Negative</div>
             </div>
           </div>
@@ -3093,172 +3096,12 @@
     <div class="wrap">
       <div class="section-header reveal">
         <span class="label">Root-Cause Analysis</span>
-        <h2>3 Evidence-Backed Diagnostics</h2>
+        <h2 id="diagnostics-heading">Evidence-Backed Diagnostics</h2>
         <p>Each diagnostic is grounded in verbatim excerpts from the response dataset, with real response IDs and engine
           attribution.</p>
       </div>
 
-      <div style="display:flex;flex-direction:column;gap:20px">
-
-        <!-- D1 -->
-        <div class="diag-card reveal">
-          <div class="diag-stripe" style="background:linear-gradient(90deg,var(--indigo),#7c5cdb)"></div>
-          <div class="diag-body">
-            <div style="display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start">
-              <div>
-                <div class="diag-num" style="background:var(--indigo-lt);color:var(--indigo)">D1</div>
-                <h3 class="diag-title">Complete Absence in Unbranded Category Discovery Prompts</h3>
-                <p class="diag-desc">
-                  Across all 25 unbranded category prompts evaluated across all three engines (75 total responses),
-                  Kasparro was included in <strong>0 out of 75 responses</strong> (0.0% inclusion rate).
-                  Meanwhile competitors Profound, Peec AI, and Otterly were consistently recommended. This reveals
-                  that generative AI models do not have Kasparro in their category co-occurrence graph.
-                </p>
-              </div>
-              <div style="text-align:center;padding:16px;background:var(--indigo-lt);border-radius:12px;min-width:90px">
-                <div style="font-size:1.8rem;font-weight:800;color:var(--indigo)">0%</div>
-                <div style="font-size:.68rem;font-weight:700;color:var(--indigo);letter-spacing:.06em">
-                  UNBRANDED<br>RECALL</div>
-              </div>
-            </div>
-
-            <div class="grid-2" style="margin-top:4px">
-              <div class="quote-block" style="border-left-color:var(--gem)">
-                <p>"Profound is a powerhouse in the AI visibility space. It tracks an extensive array of engines (10+ platforms including niche models like Grok and DeepSeek)."</p>
-                <div class="quote-meta">
-                  <span class="pill pill-gem" style="font-size:.64rem;padding:2px 7px">GEMINI</span>
-                  <span>Prompt 036 · best software for measuring brand inclusion</span>
-                  <code style="font-size:.65rem;color:var(--text-m)">0f38b477</code>
-                </div>
-              </div>
-              <div class="quote-block" style="border-left-color:var(--aim)">
-                <p>"- **Profound:** Tracks which domains are cited in AI-generated answers and provides analytics to help brands measure share-of-voice across major AI platforms and human conversation forums like Reddit."</p>
-                <div class="quote-meta">
-                  <span class="pill pill-aim" style="font-size:.64rem;padding:2px 7px">AI MODE</span>
-                  <span>Prompt 037 · tools growth marketers recommend</span>
-                  <code style="font-size:.65rem;color:var(--text-m)">0697376e</code>
-                </div>
-              </div>
-            </div>
-
-            <div class="diag-footer">
-              <span class="diag-tag" style="background:var(--indigo-lt);color:var(--indigo)">High Confidence ·
-                n=75</span>
-              <span class="diag-tag" style="background:var(--surface-2);color:var(--text-p)">Root Cause: No directory
-                profiles</span>
-              <span class="diag-tag" style="background:var(--amber-lt);color:var(--amber)">Validation: Audit G2 /
-                Capterra / Reddit</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- D2 -->
-        <div class="diag-card reveal reveal-delay-1">
-          <div class="diag-stripe" style="background:linear-gradient(90deg,var(--rose),#f0748a)"></div>
-          <div class="diag-body">
-            <div style="display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start">
-              <div>
-                <div class="diag-num" style="background:var(--rose-lt);color:var(--rose)">D2</div>
-                <h3 class="diag-title">Severe Third-Party Evidence Deficit &amp; Credibility Warnings in ChatGPT</h3>
-                <p class="diag-desc">
-                  Kasparro receives negative or cautionary characterisation in <strong>6% of ChatGPT responses</strong>
-                  (3/50) — the highest negative rate of all three engines. ChatGPT repeatedly warns buyers that
-                  Kasparro lacks independent case studies and cites ScamAdviser directly.
-                  ChatGPT's live web retrieval prioritises domain trustworthiness checks, and without verified
-                  external client case studies, ScamAdviser surfaces in answers.
-                </p>
-              </div>
-              <div style="text-align:center;padding:16px;background:var(--rose-lt);border-radius:12px;min-width:90px">
-                <div style="font-size:1.8rem;font-weight:800;color:var(--rose)">6%</div>
-                <div style="font-size:.68rem;font-weight:700;color:var(--rose);letter-spacing:.06em">NEGATIVE<br>RATE
-                </div>
-              </div>
-            </div>
-
-            <div class="grid-2" style="margin-top:4px">
-              <div class="quote-block" style="border-left-color:var(--gpt)">
-                <p>"However, I couldn't find independent evidence showing that Kasparro consistently delivers measurable improvements for B2B SaaS companies specifically."</p>
-                <div class="quote-meta">
-                  <span class="pill pill-gpt" style="font-size:.64rem;padding:2px 7px">CHATGPT</span>
-                  <span>Prompt 001 · does kasparro actually work?</span>
-                  <code style="font-size:.65rem;color:var(--text-m)">ac5bdf24</code>
-                </div>
-              </div>
-              <div class="quote-block" style="border-left-color:var(--gpt)">
-                <p>"Short answer: **AI visibility tracking is a real problem, but many tools oversell how precisely they can measure it.** Kasparro falls into a category of tools trying to solve a legitimate need, but I'd be skeptical of taking any single "AI visibility score" at face value."</p>
-                <div class="quote-meta">
-                  <span class="pill pill-gpt" style="font-size:.64rem;padding:2px 7px">CHATGPT</span>
-                  <span>Prompt 005 · does kasparro actually work or is it a gimmick?</span>
-                  <code style="font-size:.65rem;color:var(--text-m)">08f81acc</code>
-                </div>
-              </div>
-            </div>
-
-            <div class="diag-footer">
-              <span class="diag-tag" style="background:var(--rose-lt);color:var(--rose)">High Confidence · Direct
-                Evidence</span>
-              <span class="diag-tag" style="background:var(--surface-2);color:var(--text-p)">Root Cause: No 3rd-party
-                case studies</span>
-              <span class="diag-tag" style="background:var(--amber-lt);color:var(--amber)">Validation: Publish case
-                studies → retest prompts 001–005</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- D3 -->
-        <div class="diag-card reveal reveal-delay-2">
-          <div class="diag-stripe" style="background:linear-gradient(90deg,var(--amber),#f0c040)"></div>
-          <div class="diag-body">
-            <div style="display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start">
-              <div>
-                <div class="diag-num" style="background:var(--amber-lt);color:var(--amber)">D3</div>
-                <h3 class="diag-title">Brand Entity Confusion with "Kaspr" in AI Search Results</h3>
-                <p class="diag-desc">
-                  Multiple responses across ChatGPT and Google AI Mode confuse "Kasparro" with "Kaspr"
-                  (the French B2B lead-generation/contact-scraping tool) or "Gaspar AI", presenting
-                  Kaspr's subscription pricing and G2 reviews instead of Kasparro's AI visibility platform.
-                  The phonetic and orthographic proximity to "Kaspr" — combined with sparse entity graph data
-                  for Kasparro — leads AI search engines to surface Kaspr review/pricing links during disambiguation.
-                </p>
-              </div>
-              <div style="text-align:center;padding:16px;background:var(--amber-lt);border-radius:12px;min-width:90px">
-                <div style="font-size:1.8rem;font-weight:800;color:var(--amber)">2+</div>
-                <div style="font-size:.68rem;font-weight:700;color:var(--amber);letter-spacing:.06em">
-                  ENGINES<br>CONFUSED</div>
-              </div>
-            </div>
-
-            <div class="grid-2" style="margin-top:4px">
-              <div class="quote-block" style="border-left-color:var(--gpt)">
-                <p>"If you mean <strong>Kasparro</strong> (the B2B SaaS growth/outbound agency, not Kaspr), I couldn't
-                  find reliable public pricing or enough verified information to judge whether it's objectively
-                  overpriced."</p>
-                <div class="quote-meta">
-                  <span class="pill pill-gpt" style="font-size:.64rem;padding:2px 7px">CHATGPT</span>
-                  <span>Prompt 018 · is kasparro overpriced for B2B SaaS startups?</span>
-                  <code style="font-size:.65rem;color:var(--text-m)">1d2dc007</code>
-                </div>
-              </div>
-              <div class="quote-block" style="border-left-color:var(--aim)">
-                <p>"Based on my research, Kasparro is not a widely recognized, top-tier agency or tool in the AI visibility space (AISO - AI Search Optimization) for B2B SaaS according to public search results as of July 2026."</p>
-                <div class="quote-meta">
-                  <span class="pill pill-aim" style="font-size:.64rem;padding:2px 7px">AI MODE</span>
-                  <span>Prompt 001 · does kasparro actually work?</span>
-                  <code style="font-size:.65rem;color:var(--text-m)">a3fdd8bb</code>
-                </div>
-              </div>
-            </div>
-
-            <div class="diag-footer">
-              <span class="diag-tag" style="background:var(--amber-lt);color:var(--amber)">Corroborated · Multiple
-                Citations</span>
-              <span class="diag-tag" style="background:var(--surface-2);color:var(--text-p)">Root Cause: Sparse entity
-                graph · Kaspr confusion</span>
-              <span class="diag-tag" style="background:var(--indigo-lt);color:var(--indigo)">Validation: JSON-LD Schema
-                · Rich Results Test</span>
-            </div>
-          </div>
-        </div>
+      <div id="diagnostics-container" style="display:flex;flex-direction:column;gap:20px"></div>
 
       </div>
     </div>
@@ -3271,85 +3114,12 @@
     <div class="wrap">
       <div class="section-header reveal">
         <span class="label">Strategic Remedies</span>
-        <h2>3 Prioritised Action Items</h2>
+        <h2 id="remedies-heading">Prioritised Action Items</h2>
         <p>Evidence-linked recommendations ordered by expected impact. Each remedy includes effort estimation and
           measurable validation targets.</p>
       </div>
 
-      <div style="display:flex;flex-direction:column;gap:16px">
-
-        <!-- R1 -->
-        <div class="remedy-card reveal">
-          <div class="remedy-num">R1</div>
-          <div class="remedy-content">
-            <h3 class="remedy-title">Publish 3 Verified Third-Party Case Studies with Before/After GEO Metrics</h3>
-            <p class="remedy-desc">
-              ChatGPT directly cites ScamAdviser and cautions potential buyers that Kasparro lacks independent
-              case studies and third-party validation. Produce and publish 3 detailed customer case studies
-              on high-authority external platforms (Medium, Substack, industry tech blogs) featuring verifiable
-              before-and-after AI visibility metrics.
-            </p>
-            <div class="remedy-row">
-              <span class="pill pill-amber">MEDIUM EFFORT</span>
-              <span class="pill" style="background:var(--surface-2);color:var(--text-p)">2 weeks editorial
-                packaging</span>
-              <span class="pill" style="background:var(--gem-lt);color:var(--gem)">Linked to D2</span>
-            </div>
-            <div class="remedy-footer">
-              <strong>Validation Target:</strong> Re-run prompts 001–005 in 30-day window.
-              Target: 0 ScamAdviser citations and positive sentiment across all three engines.
-            </div>
-          </div>
-        </div>
-
-        <!-- R2 -->
-        <div class="remedy-card reveal reveal-delay-1">
-          <div class="remedy-num">R2</div>
-          <div class="remedy-content">
-            <h3 class="remedy-title">Establish Official Profiles on Software Review Directories (G2, Capterra,
-              ProductHunt)</h3>
-            <p class="remedy-desc">
-              Kasparro is 100% absent from unbranded category discovery queries, while AI engines frequently cite software review directories such as G2 and Capterra across unbranded category comparisons. Claim and populate verified vendor
-              profiles under "AI Search Optimization" and "Marketing Analytics" and collect initial verified user
-              reviews.
-            </p>
-            <div class="remedy-row">
-              <span class="pill pill-green">LOW EFFORT</span>
-              <span class="pill" style="background:var(--surface-2);color:var(--text-p)">Administrative profile
-                setup</span>
-              <span class="pill" style="background:var(--indigo-lt);color:var(--indigo)">Linked to D1</span>
-            </div>
-            <div class="remedy-footer">
-              <strong>Validation Target:</strong> Evaluate prompts 026–050 after 60 days.
-              Target: Kasparro inclusion rate increases from 0% to &gt;15% in unbranded category discovery.
-            </div>
-          </div>
-        </div>
-
-        <!-- R3 -->
-        <div class="remedy-card reveal reveal-delay-2">
-          <div class="remedy-num">R3</div>
-          <div class="remedy-content">
-            <h3 class="remedy-title">Implement Organization Schema.org Markup &amp; Brand Disambiguation from "Kaspr"
-            </h3>
-            <p class="remedy-desc">
-              AI engines frequently confuse Kasparro with French tool "Kaspr", quoting Kaspr's pricing
-              and G2 reviews. Deploy JSON-LD Organization schema on kasparro.com with exact brand entity
-              definitions, sameAs social references, and publish a brief "About Kasparro vs Kaspr" entity
-              disambiguation note.
-            </p>
-            <div class="remedy-row">
-              <span class="pill pill-green">LOW EFFORT</span>
-              <span class="pill" style="background:var(--surface-2);color:var(--text-p)">Straightforward technical
-                markup</span>
-              <span class="pill" style="background:var(--amber-lt);color:var(--amber)">Linked to D3</span>
-            </div>
-            <div class="remedy-footer">
-              <strong>Validation Target:</strong> Verify Google Rich Results test passes.
-              Confirm zero accidental Kaspr entity citations on branded prompts 016–019 within 30 days of indexing.
-            </div>
-          </div>
-        </div>
+      <div id="remedies-container" style="display:flex;flex-direction:column;gap:16px"></div>
 
       </div>
     </div>
@@ -3363,7 +3133,7 @@
       <div class="section-header reveal">
         <span class="label">Classifier Evaluation</span>
         <h2>Baseline vs. Proposed Classifier</h2>
-        <p>20 human-labelled gold cases (8 supplied responses + 12 synthetic edge cases) graded against two classifiers to measure accuracy, precision, recall, and F1 score.</p>
+        <p id="eval-description">Regression evaluation results are generated from the current labeled case set.</p>
       </div>
 
       <div class="eval-compare">
@@ -3380,29 +3150,29 @@
                   stroke-dasharray="213.6" stroke-dashoffset="213.6" transform="rotate(-90 45 45)" class="gauge-arc"
                   data-target-pct="50" data-circum="213.6" />
               </svg>
-              <div class="eval-score" style="color:var(--amber)">50%</div>
+              <div class="eval-score" id="eval-baseline-agreement" style="color:var(--amber)">—</div>
             </div>
-            <div style="font-size:.8rem;color:var(--text-p);font-weight:500">Agreement Rate · 10/20 exact matches</div>
+            <div style="font-size:.8rem;color:var(--text-p);font-weight:500"><span id="eval-baseline-count">Agreement rate pending</span></div>
           </div>
           <div class="metric-row">
             <span class="metric-name">kasparro_mentioned F1</span>
             <div>
-              <div class="metric-val">0.938</div>
-              <div class="f1-bar" style="width:0" data-width="93.8"></div>
+              <div class="metric-val" id="eval-baseline-kasparro_mentioned-f1">—</div>
+              <div class="f1-bar" id="eval-baseline-kasparro_mentioned-bar" style="width:0" data-width="0"></div>
             </div>
           </div>
           <div class="metric-row">
             <span class="metric-name">kasparro_recommended F1</span>
             <div>
-              <div class="metric-val" style="color:var(--rose)">0.545</div>
-              <div class="f1-bar" style="width:0;background:var(--rose)" data-width="54.5"></div>
+              <div class="metric-val" id="eval-baseline-kasparro_recommended-f1" style="color:var(--rose)">—</div>
+              <div class="f1-bar" id="eval-baseline-kasparro_recommended-bar" style="width:0;background:var(--rose)" data-width="0"></div>
             </div>
           </div>
           <div class="metric-row">
             <span class="metric-name">kasparro_negative F1</span>
             <div>
-              <div class="metric-val" style="color:var(--amber)">0.444</div>
-              <div class="f1-bar" style="width:0;background:var(--amber)" data-width="44.4"></div>
+              <div class="metric-val" id="eval-baseline-kasparro_negative-f1" style="color:var(--amber)">—</div>
+              <div class="f1-bar" id="eval-baseline-kasparro_negative-bar" style="width:0;background:var(--amber)" data-width="0"></div>
             </div>
           </div>
         </div>
@@ -3411,7 +3181,7 @@
         <div class="eval-card reveal reveal-delay-1" style="border-color:var(--green);border-width:2px">
           <div style="text-align:center;margin-bottom:20px">
             <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;color:var(--text-m);margin-bottom:12px">
-              PROPOSED CLASSIFIER · <span style="color:var(--green)">+50%</span></div>
+              PROPOSED CLASSIFIER</div>
             <div class="eval-ring">
               <svg width="90" height="90" viewBox="0 0 90 90">
                 <circle cx="45" cy="45" r="34" fill="none" stroke="var(--border)" stroke-width="8" />
@@ -3419,34 +3189,35 @@
                   stroke-dasharray="213.6" stroke-dashoffset="213.6" transform="rotate(-90 45 45)" class="gauge-arc"
                   data-target-pct="100" data-circum="213.6" />
               </svg>
-              <div class="eval-score" style="color:var(--green)">100%</div>
+              <div class="eval-score" id="eval-proposed-agreement" style="color:var(--green)">—</div>
             </div>
-            <div style="font-size:.8rem;color:var(--text-p);font-weight:500">Agreement Rate · 20/20 exact matches</div>
+            <div style="font-size:.8rem;color:var(--text-p);font-weight:500"><span id="eval-proposed-count">Agreement rate pending</span></div>
           </div>
           <div class="metric-row">
             <span class="metric-name">kasparro_mentioned F1</span>
             <div>
-              <div class="metric-val">1.000</div>
-              <div class="f1-bar" style="width:0" data-width="100.0"></div>
+              <div class="metric-val" id="eval-proposed-kasparro_mentioned-f1">—</div>
+              <div class="f1-bar" id="eval-proposed-kasparro_mentioned-bar" style="width:0" data-width="0"></div>
             </div>
           </div>
           <div class="metric-row">
             <span class="metric-name">kasparro_recommended F1</span>
             <div>
-              <div class="metric-val" style="color:var(--green)">1.000</div>
-              <div class="f1-bar" style="width:0;background:var(--green)" data-width="100"></div>
+              <div class="metric-val" id="eval-proposed-kasparro_recommended-f1" style="color:var(--green)">—</div>
+              <div class="f1-bar" id="eval-proposed-kasparro_recommended-bar" style="width:0;background:var(--green)" data-width="0"></div>
             </div>
           </div>
           <div class="metric-row">
             <span class="metric-name">kasparro_negative F1</span>
             <div>
-              <div class="metric-val" style="color:var(--amber)">1.000</div>
-              <div class="f1-bar" style="width:0;background:var(--green)" data-width="100.0"></div>
+              <div class="metric-val" id="eval-proposed-kasparro_negative-f1" style="color:var(--amber)">—</div>
+              <div class="f1-bar" id="eval-proposed-kasparro_negative-bar" style="width:0;background:var(--green)" data-width="0"></div>
             </div>
           </div>
         </div>
 
       </div>
+        <p id="eval-held-out-summary" class="section-note" style="margin-top:18px">Held-out evaluation has not yet been generated.</p>
     </div>
   </section>
 
@@ -3467,27 +3238,27 @@
               <tbody>
                 <tr>
                   <td>Run ID</td>
-                  <td>4a4b71d9…e21472</td>
+                  <td id="report-run-id">Generated from current run</td>
                 </tr>
                 <tr>
                   <td>Dataset ID</td>
-                  <td>67181111…945f4a</td>
+                  <td id="report-dataset-id">Generated from current dataset</td>
                 </tr>
                 <tr>
                   <td>Dataset Name</td>
-                  <td>kasparro-historical-snapshot</td>
+                  <td id="report-dataset-name">kasparro-historical-snapshot</td>
                 </tr>
                 <tr>
                   <td>Historical Capture</td>
-                  <td>2026-07-31</td>
+                  <td id="report-capture-date">2026-07-31</td>
                 </tr>
                 <tr>
                   <td>Location</td>
-                  <td>India (en)</td>
+                  <td id="report-location">India (en)</td>
                 </tr>
                 <tr>
                   <td>Data Provider</td>
-                  <td>DataForSEO</td>
+                  <td id="report-provider">DataForSEO</td>
                 </tr>
                 <tr>
                   <td>Pack Version</td>
@@ -3495,19 +3266,19 @@
                 </tr>
                 <tr>
                   <td>Scoring Version</td>
-                  <td>v1</td>
+                  <td id="report-scoring-version">v1</td>
                 </tr>
                 <tr>
                   <td>Classifier Version</td>
-                  <td>v1 (replay mode)</td>
+                  <td id="report-classifier-version">v1 (replay)</td>
                 </tr>
                 <tr>
                   <td>Source Hash</td>
-                  <td style="word-break:break-all">142de02b3da907cb…</td>
+                  <td id="report-source-hash" style="word-break:break-all">Generated from current dataset</td>
                 </tr>
                 <tr>
                   <td>Generated At</td>
-                  <td>2026-10-28T15:35:43Z</td>
+                  <td id="report-provenance-generated-at">Generated from current run</td>
                 </tr>
                 <tr>
                   <td>Report Status</td>
@@ -3533,7 +3304,7 @@
                 URL does not confirm factual accuracy of the surrounding text.</li>
               <li>Replay execution mode used for deterministic reproducibility without paid API credentials. The
                 real-model adapter is implemented but not exercised against live endpoints.</li>
-              <li>All 150 prompts belong to the <code
+              <li>All 50 prompts belong to the <code
                   style="font-size:.78rem;background:var(--surface-2);padding:2px 6px;border-radius:6px">kasparro:ai_shortlisting</code>
                 namespace only.</li>
             </ul>
@@ -3555,8 +3326,8 @@
           <div style="margin-top:4px">Historical Snapshot · 31 July 2026 · India (en) · DataForSEO</div>
         </div>
         <div style="text-align:right">
-          <div>Generated 28 Oct 2026 · Pack v1.0.0</div>
-          <div style="margin-top:4px">Scoring v1 · Classifier v1 · Replay Mode · 21/21 Tests Pass</div>
+          <div id="report-generated-at">Generated from current run · Pack v1.0.0</div>
+          <div id="report-generated-mode" style="margin-top:4px">Scoring v1 · Classifier v1 · Replay Mode · Metrics from generated analysis</div>
         </div>
       </div>
     </div>
@@ -3743,7 +3514,11 @@
       const data = datasetMatrix[currentScope];
 
       // Update Subtitles & Labels
-      const scopeNames = { all: 'All Prompts (50)', branded: 'Branded Queries (25)', unbranded: 'Unbranded Category (25)' };
+      const scopeNames = {
+        all: `All Prompts (${datasetMatrix.all.all.prompts_count})`,
+        branded: `Branded Queries (${datasetMatrix.branded.all.prompts_count})`,
+        unbranded: `Unbranded Category (${datasetMatrix.unbranded.all.prompts_count})`
+      };
       document.getElementById('chartSubtitle').textContent = `Showing ${scopeNames[currentScope]} across 3 engines`;
       document.getElementById('tableScopeIndicator').textContent = `SCOPE: ${scopeNames[currentScope].toUpperCase()}`;
       const scatterSub = document.getElementById('scatterSubtitle');
@@ -3758,14 +3533,14 @@
           zoneU.style.opacity = '0.15';
           document.querySelectorAll('.scatter-dot').forEach(d => {
             const p = parseInt(d.dataset.prompt);
-            d.style.opacity = p <= 25 ? '1' : '0.15';
+            d.style.opacity = d.dataset.branded === 'true' ? '1' : '0.15';
           });
         } else if (currentScope === 'unbranded') {
           zoneB.style.opacity = '0.15';
           zoneU.style.opacity = '1';
           document.querySelectorAll('.scatter-dot').forEach(d => {
             const p = parseInt(d.dataset.prompt);
-            d.style.opacity = p > 25 ? '1' : '0.15';
+            d.style.opacity = d.dataset.branded === 'false' ? '1' : '0.15';
           });
         } else {
           zoneB.style.opacity = '1';
@@ -3813,7 +3588,33 @@
       if (data.alert.type === 'danger') alertEl.classList.add('alert-danger');
       document.getElementById('alertIcon').textContent = data.alert.icon;
       document.getElementById('alertTitle').textContent = data.alert.title;
-      document.getElementById('alertDesc').innerHTML = data.alert.desc;
+      document.getElementById('alertDesc').textContent = data.alert.desc;
+
+      const branded = datasetMatrix.branded.all;
+      const unbranded = datasetMatrix.unbranded.all;
+      document.getElementById('gap-branded-title').textContent =
+        'Branded Queries (' + branded.prompts_count + ' Prompts)';
+      document.getElementById('gap-branded-pct').textContent =
+        branded.inc.toFixed(1) + '% Branded Inclusion';
+      document.getElementById('gap-branded-count').textContent =
+        branded.mentioned_count + '/' + branded.count + ' answers';
+      document.getElementById('gap-branded-rec').textContent = branded.rec.toFixed(1) + '%';
+      document.getElementById('gap-branded-bar').style.width = branded.inc + '%';
+
+      document.getElementById('gap-unbranded-title').textContent =
+        'Unbranded Queries (' + unbranded.prompts_count + ' Prompts)';
+      document.getElementById('gap-unbranded-pct').textContent =
+        unbranded.inc.toFixed(1) + '% Inclusion';
+      document.getElementById('gap-unbranded-count').textContent =
+        unbranded.mentioned_count + '/' + unbranded.count + ' answers';
+      document.getElementById('gap-unbranded-bar').style.width = unbranded.inc + '%';
+      document.getElementById('gap-unbranded-competitors').textContent =
+        'Competitor context is provided in the source-backed diagnostics.';
+      document.getElementById('gap-strategic-takeaway').textContent =
+        unbranded.mentioned_count === 0
+          ? 'In this historical snapshot, Kasparro did not appear in any unbranded responses. This describes the captured dataset only.'
+          : 'In this historical snapshot, Kasparro appeared in ' + unbranded.mentioned_count +
+            ' of ' + unbranded.count + ' unbranded responses.';
 
       // Re-apply engine focus in case scope changed
       filterEngineFocus();

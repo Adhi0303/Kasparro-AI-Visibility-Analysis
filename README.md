@@ -11,13 +11,13 @@
 
 > [!TIP]
 > ### 📊 Interactive Executive HTML Report
-> * **Direct Repository File:** [`evaluation/results/report.html`](evaluation/results/report.html)
-> * **Email Attachment:** A standalone copy of `report.html` is attached directly to the submission email for instant browser viewing.
-> * **Open in Browser (PowerShell):**
->   ```powershell
->   Start-Process evaluation/results/report.html
->   ```
->   *(Opens the complete dashboard in your default browser — features the 50-prompt scatter trajectory, metric filters, and verbatim diagnostic evidence).*
+> The checked-in `evaluation/results/report.html` is a **template**, not a current report snapshot. Regenerate the report from the current source data and analysis before sharing it:
+> ```powershell
+> python tools/regenerate_artifacts.py
+> python tools/validate_artifacts.py
+> Start-Process evaluation/results/report.html
+> ```
+> The generator creates the canonical JSON report, per-response prompt scores, regression and held-out evaluation outputs, and the interactive HTML dashboard. The validator checks report parity, metric consistency and verbatim evidence offsets. CI also uploads the generated bundle as a workflow artifact.
 
 ---
 
@@ -144,6 +144,16 @@ python -m evaluation.run_eval --mode replay --split held_out
 The repository includes 20 regression cases and 30 additional held-out synthetic scenarios with disjoint prompt-family IDs. The held-out labels are provisional single-annotator labels, not independently adjudicated ground truth. Do not tune rules against the held-out set. See [the split manifest](evaluation/split_manifest.json) and [evaluation methodology](docs/EVALUATION_AND_BENCHMARKS.md).
 
 *Replay outputs are written separately as `eval_results.json` and `eval_held_out_results.json`, with matching Markdown reports.*
+
+
+Regenerate all report outputs after changing code or source data, then validate that the HTML dashboard, JSON report, Markdown reports and source evidence agree:
+
+```powershell
+python tools/regenerate_artifacts.py
+python tools/validate_artifacts.py
+```
+
+The generated artifacts are built from the current analysis run and evaluation outputs. The held-out dataset is synthetic with provisional single-annotator labels; it should not be described as independently adjudicated ground truth.
 
 ---
 
