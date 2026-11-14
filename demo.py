@@ -87,7 +87,7 @@ def main():
     with open(manifest_path, "r", encoding="utf-8") as f:
         manifest = json.load(f)
     counts = require_mapping(manifest.get("counts"), "pack counts")
-    for count_key in ("prompts", "responses", "citations"):
+    for count_key in ("prompts", "responses", "citation_entries"):
         count = counts.get(count_key)
         if isinstance(count, bool) or not isinstance(count, int) or count < 0:
             raise RuntimeError(f"PACK_MANIFEST.json contains an invalid {count_key} count.")
@@ -103,7 +103,7 @@ def main():
     print(" [PASS] PACK_MANIFEST.json and source checksums verified.")
     print(f"        • Prompts  : {counts['prompts']}")
     print(f"        • Responses: {counts['responses']}")
-    print(f"        • Citations: {counts['citations']}")
+    print(f"        • Citations: {counts['citation_entries']}")
 
     # -------------------------------------------------------------
     # 2. Database Initialization
