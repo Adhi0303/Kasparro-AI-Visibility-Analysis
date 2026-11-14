@@ -1,59 +1,46 @@
 {
-  "schema_version": "1.0",
-  "purpose": "Keep regression/development cases separate from a frozen held-out evaluation candidate set.",
+  "schema_version": "1.1",
+  "purpose": "Auditable separation of development/tuning cases from a frozen final-check candidate set.",
   "splits": {
     "regression": {
       "path": "evaluation/cases.jsonl",
-      "role": "Development and regression testing; may be inspected while changing rules.",
+      "role": "Development and tuning only; may be inspected while changing prompts/rules.",
       "current_case_count": 20,
-      "contains_supplied_and_synthetic_cases": true
+      "supplied_case_count": 8,
+      "synthetic_case_count": 12,
+      "supplied_annotation_status": "manual_single_annotator",
+      "contains_all_three_engines": true,
+      "required_edge_cases": [
+        "synthetic-001",
+        "synthetic-002"
+      ]
     },
     "held_out": {
       "path": "evaluation/held_out_cases.jsonl",
-      "role": "Frozen evaluation candidate set; do not use its errors to tune classifier rules.",
+      "role": "Frozen final-check candidate set; do not inspect predictions to tune classifier.",
       "current_case_count": 30,
       "contains_only_synthetic_cases": true,
       "prompt_family_ids_disjoint_from_regression": true,
       "annotation_status": "provisional_single_annotator",
-      "limitation": "These labels are provisional and not independently double-annotated. Independent human review and adjudication are required before reporting this as an independent benchmark."
+      "limitation": "Synthetic and provisional labels; not an independent supplied-response benchmark until independently annotated and adjudicated. A new supplied-response holdout is still needed for stronger external validity."
     }
   },
-  "commands": {
-    "regression": "python -m evaluation.run_eval --mode replay --split regression",
-    "held_out": "python -m evaluation.run_eval --mode replay --split held_out",
-    "annotation_export": "python -m evaluation.annotation_workflow export --reviewer-a reviewer_a --reviewer-b reviewer_b",
-    "annotation_finalize": "python -m evaluation.annotation_workflow finalize --reviewer-a evaluation/annotations/reviewer_a.jsonl --reviewer-b evaluation/annotations/reviewer_b.jsonl",
-    "coverage_aware_held_out": "python -m evaluation.run_eval --mode replay --split held_out --cases-path evaluation/held_out_adjudicated_cases.jsonl",
-    "provider_smoke_test": "python -m evaluation.provider_smoke_test",
-    "provider_regression": "python -m evaluation.run_eval --mode real_model --split regression"
-  },
-  "policy": [
-    "Never merge held-out cases into regression cases for tuning.",
-    "Do not modify held-out expected labels after inspecting model predictions; log adjudicated corrections separately.",
-    "Report sample counts and per-label support with every score.",
-    "A synthetic, single-annotator holdout is a leakage-control measure, not evidence of independent ground truth.",
-    "Failed classifier calls are excluded from matched-subset classification metrics but remain in execution coverage and coverage-adjusted exact-match agreement over the full cohort.",
-    "Do not describe held-out labels as independently validated until the blinded double-annotation and disagreement-adjudication workflow has completed."
+  "comparison_policy": [
+    "Baseline and classifier must be scored against identical successful cases for matched-subset quality metrics.",
+    "Report full-cohort coverage and failures separately; do not silently count failed calls as negative predictions.",
+    "Replay metrics are software/regression evidence, not live LLM quality evidence.",
+    "Report per-label precision, recall, F1, support and exact-match agreement."
   ],
-  "annotation_workflow": {
-    "module": "evaluation/annotation_workflow.py",
-    "current_state": "not_yet_independently_annotated",
-    "export_command": "python -m evaluation.annotation_workflow export --reviewer-a reviewer_a --reviewer-b reviewer_b",
-    "finalize_command": "python -m evaluation.annotation_workflow finalize --reviewer-a evaluation/annotations/reviewer_a.jsonl --reviewer-b evaluation/annotations/reviewer_b.jsonl",
-    "adjudicated_output": "evaluation/held_out_adjudicated_cases.jsonl",
-    "requirements": [
-      "Two distinct reviewers label all cases from separately shuffled packets with no expected labels, source notes or model predictions.",
-      "A third independent reviewer must resolve every label disagreement with a rationale.",
-      "The provisional source labels are preserved and never silently overwritten."
-    ]
-  },
-  "provider_configuration": {
-    "provider": "gemini",
-    "model": "gemini-3.5-flash-lite",
-    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-    "authentication": "Authorization: Bearer <local LLM_API_KEY>",
-    "secret_handling": "Keep the API key in local .env only; never commit it or store it in GitHub for local runs.",
-    "smoke_test": "python -m evaluation.provider_smoke_test",
-    "smoke_test_scope": "One archived response only; not a quality evaluation."
+  "annotation_policy": [
+    "Supplied development labels are single-annotator and carry rationale/category/evidence metadata.",
+    "At least two required synthetic edge cases are explicitly flagged in the JSONL.",
+    "Held-out candidate labels require blinded double annotation and third-party adjudication for disagreements before independent-ground-truth claims."
+  ],
+  "commands": {
+    "development_replay": "python -m evaluation.run_eval --mode replay --split regression",
+    "development_provider": "python -m evaluation.run_eval --mode real_model --split regression",
+    "held_out_replay": "python -m evaluation.run_eval --mode replay --split held_out",
+    "provider_smoke_test": "python -m evaluation.provider_smoke_test",
+    "annotation_export": "python -m evaluation.annotation_workflow export --reviewer-a reviewer_a --reviewer-b reviewer_b"
   }
 }
