@@ -204,6 +204,16 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
     setBar("bar-" + prefix + "-inc", inc);
     setBar("bar-" + prefix + "-rec", rec);
     setBar("bar-" + prefix + "-neg", neg);
+    const engineCount = Number(aggregate.total_successful || 0);
+    setText("engine-" + prefix + "-count",
+      (key === "gemini" ? "Google" : (key === "chatgpt" ? "OpenAI" : "Google Search")) +
+      " · " + engineCount + " successful responses");
+    setText("engine-" + prefix + "-score", score.toFixed(1) + " ");
+    setText("engine-" + prefix + "-score-label", score.toFixed(1));
+    setBar("engine-" + prefix + "-score-bar", score);
+    setText("engine-" + prefix + "-inc", inc.toFixed(0) + "%");
+    setText("engine-" + prefix + "-rec", rec.toFixed(0) + "%");
+    setText("engine-" + prefix + "-neg", neg.toFixed(0) + "%");
   }
   const all = scoring.overall_distribution || {};
   const overallScore = Number(scoring.overall_mean_score);
@@ -243,6 +253,7 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
     }
   });
   setText("report-generated-at", "Generated " + report.generated_at);
+  setText("report-provenance-generated-at", report.generated_at);
   setText("report-generated-mode", "Scoring " + scoring.scoring_version + " · Classifier " +
     scoring.classifier_version + " · " + scoring.execution_mode + " · Metrics from generated analysis");
   setText("report-run-id", report.provenance.run_id);
@@ -273,6 +284,10 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
     setText("eval-proposed-" + name + "-f1", value.f1 === null ? "N/A" : Number(value.f1).toFixed(3));
     setBar("eval-proposed-" + name + "-bar", value.f1 === null ? 0 : Number(value.f1) * 100);
   }
+  setText("chartSubtitle", "Showing " + (report.counts.supplied_prompts || 0) + " prompts across " +
+    engineNames.length + " engines");
+  setText("gapPill", percent((report.evaluation && report.evaluation.regression && report.evaluation.regression.proposed_metrics)
+    ? (report.evaluation.regression.proposed_metrics.agreement_rate || 0) : 0) + " Regression agreement");
   const heldOutText = heldOut.counts
     ? "Held-out candidate run: " + heldOut.counts.evaluated_cases + "/" + heldOut.counts.total_cases +
       " evaluated; " + heldOut.counts.failed_cases + " failed. Labels are provisional single-annotator synthetic annotations."
