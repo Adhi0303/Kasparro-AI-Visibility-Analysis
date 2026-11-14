@@ -23,7 +23,9 @@
     "held_out": "python -m evaluation.run_eval --mode replay --split held_out",
     "annotation_export": "python -m evaluation.annotation_workflow export --reviewer-a reviewer_a --reviewer-b reviewer_b",
     "annotation_finalize": "python -m evaluation.annotation_workflow finalize --reviewer-a evaluation/annotations/reviewer_a.jsonl --reviewer-b evaluation/annotations/reviewer_b.jsonl",
-    "coverage_aware_held_out": "python -m evaluation.run_eval --mode replay --split held_out --cases-path evaluation/held_out_adjudicated_cases.jsonl"
+    "coverage_aware_held_out": "python -m evaluation.run_eval --mode replay --split held_out --cases-path evaluation/held_out_adjudicated_cases.jsonl",
+    "provider_smoke_test": "python -m evaluation.provider_smoke_test",
+    "provider_regression": "python -m evaluation.run_eval --mode real_model --split regression"
   },
   "policy": [
     "Never merge held-out cases into regression cases for tuning.",
@@ -44,5 +46,14 @@
       "A third independent reviewer must resolve every label disagreement with a rationale.",
       "The provisional source labels are preserved and never silently overwritten."
     ]
+  },
+  "provider_configuration": {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+    "authentication": "Authorization: Bearer <local LLM_API_KEY>",
+    "secret_handling": "Keep the API key in local .env only; never commit it or store it in GitHub for local runs.",
+    "smoke_test": "python -m evaluation.provider_smoke_test",
+    "smoke_test_scope": "One archived response only; not a quality evaluation."
   }
 }
