@@ -61,7 +61,7 @@ def _dot_svg_group(engine: str, color: str, icon: str, engine_label: str, items:
         )
         circles.append(
             f'              <circle cx="{x:.1f}" cy="{y:.1f}" r="4.5" fill="{color}" stroke="#ffffff" stroke-width="1.5"\n'
-            f'                class="scatter-dot dot-{engine} dot-p{idx:02d}" data-prompt="{idx}" data-engine="{engine}"\n'
+            f'                class="scatter-dot dot-{engine} dot-p{idx:02d}" data-prompt="{idx}" data-engine="{engine}" data-branded="{str(bool(item.get('branded_query'))).lower()}"\n'
             f'                data-hover-title="{title}"\n'
             f'                data-hover-body="{body}"\n'
             f'                data-hover-meta-left="Category: {cat_label}" data-hover-meta-right="Formula: {score:.1f} pts"></circle>'
@@ -110,6 +110,7 @@ def _scope_stats(
             "rec": _pct_int(recommended_count / count),
             "neg": _pct_int(negative_count / count),
             "count": count,
+            "prompt_count": len({row["prompt_id"] for row in subset}),
             "mentioned_count": mentioned_count,
             "recommended_count": recommended_count,
             "negative_count": negative_count,
@@ -127,6 +128,7 @@ def _scope_stats(
         "rec": _pct_int(recommended_count / total),
         "neg": _pct_int(negative_count / total),
         "count": total,
+        "prompt_count": len({row["prompt_id"] for row in all_rows}),
         "mentioned_count": mentioned_count,
         "recommended_count": recommended_count,
         "negative_count": negative_count,
@@ -630,6 +632,7 @@ def main() -> None:
                     "rec": item["rec"],
                     "neg": item["neg"],
                     "count": item["count"],
+                    "prompts_count": item.get("prompt_count", item["count"]),
                 }
             return group
 
