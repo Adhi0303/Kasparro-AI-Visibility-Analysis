@@ -146,6 +146,16 @@ Run the separate held-out candidate set:
 python -m evaluation.run_eval --mode replay --split held_out
 ```
 
+For a live provider comparison, first pass the one-response smoke test, then run:
+```powershell
+python -m evaluation.run_eval --mode real_model --split regression
+```
+For a repeated-run stability study (2–10 calls per case; default 3):
+```powershell
+python -m evaluation.repeatability --split regression --repeats 3
+```
+The repeatability output records per-case label stability, failed calls, per-repeat paired baseline metrics and latency. It requires local real-model credentials and may incur provider usage.
+
 The repository includes 20 regression cases and 30 additional held-out synthetic scenarios with disjoint prompt-family IDs. The held-out labels currently remain provisional single-annotator labels, not independently adjudicated ground truth. Do not tune rules against the held-out set.
 
 To create two blinded reviewer packets:
