@@ -692,6 +692,9 @@ def main() -> None:
                     "neg": item["neg"],
                     "count": item["count"],
                     "prompts_count": item.get("prompt_count", item["count"]),
+                    "mentioned_count": item.get("mentioned_count", 0),
+                    "recommended_count": item.get("recommended_count", 0),
+                    "negative_count": item.get("negative_count", 0),
                 }
             return group
 
