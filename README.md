@@ -10,14 +10,13 @@
 ---
 
 > [!TIP]
-> ### 📊 Interactive Executive HTML Report
+> ### 📊 Generated Executive HTML Report
 > * **Direct Repository File:** [`evaluation/results/report.html`](evaluation/results/report.html)
-> * **Email Attachment:** A standalone copy of `report.html` is attached directly to the submission email for instant browser viewing.
 > * **Open in Browser (PowerShell):**
 >   ```powershell
 >   Start-Process evaluation/results/report.html
 >   ```
->   *(Opens the complete dashboard in your default browser — features the 50-prompt scatter trajectory, metric filters, and verbatim diagnostic evidence).*
+>   *(Opens the current data-derived dashboard in your default browser — includes dataset metrics, per-engine comparisons, regression metrics, validated diagnostics, remedies, and provenance).*
 
 ---
 
@@ -69,11 +68,17 @@ flowchart TD
 
 ## 3. Quick-Start Guide
 
-### ⚡ Option A: One-Click End-to-End Demo (< 1 second)
+### ⚡ Option A: One-Click End-to-End Demo
 Run the entire workflow (pack validation → SQLite setup → ingestion → deterministic scoring → export gate enforcement) in a single command:
 ```powershell
 python demo.py
 ```
+
+To regenerate the final JSON and HTML report artifacts from the current validated analysis pipeline:
+```powershell
+python tools/regenerate_artifacts.py
+```
+The dashboard is rebuilt from the current analysis and evaluation outputs; it does not reuse an old generated HTML file or substitute default metric values.
 
 ---
 

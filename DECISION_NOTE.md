@@ -115,9 +115,9 @@ From the analysis of the 150 archived responses:
 | Replay classifier, provider adapter & error handling | 45 mins | Completed |
 | Scoring formula, prominence decay & category taxonomy | 40 mins | Completed |
 | Report lifecycle, review workflow & export gate | 40 mins | Completed |
-| Automated pytest suite (76 tests across unit & API integration suites) | 35 mins | Completed |
-| Evaluation grader, cases & comparison report | 30 mins | Completed |
-| Final report generation, README & Decision Note | 35 mins | Completed |
+| Automated pytest suite (actual test counts are reported by the current pytest/CI run) | 35 mins | Completed |
+| Regression/held-out evaluation grader, cases & comparison reports | 30 mins | Completed |
+| Data-driven report generation, README & Decision Note | 35 mins | Completed |
 | **Total Active Time** | **5h 45m** | **Within 6h Limit** |
 
 ---

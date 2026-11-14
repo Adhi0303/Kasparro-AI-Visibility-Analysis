@@ -38,11 +38,22 @@ jobs:
       - name: Run test suite
         run: pytest -q
 
-      - name: Run deterministic evaluation
-        run: python -m evaluation.run_eval --mode replay
+      - name: Regenerate data-driven reports
+        run: python tools/regenerate_artifacts.py
 
-      - name: Run held-out candidate evaluation
-        run: python -m evaluation.run_eval --mode replay --split held_out
+      - name: Upload generated analytical artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kasparro-analysis-artifacts
+          path: |
+            evaluation/results/final_report.json
+            evaluation/results/prompt_scores.json
+            evaluation/results/report.html
+            evaluation/results/eval_results.json
+            evaluation/results/eval_comparison_report.md
+            evaluation/results/eval_held_out_results.json
+            evaluation/results/eval_comparison_report_held_out.md
+          if-no-files-found: error
 
       - name: Check whitespace errors
         run: git diff --check

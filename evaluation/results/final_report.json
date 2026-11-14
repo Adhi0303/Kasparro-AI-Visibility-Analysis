@@ -65,7 +65,7 @@
         "distribution": {
           "inclusion_rate": 0.44,
           "recommendation_rate": 0.12,
-          "negative_rate": 0.0
+          "negative_rate": 0
         }
       }
     },
@@ -91,7 +91,7 @@
         "distribution": {
           "inclusion_rate": 0.75,
           "recommendation_rate": 0.0833,
-          "negative_rate": 0.0
+          "negative_rate": 0
         }
       },
       "capability_evaluation": {
@@ -103,7 +103,7 @@
         "distribution": {
           "inclusion_rate": 0.4,
           "recommendation_rate": 0.0333,
-          "negative_rate": 0.0
+          "negative_rate": 0
         }
       },
       "trust_and_legitimacy": {
@@ -127,7 +127,7 @@
         "distribution": {
           "inclusion_rate": 0.4848,
           "recommendation_rate": 0.0909,
-          "negative_rate": 0.0
+          "negative_rate": 0
         }
       }
     }
@@ -168,7 +168,7 @@
     {
       "title": "Third-Party Evidence Deficit and Cautionary Characterization",
       "observed_pattern": "Among analyzed responses, negative or cautionary characterization was highest on chatgpt (6.0% (3/50)), alongside 5 response(s) citing ScamAdviser or highlighting missing independent case studies.",
-      "comparison": "Negative characterization rate by engine \u2014 ChatGPT: 6.0% (3/50), Google AI Mode: 4.0% (2/50), Gemini: 0.0% (0/50).",
+      "comparison": "Negative characterization rate by engine — ChatGPT: 6.0% (3/50), Google AI Mode: 4.0% (2/50), Gemini: 0.0% (0/50).",
       "evidence": [
         {
           "response_id": "5492b420-7fa5-4de4-ab2c-6c4412e5b18d",
@@ -327,5 +327,92 @@
       }
     ],
     "rejected": []
+  },
+  "evaluation": {
+    "regression": {
+      "counts": {
+        "total_cases": 20,
+        "supplied_cases": 8,
+        "synthetic_cases": 12,
+        "evaluated_cases": 20,
+        "failed_cases": 0
+      },
+      "execution_metadata": {
+        "execution_mode": "replay",
+        "provider": "deterministic_replay",
+        "model": "contextual-rules-v1",
+        "base_url": null,
+        "classifier_version": "v1"
+      },
+      "baseline_metrics": {
+        "total_cases": 20,
+        "exact_matches": 10,
+        "agreement_rate": 0.5,
+        "per_label": {
+          "kasparro_mentioned": {
+            "true_positives": 15,
+            "false_positives": 2,
+            "true_negatives": 3,
+            "false_negatives": 0,
+            "precision": 0.8824,
+            "recall": 1,
+            "f1": 0.9375
+          },
+          "kasparro_recommended": {
+            "true_positives": 3,
+            "false_positives": 5,
+            "true_negatives": 12,
+            "false_negatives": 0,
+            "precision": 0.375,
+            "recall": 1,
+            "f1": 0.5455
+          },
+          "kasparro_negative": {
+            "true_positives": 2,
+            "false_positives": 2,
+            "true_negatives": 13,
+            "false_negatives": 3,
+            "precision": 0.5,
+            "recall": 0.4,
+            "f1": 0.4444
+          }
+        }
+      },
+      "proposed_metrics": {
+        "total_cases": 20,
+        "exact_matches": 20,
+        "agreement_rate": 1,
+        "per_label": {
+          "kasparro_mentioned": {
+            "true_positives": 15,
+            "false_positives": 0,
+            "true_negatives": 5,
+            "false_negatives": 0,
+            "precision": 1,
+            "recall": 1,
+            "f1": 1
+          },
+          "kasparro_recommended": {
+            "true_positives": 3,
+            "false_positives": 0,
+            "true_negatives": 17,
+            "false_negatives": 0,
+            "precision": 1,
+            "recall": 1,
+            "f1": 1
+          },
+          "kasparro_negative": {
+            "true_positives": 5,
+            "false_positives": 0,
+            "true_negatives": 15,
+            "false_negatives": 0,
+            "precision": 1,
+            "recall": 1,
+            "f1": 1
+          }
+        }
+      }
+    },
+    "interpretation": "The checked-in classifier evaluation is a 20-case regression set (8 supplied and 12 synthetic). It is not an independent held-out accuracy estimate."
   }
 }
