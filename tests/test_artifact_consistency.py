@@ -45,6 +45,22 @@ def _sample_report(source_text):
         "split": "regression",
     }
     held_metrics = {**metrics, "split": "held_out"}
+    def normalize_scope(scope):
+        normalized = {}
+        for engine, metrics in scope.items():
+            normalized[engine] = {
+                "score": metrics["score"],
+                "inc": metrics["inc"],
+                "rec": metrics["rec"],
+                "neg": metrics["neg"],
+                "count": metrics["count"],
+                "prompts_count": metrics["prompt_count"],
+                "mentioned_count": metrics["mentioned_count"],
+                "recommended_count": metrics["recommended_count"],
+                "negative_count": metrics["negative_count"],
+            }
+        return normalized
+
     return {
         "title": "Test report",
         "generated_at": "2026-11-14T00:00:00+00:00",
@@ -109,9 +125,9 @@ def _sample_report(source_text):
         "remedies": [],
         "evidence_validation": {},
         "dashboard_scopes": {
-            "all": scopes["all"],
-            "branded": scopes["branded"],
-            "unbranded": scopes["unbranded"],
+            "all": normalize_scope(scopes["all"]),
+            "branded": normalize_scope(scopes["branded"]),
+            "unbranded": normalize_scope(scopes["unbranded"]),
             "competitors": "See diagnostics",
         },
         "evaluation": {
