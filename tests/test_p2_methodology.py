@@ -13,7 +13,8 @@ def test_supplied_development_cases_are_documented_and_cover_all_engines():
     assert {case["engine"] for case in supplied} >= {"chatgpt", "gemini", "aimode"}
     for case in supplied:
         annotation = case["annotation"]
-        assert annotation["method"] == "manual_single_annotator"
+        assert annotation["method"] == "preexisting_project_reference_labels_provenance_unverified"
+        assert annotation["annotator_role"] == "not_recorded"
         assert annotation["label_set_version"] == "kasparro-provider-labels-v1"
         assert annotation["category"]
         assert annotation["rationale"]
