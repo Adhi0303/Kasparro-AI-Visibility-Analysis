@@ -8,12 +8,13 @@
       "current_case_count": 20,
       "supplied_case_count": 8,
       "synthetic_case_count": 12,
-      "supplied_annotation_status": "manual_single_annotator",
+      "supplied_annotation_status": "preexisting_reference_labels_provenance_unverified",
       "contains_all_three_engines": true,
       "required_edge_cases": [
         "synthetic-001",
         "synthetic-002"
-      ]
+      ],
+      "supplied_annotation_limitation": "Existing expected labels predate P2; annotator identity and annotation process were not recorded. P2 rationales are documentation, not independent annotation evidence. Confirm provenance or re-annotate before claiming the manual-labelling requirement is fully evidenced."
     },
     "held_out": {
       "path": "evaluation/held_out_cases.jsonl",
