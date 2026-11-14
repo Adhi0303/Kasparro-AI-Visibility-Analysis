@@ -66,7 +66,7 @@ As required by the assignment brief, one critical failure observed during develo
 - **Failure:** Diagnostic findings initially contained paraphrased summaries of competitor recommendations (e.g. *"Profound, Peec AI, and Otterly are dedicated platforms..."*) rather than exact substring matches from `responses.jsonl`.
 - **Diagnosis:** LLM-generated summaries were transcribed into diagnostic data fixtures without automated substring verification against source `answer_text` records.
 - **Fix:** Replaced all excerpts with verified verbatim substrings from the source responses and added an automated regression test (`test_all_diagnostic_evidence_verbatim_integrity`) in `tests/test_analysis.py` that asserts `excerpt in answer_text` across all diagnostics.
-- **Verification:** Command `pytest tests/test_analysis.py -k test_all_diagnostic_evidence_verbatim_integrity` passed with 100% string-matching.
+- **Verification:** The regression test asserts that diagnostic excerpts resolve to the original response text. The report-generation validator additionally checks response IDs, source offsets and exact source slices before artifacts are accepted.
 
 ---
 
@@ -115,7 +115,7 @@ From the analysis of the 150 archived responses:
 | Replay classifier, provider adapter & error handling | 45 mins | Completed |
 | Scoring formula, prominence decay & category taxonomy | 40 mins | Completed |
 | Report lifecycle, review workflow & export gate | 40 mins | Completed |
-| Automated pytest suite (76 tests across unit & API integration suites) | 35 mins | Completed |
+| Automated pytest suite (unit, API integration, security, provider and report regression coverage) | 35 mins | Completed |
 | Evaluation grader, cases & comparison report | 30 mins | Completed |
 | Final report generation, README & Decision Note | 35 mins | Completed |
 | **Total Active Time** | **5h 45m** | **Within 6h Limit** |
