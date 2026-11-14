@@ -605,6 +605,15 @@ def main() -> None:
         gpt_branded_neg_count = scope_branded["chatgpt"]["negative_count"]
         gpt_branded_count = scope_branded["chatgpt"]["count"]
         gpt_branded_neg_pct = _pct_int(gpt_branded_neg_count / gpt_branded_count)
+        gem_count = scope_all["gemini"]["count"]
+        gpt_count = scope_all["chatgpt"]["count"]
+        aim_count = scope_all["aimode"]["count"]
+        gem_rec_count = scope_all["gemini"]["recommended_count"]
+        gpt_rec_count = scope_all["chatgpt"]["recommended_count"]
+        aim_rec_count = scope_all["aimode"]["recommended_count"]
+        gem_neg_count = scope_all["gemini"]["negative_count"]
+        gpt_neg_count = scope_all["chatgpt"]["negative_count"]
+        aim_neg_count = scope_all["aimode"]["negative_count"]
 
         def matrix_group(stats: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
             group = {}
@@ -723,14 +732,13 @@ def main() -> None:
         p_lbl = eval_res["proposed_metrics"]["per_label"]
 
         replacements = [
-            ("21 Tests Passed", "76 Tests Collected &amp; Verified"),
             # Branded inclusion cliff card
             ("49.3% Overall Inclusion", f"{branded_inc_pct:.1f}% Branded Inclusion"),
             ('style="width:49.3%;background:var(--indigo)"', f'style="width:{branded_inc_pct:.1f}%;background:var(--indigo)"'),
-            ("<span>Mentioned: <strong>37/75 answers</strong></span>", f"<span>Mentioned: <strong>{branded_mentions}/75 answers</strong></span>"),
+            ("<span>Mentioned: <strong>37/75 answers</strong></span>", f"<span>Mentioned: <strong>{branded_mentions}/{branded_response_count} answers</strong></span>"),
             ("<span>Recommendation: <strong>32%</strong></span>", f"<span>Recommendation: <strong>{branded_rec_pct:.0f}%</strong></span>"),
             ("Branded inclusion: <strong>49.3%</strong> vs unbranded category recall: <strong>0.0%</strong>.",
-             f"Branded inclusion: <strong>{branded_mentions}/75 ({branded_inc_pct:.1f}%)</strong> vs unbranded category recall: <strong>0/75 (0.0%)</strong>."),
+             f"Branded inclusion: <strong>{branded_mentions}/{branded_response_count} ({branded_inc_pct:.1f}%)</strong> vs unbranded category inclusion: <strong>{unbranded_mentions}/{unbranded_response_count} ({scope_unbranded['all']['inc']}%)</strong>."),
             # Bar chart + table + engine card metrics
             ("style=\"width:41.5%;background:var(--gem)\" id=\"bar-gem-score\"", f"style=\"width:{gem_s}%;background:var(--gem)\" id=\"bar-gem-score\""),
             ("Gemini · Visibility Score: 41.5", f"Gemini · Visibility Score: {gem_s}"),
@@ -744,23 +752,23 @@ def main() -> None:
             ("Rare recommendations (8%)", f"Rare recommendations ({aim_rec}%)"),
             ("style=\"width:26%;background:var(--green)\" id=\"bar-gem-rec\"", f"style=\"width:{gem_rec}%;background:var(--green)\" id=\"bar-gem-rec\""),
             ("Gemini · Recommendation Rate: 26%", f"Gemini · Recommendation Rate: {gem_rec}%"),
-            ("Highest proactive recommendation rate (13/50)", f"Highest proactive recommendation rate ({int(round(gem_rec * 0.5))}/50)"),
+            ("Highest proactive recommendation rate (13/50)", f"Highest proactive recommendation rate ({gem_rec_count}/{gem_count})"),
             ("id=\"val-gem-rec\">26%<", f"id=\"val-gem-rec\">{gem_rec}%<"),
             ("style=\"width:14%;background:var(--amber)\" id=\"bar-gpt-rec\"", f"style=\"width:{gpt_rec}%;background:var(--amber)\" id=\"bar-gpt-rec\""),
             ("ChatGPT · Recommendation Rate: 14%", f"ChatGPT · Recommendation Rate: {gpt_rec}%"),
-            ("Low recommendation rate (7/50)", f"Low recommendation rate ({int(round(gpt_rec * 0.5))}/50)"),
+            ("Low recommendation rate (7/50)", f"Low recommendation rate ({gpt_rec_count}/{gpt_count})"),
             ("id=\"val-gpt-rec\">14%<", f"id=\"val-gpt-rec\">{gpt_rec}%<"),
             ("style=\"width:8%;background:var(--rose)\" id=\"bar-aim-rec\"", f"style=\"width:{aim_rec}%;background:var(--rose)\" id=\"bar-aim-rec\""),
             ("Google AI Mode · Recommendation Rate: 8%", f"Google AI Mode · Recommendation Rate: {aim_rec}%"),
-            ("Lowest recommendation rate (4/50)", f"Lowest recommendation rate ({int(round(aim_rec * 0.5))}/50)"),
+            ("Lowest recommendation rate (4/50)", f"Lowest recommendation rate ({aim_rec_count}/{aim_count})"),
             ("id=\"val-aim-rec\">8%<", f"id=\"val-aim-rec\">{aim_rec}%<"),
             ("style=\"width:2%;background:var(--green)\" id=\"bar-gem-neg\"", f"style=\"width:{gem_neg}%;background:var(--green)\" id=\"bar-gem-neg\""),
             ("Gemini · Negative Rate: 2%", f"Gemini · Negative Rate: {gem_neg}%"),
-            ("Only 1 in 50 responses flagged negative.", f"Only {int(round(gem_neg * 0.5))} in 50 responses flagged negative."),
+            ("Only 1 in 50 responses flagged negative.", f"{gem_neg_count} of {gem_count} responses flagged negative."),
             ("id=\"val-gem-neg\">2%<", f"id=\"val-gem-neg\">{gem_neg}%<"),
             ("style=\"width:12%;background:var(--rose)\" id=\"bar-gpt-neg\"", f"style=\"width:{gpt_neg}%;background:var(--rose)\" id=\"bar-gpt-neg\""),
             ("ChatGPT · Negative Rate: 12%", f"ChatGPT · Negative Rate: {gpt_neg}%"),
-            ("6 of 50 responses flagged cautionary.", f"{int(round(gpt_neg * 0.5))} of 50 responses flagged cautionary."),
+            ("6 of 50 responses flagged cautionary.", f"{gpt_neg_count} of {gpt_count} responses flagged cautionary."),
             ("id=\"val-gpt-neg\">12%<", f"id=\"val-gpt-neg\">{gpt_neg}%<"),
             ("Top performer (41.5). Gemini exhibits the highest proactive recommendation rate (26%)", f"Top performer ({gem_s}). Gemini exhibits the highest proactive recommendation rate ({gem_rec}%)"),
             ("id=\"t-gem-score\">41.5<", f"id=\"t-gem-score\">{gem_s}<"),
@@ -800,7 +808,7 @@ def main() -> None:
             ('style="width:0%;background:var(--aim)" data-width="34.8"', f'style="width:0%;background:var(--aim)" data-width="{aim_s}"'),
             ('<div class="v" style="color:var(--rose)">8%</div>', f'<div class="v" style="color:var(--rose)">{aim_rec}%</div>'),
             # Diagnostic cards (D2 rate, D2 verbatim quote without ellipsis, D3 verbatim quote, R2/R3 verified claims)
-            ("in <strong>12% of ChatGPT responses</strong>\n                  (6/50)", f"in <strong>{gpt_neg}% of ChatGPT responses</strong>\n                  ({int(round(gpt_neg * 0.5))}/50)"),
+            ("in <strong>12% of ChatGPT responses</strong>\n                  (6/50)", f"in <strong>{gpt_neg}% of ChatGPT responses</strong>\n                  ({gpt_neg_count}/{gpt_count})"),
             ('<div style="font-size:1.8rem;font-weight:800;color:var(--rose)">12%</div>', f'<div style="font-size:1.8rem;font-weight:800;color:var(--rose)">{gpt_neg}%</div>'),
             (
                 '"I couldn\'t find independent evidence showing that Kasparro consistently delivers measurable\n                  improvements… Most of the publicly available material is the company\'s own positioning rather than\n                  third-party case studies with before/after data. [scamadviser.com]"',
