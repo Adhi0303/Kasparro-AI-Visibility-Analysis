@@ -141,8 +141,8 @@ def _safe_script_json(value: Dict[str, Any]) -> str:
     return (
         json.dumps(value, ensure_ascii=False, separators=(",", ":"))
         .replace("</", "<\\/")
-        .replace("\u2028", "\\\\u2028")
-        .replace("\u2029", "\\\\u2029")
+        .replace("\u2028", r"\u2028")
+        .replace("\u2029", r"\u2029")
     )
 
 
@@ -264,6 +264,13 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
   setText("report-provider", report.provenance.provider);
   setText("report-source-hash", report.provenance.source_hash);
   setText("report-provenance-generated-at", report.generated_at);
+  setText("ringNum", Number(scoring.overall_mean_score).toFixed(1));
+  const mainArc = document.getElementById("mainArc");
+  if (mainArc) {
+    const circumference = 2 * Math.PI * 86;
+    mainArc.style.strokeDasharray = String(circumference);
+    mainArc.style.strokeDashoffset = String(circumference * (1 - Number(scoring.overall_mean_score) / 100));
+  }
   const evaluation = report.evaluation || {};
   const regression = evaluation.regression || {};
   const heldOut = evaluation.held_out || {};
@@ -288,6 +295,19 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
     engineNames.length + " engines");
   setText("gapPill", percent((report.evaluation && report.evaluation.regression && report.evaluation.regression.proposed_metrics)
     ? (report.evaluation.regression.proposed_metrics.agreement_rate || 0) : 0) + " Regression agreement");
+  const dashboardScopes = report.dashboard_scopes || {};
+  const brandedOverall = (dashboardScopes.branded || {}).all || {};
+  const unbrandedOverall = (dashboardScopes.unbranded || {}).all || {};
+  setText("gap-branded-title", "Branded Queries (" + (brandedOverall.prompts_count || 0) + " Prompts)");
+  setText("gap-branded-pct", Number(brandedOverall.inc || 0).toFixed(1) + "% Branded Inclusion");
+  setBar("gap-branded-bar", brandedOverall.inc || 0);
+  setText("gap-branded-count", (brandedOverall.mentioned_count || 0) + "/" + (brandedOverall.count || 0) + " answers");
+  setText("gap-branded-rec", Number(brandedOverall.rec || 0).toFixed(1) + "%");
+  setText("gap-unbranded-title", "Unbranded Queries (" + (unbrandedOverall.prompts_count || 0) + " Prompts)");
+  setText("gap-unbranded-pct", Number(unbrandedOverall.inc || 0).toFixed(1) + "% Inclusion");
+  setBar("gap-unbranded-bar", unbrandedOverall.inc || 0);
+  setText("gap-unbranded-count", (unbrandedOverall.mentioned_count || 0) + "/" + (unbrandedOverall.count || 0) + " answers");
+  setText("gap-unbranded-competitors", dashboardScopes.competitors || "See source responses");
   const heldOutText = heldOut.counts
     ? "Held-out candidate run: " + heldOut.counts.evaluated_cases + "/" + heldOut.counts.total_cases +
       " evaluated; " + heldOut.counts.failed_cases + " failed. Labels are provisional single-annotator synthetic annotations."
