@@ -2741,15 +2741,15 @@
             <div class="gap-block" data-hover-title="Branded Prompts (001-025)"
               data-hover-body="When buyers explicitly query Kasparro by name, models include the brand in 72 of 75 responses (96% inclusion). However, 24% of ChatGPT responses flag skepticism.">
               <div class="gap-top">
-                <span class="gap-title">Branded Queries (25 Prompts)</span>
-                <span style="font-size:.84rem;font-weight:700;color:var(--indigo)">96.0% Branded Inclusion</span>
+                <span class="gap-title" id="gap-branded-title">Branded Queries</span>
+                <span id="gap-branded-pct" style="font-size:.84rem;font-weight:700;color:var(--indigo)">Branded Inclusion</span>
               </div>
               <div class="gap-bar-track">
-                <div class="gap-bar-fill" style="width:96.0%;background:var(--indigo)"></div>
+                <div class="gap-bar-fill" id="gap-branded-bar" style="width:0%;background:var(--indigo)"></div>
               </div>
               <div class="gap-meta">
-                <span>Mentioned: <strong>72/75 answers</strong></span>
-                <span>Recommendation: <strong>12%</strong></span>
+                <span>Mentioned: <strong id="gap-branded-count">Awaiting generated metrics</strong></span>
+                <span>Recommendation: <strong id="gap-branded-rec">Awaiting generated metrics</strong></span>
               </div>
             </div>
 
@@ -2757,22 +2757,21 @@
               data-hover-title="Unbranded Category Discovery (026-050)"
               data-hover-body="When buyers ask generic questions ('best AI visibility tools', 'how to track ChatGPT mentions'), Kasparro is completely absent (0/75 responses). Competitors Profound & Peec AI dominate.">
               <div class="gap-top">
-                <span class="gap-title" style="color:var(--rose)">Unbranded Queries (25 Prompts)</span>
-                <span style="font-size:.84rem;font-weight:800;color:var(--rose)">0.0% Recall</span>
+                <span class="gap-title" id="gap-unbranded-title" style="color:var(--rose)">Unbranded Queries</span>
+                <span id="gap-unbranded-pct" style="font-size:.84rem;font-weight:800;color:var(--rose)">Inclusion</span>
               </div>
               <div class="gap-bar-track">
-                <div class="gap-bar-fill" style="width:0%;background:var(--rose)"></div>
+                <div class="gap-bar-fill" id="gap-unbranded-bar" style="width:0%;background:var(--rose)"></div>
               </div>
               <div class="gap-meta">
-                <span>Mentioned: <strong style="color:var(--rose)">0/75 answers</strong></span>
-                <span>Competitors: <strong>Profound, Peec AI</strong></span>
+                <span>Mentioned: <strong id="gap-unbranded-count" style="color:var(--rose)">Awaiting generated metrics</strong></span>
+                <span id="gap-unbranded-competitors">Competitor context is available in source-backed diagnostics.</span>
               </div>
             </div>
 
             <div
               style="background:var(--surface-2);border-radius:10px;padding:12px 14px;font-size:.78rem;color:var(--text-p)">
-              💡 <strong>Strategic takeaway:</strong> Kasparro does not suffer from a brand reputation problem as much
-              as a <em>discoverability void</em>. Building G2/Capterra profiles directly bridges this gap.
+              <span id="gap-strategic-takeaway">Strategic interpretation will be generated from the current report data.</span>
             </div>
           </div>
         </div>
