@@ -42,16 +42,17 @@ def _pct_int(rate: float) -> int:
     return int(round(rate * 100))
 
 
-def _dot_svg_group(engine: str, color: str, icon: str, engine_label: str, items: List[Dict[str, Any]]) -> str:
+def _dot_svg_group(engine: str, color: str, icon: str, engine_label: str, items: List[Dict[str, Any]], max_prompt_index: int) -> str:
     circles: List[str] = []
+    x_denominator = max(max_prompt_index - 1, 1)
     for item in items:
-        idx = item["prompt_index"]
+        idx = int(item["prompt_index"])
         score = float(item["score"])
-        x = 50.0 + (idx - 1) * (920.0 / 49.0)
+        x = 50.0 + (idx - 1) * (920.0 / x_denominator)
         y = 310.0 - (score / 100.0) * 270.0
-        cat_label = "Branded Query" if idx <= 25 else "Unbranded GEO"
+        cat_label = "Branded Query" if item.get("branded_query") else "Unbranded GEO"
         title = html_lib.escape(f"{icon} {engine_label} · Prompt {idx:02d} · Score: {score:.1f}/100", quote=True)
-        q_text = html_lib.escape(json.dumps(item["prompt_text"]), quote=True)
+        q_text = html_lib.escape(json.dumps(item["prompt_text"], ensure_ascii=False), quote=True)
         body = (
             f"{q_text}&lt;br&gt;&lt;br&gt;"
             f"• &lt;strong&gt;Mentioned:&lt;/strong&gt; {'Yes' if item['mentioned'] else 'No'}&lt;br&gt;"
@@ -68,45 +69,222 @@ def _dot_svg_group(engine: str, color: str, icon: str, engine_label: str, items:
     return "\n".join(circles)
 
 
-def _polyline_points(items: List[Dict[str, Any]]) -> str:
+def _polyline_points(items: List[Dict[str, Any]], max_prompt_index: int) -> str:
     pts: List[str] = []
+    x_denominator = max(max_prompt_index - 1, 1)
     for item in items:
-        idx = item["prompt_index"]
+        idx = int(item["prompt_index"])
         score = float(item["score"])
-        x = 50.0 + (idx - 1) * (920.0 / 49.0)
+        x = 50.0 + (idx - 1) * (920.0 / x_denominator)
         y = 310.0 - (score / 100.0) * 270.0
         pts.append(f"{x:.1f},{y:.1f}")
     return " ".join(pts)
 
 
-def _scope_stats(prompt_scores: Dict[str, List[Dict[str, Any]]], start_p: int, end_p: int) -> Dict[str, Dict[str, Any]]:
+def _scope_stats(
+    prompt_scores: Dict[str, List[Dict[str, Any]]],
+    branded_query: Optional[bool] = None,
+) -> Dict[str, Dict[str, Any]]:
+    """Compute dashboard scopes from the actual prompt text classification, not prompt-number ranges."""
     out: Dict[str, Dict[str, Any]] = {}
     all_rows: List[Dict[str, Any]] = []
-    for eng in ("gemini", "chatgpt", "aimode"):
-        subset = [x for x in prompt_scores[eng] if start_p <= x["prompt_index"] <= end_p]
-        n = len(subset)
+
+    for engine in ("gemini", "chatgpt", "aimode"):
+        rows = prompt_scores.get(engine, [])
+        subset = rows if branded_query is None else [
+            row for row in rows if bool(row.get("branded_query")) is branded_query
+        ]
+        if not subset:
+            scope_name = "all" if branded_query is None else ("branded" if branded_query else "unbranded")
+            raise ValueError(f"No {engine} responses available for the {scope_name} dashboard scope.")
+
         all_rows.extend(subset)
-        avg = round(sum(x["score"] for x in subset) / n, 1) if n else 0.0
-        inc = round(sum(1 for x in subset if x["mentioned"]) * 100 / n) if n else 0
-        rec = round(sum(1 for x in subset if x["recommended"]) * 100 / n) if n else 0
-        neg = round(sum(1 for x in subset if x["negative"]) * 100 / n) if n else 0
-        out[eng] = {"score": avg, "inc": inc, "rec": rec, "neg": neg, "count": n}
-    n_all = len(all_rows)
+        count = len(subset)
+        mentioned_count = sum(bool(row["mentioned"]) for row in subset)
+        recommended_count = sum(bool(row["recommended"]) for row in subset)
+        negative_count = sum(bool(row["negative"]) for row in subset)
+
+        out[engine] = {
+            "score": round(sum(float(row["score"]) for row in subset) / count, 1),
+            "inc": _pct_int(mentioned_count / count),
+            "rec": _pct_int(recommended_count / count),
+            "neg": _pct_int(negative_count / count),
+            "count": count,
+            "mentioned_count": mentioned_count,
+            "recommended_count": recommended_count,
+            "negative_count": negative_count,
+        }
+
+    total = len(all_rows)
+    if not total:
+        raise ValueError("No response rows are available for the dashboard.")
+    mentioned_count = sum(bool(row["mentioned"]) for row in all_rows)
+    recommended_count = sum(bool(row["recommended"]) for row in all_rows)
+    negative_count = sum(bool(row["negative"]) for row in all_rows)
     out["all"] = {
-        "score": round(sum(x["score"] for x in all_rows) / n_all, 1) if n_all else 0.0,
-        "inc": round(sum(1 for x in all_rows if x["mentioned"]) * 100 / n_all) if n_all else 0,
-        "rec": round(sum(1 for x in all_rows if x["recommended"]) * 100 / n_all) if n_all else 0,
-        "neg": round(sum(1 for x in all_rows if x["negative"]) * 100 / n_all) if n_all else 0,
-        "count": n_all,
+        "score": round(sum(float(row["score"]) for row in all_rows) / total, 1),
+        "inc": _pct_int(mentioned_count / total),
+        "rec": _pct_int(recommended_count / total),
+        "neg": _pct_int(negative_count / total),
+        "count": total,
+        "mentioned_count": mentioned_count,
+        "recommended_count": recommended_count,
+        "negative_count": negative_count,
     }
     return out
+
+
+def _safe_script_json(value: Dict[str, Any]) -> str:
+    """Serialize JSON safely for an embedded application/json script element."""
+    return (
+        json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+        .replace("</", "<\\/")
+        .replace("\\u2028", "\\\\u2028")
+        .replace("\\u2029", "\\\\u2029")
+    )
+
+
+def _required(mapping: Dict[str, Any], key: str, label: str) -> Any:
+    if key not in mapping or mapping[key] is None:
+        raise ValueError(f"Missing required value: {label}.{key}")
+    return mapping[key]
+
+
+def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
+    """Embed the same canonical report/evaluation payload used to generate the dashboard."""
+    html_text = re.sub(
+        r'\\s*<script id="kasparro-report-data" type="application/json">.*?</script>\\s*'
+        r'<script id="kasparro-report-hydration">.*?</script>\\s*',
+        "\\n",
+        html_text,
+        flags=re.DOTALL,
+    )
+    json_payload = _safe_script_json(payload)
+    bootstrap = """
+<script id="kasparro-report-hydration">
+(function () {
+  const node = document.getElementById("kasparro-report-data");
+  if (!node) return;
+  let report;
+  try { report = JSON.parse(node.textContent); } catch (error) {
+    console.error("Unable to parse generated report data.", error);
+    return;
+  }
+  const setText = (id, value) => {
+    const element = document.getElementById(id);
+    if (element && value !== null && value !== undefined) element.textContent = String(value);
+  };
+  const setBar = (id, value) => {
+    const element = document.getElementById(id);
+    if (!element || value === null || value === undefined) return;
+    const pct = Math.max(0, Math.min(100, Number(value)));
+    element.style.width = pct + "%";
+    element.setAttribute("data-width", String(pct));
+  };
+  const percent = value => (Number(value) * 100).toFixed(1) + "%";
+  const scoring = report.scoring || {};
+  const engines = scoring.engine_aggregates || {};
+  const engineKeys = ["gemini", "chatgpt", "aimode"];
+  for (const key of engineKeys) {
+    const aggregate = engines[key];
+    if (!aggregate) continue;
+    const distribution = aggregate.distribution || {};
+    const prefix = key === "aimode" ? "aim" : (key === "chatgpt" ? "gpt" : "gem");
+    const score = Number(aggregate.mean_score);
+    const inc = Number(distribution.inclusion_rate) * 100;
+    const rec = Number(distribution.recommendation_rate) * 100;
+    const neg = Number(distribution.negative_rate) * 100;
+    setText("val-" + prefix + "-score", score.toFixed(1));
+    setText("val-" + prefix + "-inc", inc.toFixed(0) + "%");
+    setText("val-" + prefix + "-rec", rec.toFixed(0) + "%");
+    setText("val-" + prefix + "-neg", neg.toFixed(0) + "%");
+    setBar("bar-" + prefix + "-score", score);
+    setBar("bar-" + prefix + "-inc", inc);
+    setBar("bar-" + prefix + "-rec", rec);
+    setBar("bar-" + prefix + "-neg", neg);
+  }
+  const all = scoring.overall_distribution || {};
+  const overallScore = Number(scoring.overall_mean_score);
+  setText("t-all-score", overallScore.toFixed(1));
+  setText("t-all-inc", (Number(all.inclusion_rate) * 100).toFixed(0) + "%");
+  setText("t-all-rec", (Number(all.recommendation_rate) * 100).toFixed(0) + "%");
+  setText("t-all-neg", (Number(all.negative_rate) * 100).toFixed(0) + "%");
+  setBar("t-all-inc-bar", Number(all.inclusion_rate) * 100);
+  setBar("t-all-rec-bar", Number(all.recommendation_rate) * 100);
+  setBar("t-all-neg-bar", Number(all.negative_rate) * 100);
+  setText("t-all-count", report.counts.successful_responses);
+  for (const key of engineKeys) {
+    const aggregate = engines[key];
+    if (!aggregate) continue;
+    const prefix = key === "aimode" ? "aim" : (key === "chatgpt" ? "gpt" : "gem");
+    setText("t-" + prefix + "-score", Number(aggregate.mean_score).toFixed(1));
+    setText("t-" + prefix + "-inc", (Number(aggregate.distribution.inclusion_rate) * 100).toFixed(0) + "%");
+    setText("t-" + prefix + "-rec", (Number(aggregate.distribution.recommendation_rate) * 100).toFixed(0) + "%");
+    setText("t-" + prefix + "-neg", (Number(aggregate.distribution.negative_rate) * 100).toFixed(0) + "%");
+    setText("t-" + prefix + "-count", aggregate.total_successful);
+    setBar("t-" + prefix + "-inc-bar", Number(aggregate.distribution.inclusion_rate) * 100);
+    setBar("t-" + prefix + "-rec-bar", Number(aggregate.distribution.recommendation_rate) * 100);
+    setBar("t-" + prefix + "-neg-bar", Number(aggregate.distribution.negative_rate) * 100);
+  }
+  const counts = report.counts || {};
+  const statNodes = document.querySelectorAll(".stat-grid .stat-value.num");
+  const statTargets = [counts.supplied_prompts, counts.supplied_responses, counts.supplied_citations,
+    counts.eligible_responses ? (counts.successful_responses / counts.eligible_responses) * 100 : 0];
+  statNodes.forEach((element, index) => {
+    if (statTargets[index] !== undefined && statTargets[index] !== null) {
+      element.setAttribute("data-target", String(statTargets[index]));
+    }
+  });
+  setText("report-generated-at", "Generated " + report.generated_at);
+  setText("report-generated-mode", "Scoring " + scoring.scoring_version + " · Classifier " +
+    scoring.classifier_version + " · " + scoring.execution_mode + " · Metrics from generated analysis");
+  setText("report-run-id", report.provenance.run_id);
+  setText("report-dataset-id", report.provenance.dataset_id);
+  setText("report-dataset-name", report.provenance.dataset_name);
+  setText("report-capture-date", report.provenance.historical_capture_date);
+  setText("report-location", report.provenance.location + " (" + report.provenance.language + ")");
+  setText("report-provider", report.provenance.provider);
+  setText("report-source-hash", report.provenance.source_hash);
+  const evaluation = report.evaluation || {};
+  const regression = evaluation.regression || {};
+  const heldOut = evaluation.held_out || {};
+  const baseline = regression.baseline_metrics || {};
+  const proposed = regression.proposed_metrics || {};
+  const bLabels = baseline.per_label || {};
+  const pLabels = proposed.per_label || {};
+  setText("eval-description", regression.description || "");
+  setText("eval-baseline-agreement", percent(baseline.agreement_rate));
+  setText("eval-baseline-count", (baseline.exact_matches || 0) + "/" + (baseline.total_cases || 0) + " exact matches");
+  setText("eval-proposed-agreement", percent(proposed.agreement_rate));
+  setText("eval-proposed-count", (proposed.exact_matches || 0) + "/" + (proposed.total_cases || 0) + " exact matches");
+  for (const [name, value] of Object.entries(bLabels)) {
+    setText("eval-baseline-" + name + "-f1", value.f1 === null ? "N/A" : Number(value.f1).toFixed(3));
+    setBar("eval-baseline-" + name + "-bar", value.f1 === null ? 0 : Number(value.f1) * 100);
+  }
+  for (const [name, value] of Object.entries(pLabels)) {
+    setText("eval-proposed-" + name + "-f1", value.f1 === null ? "N/A" : Number(value.f1).toFixed(3));
+    setBar("eval-proposed-" + name + "-bar", value.f1 === null ? 0 : Number(value.f1) * 100);
+  }
+  const heldOutText = heldOut.counts
+    ? "Held-out candidate run: " + heldOut.counts.evaluated_cases + "/" + heldOut.counts.total_cases +
+      " evaluated; " + heldOut.counts.failed_cases + " failed. Labels are provisional single-annotator synthetic annotations."
+    : "Held-out evaluation output was not generated.";
+  setText("eval-held-out-summary", heldOutText);
+})();
+</script>
+"""
+    data_block = f'<script id="kasparro-report-data" type="application/json">{json_payload}</script>\\n'
+    if "</body>" not in html_text:
+        raise ValueError("Dashboard template is missing </body>; cannot inject canonical report data.")
+    return html_text.replace("</body>", data_block + bootstrap + "\\n</body>", 1)
 
 
 def main() -> None:
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # 1. Re-run evaluation harness (replay)
-    eval_res = run_evaluation(execution_mode="replay", output_dir=str(RESULTS_DIR))
+    # 1. Generate distinct regression and held-out evaluation outputs.
+    eval_res = run_evaluation(execution_mode="replay", output_dir=str(RESULTS_DIR), split="regression")
+    held_out_eval_res = run_evaluation(execution_mode="replay", output_dir=str(RESULTS_DIR), split="held_out")
 
     # 2. Execute real end-to-end DB pipeline
     engine = create_engine("sqlite:///:memory:")
