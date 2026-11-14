@@ -122,6 +122,7 @@ def test_dashboard_uses_current_analysis_and_evaluation_values():
     assert "76 Tests Collected" not in html
     assert "21/21 Tests Pass" not in html
     assert "37.57" not in html
+    assert all(line == line.rstrip() for line in html.splitlines())
 
 
 def test_dashboard_escapes_untrusted_evidence_text():
