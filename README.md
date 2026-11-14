@@ -90,7 +90,7 @@ The dashboard is rebuilt from the current analysis and evaluation outputs; it do
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 
-# Install pinned dependencies
+# Install dependencies
 pip install -r requirements.txt
 
 # Configure environment file
@@ -233,9 +233,11 @@ For an OpenAI-compatible provider instead, set `LLM_PROVIDER=openai`, its model,
 
 ## 7. REST API Endpoints & Example Calls
 
-Default development tokens configured in `.env`:
+Local demonstration tokens configured in `.env.example`:
 - **Analyst Token:** `dev-analyst-token-2026`
 - **Reviewer Token:** `dev-reviewer-token-2026`
+
+These are public, non-secret demo credentials for local evaluation only. Replace them through environment variables before any shared or deployed use; never reuse them in a real environment.
 
 ### 1. Health Check
 ```powershell
