@@ -235,6 +235,7 @@ def test_held_out_metrics_report_coverage_and_do_not_hide_provider_failures(monk
     class OneFailureClassifier:
         def __init__(self):
             self.delegate = real_classifier()
+            self.classifier_version = self.delegate.classifier_version
 
         def classify(self, response_id, engine, answer_text, prompt_text=None):
             if response_id == "heldout-response-001":
