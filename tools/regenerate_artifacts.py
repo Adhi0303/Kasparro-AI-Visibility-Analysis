@@ -579,23 +579,23 @@ footer{{text-align:center;color:var(--muted);font-size:12px;padding:30px 0 12px}
   <footer>Generated from validated source data and the current analysis run · {generated_at}</footer>
 </main>
 <script>
-(() => {
+(() => {{
   const engineSelect = document.getElementById("chart-engine-filter");
   const cohortSelect = document.getElementById("chart-cohort-filter");
   const points = Array.from(document.querySelectorAll(".chart-point"));
   if (!engineSelect || !cohortSelect || points.length === 0) return;
-  const applyFilters = () => {
+  const applyFilters = () => {{
     const engine = engineSelect.value;
     const cohort = cohortSelect.value;
-    points.forEach((point) => {
+    points.forEach((point) => {{
       const engineMatch = engine === "all" || point.dataset.engine === engine;
       const cohortMatch = cohort === "all" || point.dataset.cohort === cohort;
       point.style.display = engineMatch && cohortMatch ? "" : "none";
-    });
-  };
+    }});
+  }};
   engineSelect.addEventListener("change", applyFilters);
   cohortSelect.addEventListener("change", applyFilters);
-})();
+}})();
 </script>
 </body>
 </html>
@@ -608,7 +608,7 @@ footer{{text-align:center;color:var(--muted);font-size:12px;padding:30px 0 12px}
 
     # Triple-quoted templates can preserve indentation on visually blank lines.
     # Normalize generated output so git diff --check and downstream tooling agree.
-    html_document = "\\n".join(line.rstrip() for line in html_document.splitlines()) + "\\n"
+    html_document = "\n".join(line.rstrip() for line in html_document.splitlines()) + "\n"
     return html_document
 
 
