@@ -2,7 +2,7 @@
 
 ## Purpose and scope
 
-This document records the eight supplied archived responses used as the labelled **development/tuning** sample for the provider-classification evaluation. It is not a final unseen benchmark. The labels are manually authored by one project annotator and should be treated as reference labels with known single-annotator limitations.
+This document records the eight supplied archived responses used as the labelled **development/tuning** sample for the provider-classification evaluation. It is not a final unseen benchmark. The eight expected-label tuples were already present in the repository before this P2 change. The repository did not record who assigned them, when they were assigned, or whether a second reviewer checked them. P2 adds explicit rationales and categories as documentation, but does not retroactively claim a verified manual-annotation event. Until the project owner confirms the annotation provenance (or the cases are re-labelled from blinded packets), treat them as pre-existing project reference labels with unverified provenance.
 
 ## Selection
 
@@ -37,7 +37,7 @@ Recommendation and negative characterization may both be true where the answer e
 | case-007 | ChatGPT | Pricing and value | 1 / 0 / 0 | Disambiguates Kasparro from Kaspr but says evidence is insufficient to judge value; neutral mention. |
 | case-008 | Gemini | Product capability and limitations | 1 / 0 / 0 | Uses Kasparro in a balanced discussion of capability versus model non-determinism; neither recommendation nor negative claim. |
 
-The machine-readable annotation object in each supplied case is the source of truth for method, annotator role, label-set version, category and rationale. `expected_evidence` is an exact excerpt from the archived answer for positive discussion/characterization where available; empty evidence arrays are intentional for absence cases.
+The machine-readable annotation object records the provenance limitation, label-set version, category and rationale. Its `rationale_provenance` field explicitly marks the rationale as P2 documentation rather than independent annotation evidence. `expected_evidence` is an exact excerpt from the archived answer for positive discussion/characterization where available; empty evidence arrays are intentional for absence cases.
 
 ## Required synthetic edge cases
 
@@ -52,4 +52,4 @@ These are controlled development regression cases, not supplied observations and
 - Keep the 30-case held-out candidate file frozen. Its prompt-family IDs are disjoint from the development set.
 - The held-out candidate cases are synthetic and provisionally single-annotated. Use the blinded workflow in `evaluation/annotation_workflow.py`; require a third reviewer for disagreements before calling labels independently adjudicated.
 - The current held-out candidate set is not a supplied-response holdout. For a stronger final claim, select a new set of archived supplied responses, manually annotate them without seeing classifier predictions, and freeze that dataset before the final model run.
-- The current eight supplied labels are single-annotator development references. Do not overstate inter-annotator reliability or generalization from them.
+- The current eight supplied labels have unverified annotator provenance. Do not describe them as confirmed manual labels or overstate inter-annotator reliability/generalization. Confirm the original annotator and annotation process, or relabel them using blinded annotation packets, before treating this requirement as fully satisfied.
