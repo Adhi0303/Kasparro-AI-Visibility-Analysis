@@ -240,3 +240,21 @@ def test_artifact_validator_checks_dashboard_report_eval_and_evidence(tmp_path):
     (results / "report.html").write_text(html + "76 Tests Collected", encoding="utf-8")
     errors = validate_artifact_directory(results, data)
     assert any("stale hardcoded claim" in error for error in errors)
+
+
+
+def test_demo_metric_helpers_reject_missing_or_invalid_fallback_values():
+    from demo import require_mapping, require_number, require_rate
+
+    assert require_mapping({"score": 12}, "metrics") == {"score": 12}
+    assert require_number({"score": 12}, "score", "metrics") == 12.0
+    assert require_rate({"rate": 0.75}, "rate", "metrics") == 0.75
+
+    with pytest.raises(RuntimeError):
+        require_mapping(None, "metrics")
+    with pytest.raises(RuntimeError):
+        require_number({}, "score", "metrics")
+    with pytest.raises(RuntimeError):
+        require_number({"score": float("nan")}, "score", "metrics")
+    with pytest.raises(RuntimeError):
+        require_rate({"rate": 1.5}, "rate", "metrics")
