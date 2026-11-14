@@ -337,6 +337,14 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
   setText("gap-unbranded-pct", Number(unbrandedOverall.inc || 0).toFixed(1) + "% Inclusion");
   setBar("gap-unbranded-bar", unbrandedOverall.inc || 0);
   setText("gap-unbranded-count", (unbrandedOverall.mentioned_count || 0) + "/" + (unbrandedOverall.count || 0) + " answers");
+  setAttribute("gap-branded-card", "data-hover-title", "Branded prompt visibility");
+  setAttribute("gap-branded-card", "data-hover-body",
+    (brandedOverall.mentioned_count || 0) + " of " + (brandedOverall.count || 0) +
+    " branded responses mentioned Kasparro; recommendation rate was " + Number(brandedOverall.rec || 0).toFixed(1) + "%.");
+  setAttribute("gap-unbranded-card", "data-hover-title", "Unbranded category visibility");
+  setAttribute("gap-unbranded-card", "data-hover-body",
+    (unbrandedOverall.mentioned_count || 0) + " of " + (unbrandedOverall.count || 0) +
+    " unbranded responses mentioned Kasparro.");
   setText("gap-unbranded-competitors", dashboardScopes.competitors || "See source responses");
   const heldOutText = heldOut.counts
     ? "Held-out candidate run: " + heldOut.counts.evaluated_cases + "/" + heldOut.counts.total_cases +
