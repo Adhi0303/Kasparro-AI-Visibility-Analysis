@@ -3584,7 +3584,33 @@
       if (data.alert.type === 'danger') alertEl.classList.add('alert-danger');
       document.getElementById('alertIcon').textContent = data.alert.icon;
       document.getElementById('alertTitle').textContent = data.alert.title;
-      document.getElementById('alertDesc').innerHTML = data.alert.desc;
+      document.getElementById('alertDesc').textContent = data.alert.desc;
+
+      const branded = datasetMatrix.branded.all;
+      const unbranded = datasetMatrix.unbranded.all;
+      document.getElementById('gap-branded-title').textContent =
+        'Branded Queries (' + branded.prompts_count + ' Prompts)';
+      document.getElementById('gap-branded-pct').textContent =
+        branded.inc.toFixed(1) + '% Branded Inclusion';
+      document.getElementById('gap-branded-count').textContent =
+        branded.mentioned_count + '/' + branded.count + ' answers';
+      document.getElementById('gap-branded-rec').textContent = branded.rec.toFixed(1) + '%';
+      document.getElementById('gap-branded-bar').style.width = branded.inc + '%';
+
+      document.getElementById('gap-unbranded-title').textContent =
+        'Unbranded Queries (' + unbranded.prompts_count + ' Prompts)';
+      document.getElementById('gap-unbranded-pct').textContent =
+        unbranded.inc.toFixed(1) + '% Inclusion';
+      document.getElementById('gap-unbranded-count').textContent =
+        unbranded.mentioned_count + '/' + unbranded.count + ' answers';
+      document.getElementById('gap-unbranded-bar').style.width = unbranded.inc + '%';
+      document.getElementById('gap-unbranded-competitors').textContent =
+        'Competitor context is provided in the source-backed diagnostics.';
+      document.getElementById('gap-strategic-takeaway').textContent =
+        unbranded.mentioned_count === 0
+          ? 'In this historical snapshot, Kasparro did not appear in any unbranded responses. This describes the captured dataset only.'
+          : 'In this historical snapshot, Kasparro appeared in ' + unbranded.mentioned_count +
+            ' of ' + unbranded.count + ' unbranded responses.';
 
       // Re-apply engine focus in case scope changed
       filterEngineFocus();
