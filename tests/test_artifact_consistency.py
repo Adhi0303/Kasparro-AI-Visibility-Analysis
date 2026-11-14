@@ -258,3 +258,15 @@ def test_demo_metric_helpers_reject_missing_or_invalid_fallback_values():
         require_number({"score": float("nan")}, "score", "metrics")
     with pytest.raises(RuntimeError):
         require_rate({"rate": 1.5}, "rate", "metrics")
+
+
+def test_demo_manifest_count_keys_match_assignment_pack():
+    from pathlib import Path
+    from demo import require_mapping, require_number
+
+    root = Path(__file__).resolve().parents[1]
+    manifest = json.loads((root / "PACK_MANIFEST.json").read_text(encoding="utf-8"))
+    counts = require_mapping(manifest.get("counts"), "pack counts")
+    assert require_number(counts, "prompts", "pack counts") > 0
+    assert require_number(counts, "responses", "pack counts") > 0
+    assert require_number(counts, "citation_entries", "pack counts") > 0
