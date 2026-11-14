@@ -283,3 +283,28 @@ def test_demo_manifest_count_keys_match_assignment_pack():
     assert require_number(counts, "prompts", "pack counts") > 0
     assert require_number(counts, "responses", "pack counts") > 0
     assert require_number(counts, "citation_entries", "pack counts") > 0
+
+
+
+def test_dashboard_payload_injection_removes_template_notice_and_is_idempotent():
+    from tools.regenerate_artifacts import _inject_report_payload
+    from tools.validate_artifacts import extract_embedded_report_data
+
+    payload = {
+        "title": "Generated",
+        "counts": {"successful_responses": 1},
+        "scoring": {"execution_mode": "replay"},
+    }
+    template = (
+        '<html><body>'
+        '<div id="report-not-generated">Template only</div>'
+        '<main>Dashboard</main>'
+        '</body></html>'
+    )
+    first = _inject_report_payload(template, payload)
+    second = _inject_report_payload(first, payload)
+
+    assert 'id="report-not-generated"' not in second
+    assert extract_embedded_report_data(second) == payload
+    assert second.count('id="kasparro-report-data"') == 1
+    assert second.count('id="kasparro-report-hydration"') == 1
