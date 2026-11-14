@@ -161,6 +161,12 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
         html_text,
         flags=re.DOTALL,
     )
+    html_text = re.sub(
+        r'<div id="report-not-generated"[^>]*>.*?</div>\\s*',
+        "",
+        html_text,
+        flags=re.DOTALL,
+    )
     json_payload = _safe_script_json(payload)
     bootstrap = """
 <script id="kasparro-report-hydration">
