@@ -355,7 +355,7 @@ def main() -> None:
                 "prompt_id": db_r.prompt_id,
                 "response_id": db_r.source_response_id,
                 "prompt_text": prompt_text,
-                "branded_query": bool(re.search(r"\\bkasparro\\b", prompt_text, re.IGNORECASE)),
+                "branded_query": bool(re.search(r"\bkasparro\b", prompt_text, re.IGNORECASE)),
                 "score": round(float(row.score), 1),
                 "mentioned": bool(labels.get("kasparro_mentioned")),
                 "recommended": bool(labels.get("kasparro_recommended")),
@@ -565,7 +565,7 @@ def main() -> None:
         }
         new_matrix = "    const datasetMatrix = " + _safe_script_json(matrix) + ";"
         html_text, matrix_substitutions = re.subn(
-            r"    const datasetMatrix = \\{.*?    \\};",
+            r"    const datasetMatrix = \{.*?    \};",
             new_matrix,
             html_text,
             count=1,
