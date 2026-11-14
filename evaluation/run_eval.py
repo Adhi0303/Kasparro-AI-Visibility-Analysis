@@ -297,10 +297,9 @@ Classification metrics and the baseline comparison below use the matched success
 | Metric | Rule-Based Baseline | Evaluated Classifier | Delta |
 |---|---|---|---|
 | **Exact-Match Agreement** | {baseline_metrics['agreement_rate'] * 100:.1f}% ({baseline_metrics['exact_matches']}/{len(expected_completed)}) | {proposed_metrics['agreement_rate'] * 100:.1f}% ({proposed_metrics['exact_matches']}/{len(expected_completed)}) | {sign}{agreement_delta:.1f}% |
-| **Mention Precision** | {baseline_metrics['per_label']['kasparro_mentioned']['precision']} | {proposed_metrics['per_label']['kasparro_mentioned']['precision']} | Context-aware prompt echo filtering |
-| **Mention Recall** | {baseline_metrics['per_label']['kasparro_mentioned']['recall']} | {proposed_metrics['per_label']['kasparro_mentioned']['recall']} | Genuine brand discussion retained |
-| **Recommendation F1** | {baseline_metrics['per_label']['kasparro_recommended']['f1']} | {proposed_metrics['per_label']['kasparro_recommended']['f1']} | Target-aware recommendation attribution |
-| **Negative F1** | {baseline_metrics['per_label']['kasparro_negative']['f1']} | {proposed_metrics['per_label']['kasparro_negative']['f1']} | Target-aware sentiment & neutrality handling |
+| **Mention P / R / F1** | {baseline_metrics['per_label']['kasparro_mentioned']['precision']} / {baseline_metrics['per_label']['kasparro_mentioned']['recall']} / {baseline_metrics['per_label']['kasparro_mentioned']['f1']} | {proposed_metrics['per_label']['kasparro_mentioned']['precision']} / {proposed_metrics['per_label']['kasparro_mentioned']['recall']} / {proposed_metrics['per_label']['kasparro_mentioned']['f1']} | — |
+| **Recommendation P / R / F1** | {baseline_metrics['per_label']['kasparro_recommended']['precision']} / {baseline_metrics['per_label']['kasparro_recommended']['recall']} / {baseline_metrics['per_label']['kasparro_recommended']['f1']} | {proposed_metrics['per_label']['kasparro_recommended']['precision']} / {proposed_metrics['per_label']['kasparro_recommended']['recall']} / {proposed_metrics['per_label']['kasparro_recommended']['f1']} | — |
+| **Negative P / R / F1** | {baseline_metrics['per_label']['kasparro_negative']['precision']} / {baseline_metrics['per_label']['kasparro_negative']['recall']} / {baseline_metrics['per_label']['kasparro_negative']['f1']} | {proposed_metrics['per_label']['kasparro_negative']['precision']} / {proposed_metrics['per_label']['kasparro_negative']['recall']} / {proposed_metrics['per_label']['kasparro_negative']['f1']} | — |
 
 ---
 
