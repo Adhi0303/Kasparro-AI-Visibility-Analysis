@@ -590,7 +590,7 @@ footer{{text-align:center;color:var(--muted);font-size:12px;padding:30px 0 12px}
     points.forEach((point) => {
       const engineMatch = engine === "all" || point.dataset.engine === engine;
       const cohortMatch = cohort === "all" || point.dataset.cohort === cohort;
-      point.hidden = !(engineMatch && cohortMatch);
+      point.style.display = engineMatch && cohortMatch ? "" : "none";
     });
   };
   engineSelect.addEventListener("change", applyFilters);
