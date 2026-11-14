@@ -222,6 +222,19 @@ def test_artifact_validator_checks_dashboard_report_eval_and_evidence(tmp_path):
     for name, value in files.items():
         (results / name).write_text(json.dumps(value), encoding="utf-8")
 
+    (results / "eval_comparison_report.md").write_text(
+        "- **Evaluation Split:** regression\n"
+        "- **Total Cases:** 2\n"
+        "- **Failed/Skipped Evaluations:** 0\n",
+        encoding="utf-8",
+    )
+    (results / "eval_comparison_report_held_out.md").write_text(
+        "- **Evaluation Split:** held_out\n"
+        "- **Total Cases:** 2\n"
+        "- **Failed/Skipped Evaluations:** 0\n",
+        encoding="utf-8",
+    )
+
     html = (
         '<html><body>'
         '<div id="diagnostics-container"></div><div id="remedies-container"></div>'
