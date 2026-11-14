@@ -12,6 +12,7 @@ This documentation suite is organized into focused, single-responsibility guides
 | **[4. Human Review & Immutability](HUMAN_REVIEW_LIFECYCLE.md)** | Analyst vs Reviewer workflow, state machine (`DRAFT → SUBMITTED → APPROVED/REJECTED`), cryptographic SHA-256 content hashing, version immutability, and export gate enforcement. |
 | **[5. Evaluation & Benchmarks](EVALUATION_AND_BENCHMARKS.md)** | Separate regression and provisional held-out evaluation sets, multi-label metrics, annotation limitations, and reproducible report generation. |
 | **[6. P4 Final Analysis Audit](P4_FINAL_ANALYSIS_AUDIT.md)** | End-to-end audit reconciling 150 archived responses, independent aggregate recalculations, verified diagnostics, 7-part remedies, and tier separation. |
+| **[7. Engineering Walkthrough](ENGINEERING_WALKTHROUGH.md)** | Reviewer walkthrough mapping the assignment modules and role expectations to implementation, tests, real-model results, limitations and demo commands. |
 
 ---
 

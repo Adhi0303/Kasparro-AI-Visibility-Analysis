@@ -120,7 +120,7 @@ The assignment architecture enforces strict boundaries between data tiers to pre
 |---|---|---|---|
 | **1. Historical Snapshot** | 150 archived responses (31 July 2026) | Static Dataset / Replay | Overall score: 33.04; Inclusion: 48.0%; Rec: 6.0%; Neg: 3.33% (`final_report.json`, `report.html`) |
 | **2. Deterministic Replay** | 20 regression + 30 held-out cases | Regex / Rule-based (v1) | Regression: 100.0% agreement; Held-out: 63.3% agreement (`eval_results.json`, `eval_held_out_results.json`) |
-| **3. Real-Model Provider** | 20 regression cases + 60 repeatability calls | Live Gemini API (`gemini-3.5-flash-lite`) | Single pass: 73.7% agreement (+21.1% over baseline), 95.0% coverage (1 HTTP 429 quota failure); Repeatability: 88.89% stability, 90.0% coverage (6 quota failures) (`eval_provider_results.json`, `repeatability_regression.json`) |
+| **3. Real-Model Provider** | 20 regression cases + 60 repeatability calls | Live Gemini API (`gemini-3.5-flash-lite`) | Single pass: 72.2% matched-subset agreement (13/18), +27.8 percentage points over the 44.4% baseline; 90.0% execution coverage (18/20), with 2 HTTP 429 quota failures; coverage-adjusted agreement: 65.0% (13/20). Repeatability: 88.89% stability among 18 repeatable cases, 90.0% call coverage (54/60), with 6 quota failures (`eval_provider_results.json`, `repeatability_regression.json`) |
 
 *For complete reconciliation audit details, see [`docs/P4_FINAL_ANALYSIS_AUDIT.md`](docs/P4_FINAL_ANALYSIS_AUDIT.md).*
 
@@ -136,9 +136,9 @@ The assignment architecture enforces strict boundaries between data tiers to pre
 
 ## 6. AI Assistance Disclosure
 
-- **Tools Used:** Antigravity AI Coding Assistant.
-- **Tasks Delegated:** Boilerplate FastAPI schema generation, SQLite schema creation, and regex pattern drafting.
-- **Human Verification:** All business logic, scoring formulas, permission guards, database queries, and diagnostic findings were manually reviewed, verified with automated pytest suites, and checked against the assignment specification.
+- **Tools Used:** Antigravity AI Coding Assistant and ChatGPT.
+- **AI-Assisted Work:** Implementation support across backend scaffolding and application modules; prompt and classifier iteration; test-case development; evaluation-runner and report-generation support; evidence-integrity checks; and documentation drafting and revision.
+- **Candidate Review and Verification:** The candidate directed the implementation, reviewed and revised generated code, checked design decisions against the assignment requirements, inspected evaluation outputs and evidence, and ran the automated test suite and pack-integrity checker. AI-generated code and analysis were treated as proposals and were not accepted without review and verification.
 
 ---
 

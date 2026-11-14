@@ -121,7 +121,7 @@ The analysis cleanly segregates the three execution tiers to prevent misleading 
 |---|---|---|---|---|
 | **1. Historical Capture** | 150 archived responses (31 July 2026) | Static Dataset | Overall score: 33.04; Inclusion: 48.0%; Rec: 6.0%; Neg: 3.33% | `final_report.json`, `prompt_scores.json`, `report.html` |
 | **2. Deterministic Replay** | 20 regression + 30 held-out cases | Rule-based (v1) | Regression: 100.0% agreement; Held-out: 63.3% agreement | `eval_results.json`, `eval_comparison_report.md`, `eval_held_out_results.json` |
-| **3. Real-Model Provider** | 20 cases (1-pass) + 60 calls (3-run repeatability) | Live Gemini API (`gemini-3.5-flash-lite`) | Single pass: 73.7% agreement (+21.1% vs baseline), 95.0% coverage (1 HTTP 429 quota failure); Repeatability: 88.89% stability, 90.0% coverage (6 quota failures) | `eval_provider_results.json`, `eval_provider_report.md`, `repeatability_regression.json` |
+| **3. Real-Model Provider** | 20 cases (1-pass) + 60 calls (3-run repeatability) | Live Gemini API (`gemini-3.5-flash-lite`) | Single pass: 72.2% matched-subset agreement (13/18), +27.8 percentage points vs. the 44.4% baseline; 90.0% execution coverage (18/20), with 2 HTTP 429 quota failures; coverage-adjusted agreement: 65.0% (13/20). Repeatability: 88.89% stability among 18 repeatable cases, 90.0% call coverage (54/60), with 6 quota failures | `eval_provider_results.json`, `eval_provider_report.md`, `repeatability_regression.json` |
 
 - Real-model results are **never** presented as the score of the 150 historical responses.
 - Replay results are **never** presented as real-model LLM accuracy.
@@ -133,6 +133,6 @@ The analysis cleanly segregates the three execution tiers to prevent misleading 
 
 * **P4 Reconciliation Tests:** `pytest -v tests/test_p4_reconciliation.py` — **3 passed** (0.09s).
 * **P3 Evidence Integrity Tests:** `pytest -v tests/test_p3_evidence_integrity.py` — **4 passed** (1.71s).
-* **Full Automated Test Suite:** `pytest -q` — **122 passed**, 1 skipped, **0 failed** (11.02s).
+* **Full Automated Test Suite:** `pytest -v` — **122 passed**, 1 skipped, **0 failed** (4.87s; final local run reported for commit `121544c`).
 * **Assignment Pack Integrity:** `python tools/check_pack.py` — **Passed** (50 prompts, 150 responses, 2439 citations validated).
 
