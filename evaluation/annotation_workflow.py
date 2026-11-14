@@ -134,7 +134,7 @@ def export_annotation_templates(
 
 def _load_reviewer_submission(
     path: str | Path,
-    expected_case_ids: set[str],
+    source_cases: dict[str, dict[str, Any]],
 ) -> tuple[str, dict[str, dict[str, bool]]]:
     rows = _read_jsonl(path)
     if not rows:
@@ -149,6 +149,7 @@ def _load_reviewer_submission(
 
     indexed = _unique_cases(rows, str(path))
     received = set(indexed)
+    expected_case_ids = set(source_cases)
     if received != expected_case_ids:
         missing = sorted(expected_case_ids - received)
         extra = sorted(received - expected_case_ids)
@@ -165,6 +166,18 @@ def _load_reviewer_submission(
                 f"{path}:{case_id}: reviewer packet must not contain model/gold fields: "
                 f"{sorted(leaked_fields)}"
             )
+        source = source_cases[case_id]
+        expected_context = {
+            "engine": source.get("engine", "unknown"),
+            "prompt_text": source.get("prompt_text", ""),
+            "response_text": source.get("synthetic_text", ""),
+        }
+        for field, expected_value in expected_context.items():
+            if row.get(field) != expected_value:
+                raise ValueError(
+                    f"{path}:{case_id}: reviewer context field '{field}' does not match "
+                    "the frozen source case"
+                )
         annotations[case_id] = _validate_labels(row.get("labels"), f"{path}:{case_id}")
     return next(iter(reviewer_ids)), annotations
 
@@ -197,8 +210,8 @@ def finalize_annotations(
     source = _unique_cases(source_rows, "source cases")
     expected_ids = set(source)
 
-    reviewer_a_id, reviewer_a = _load_reviewer_submission(reviewer_a_path, expected_ids)
-    reviewer_b_id, reviewer_b = _load_reviewer_submission(reviewer_b_path, expected_ids)
+    reviewer_a_id, reviewer_a = _load_reviewer_submission(reviewer_a_path, source)
+    reviewer_b_id, reviewer_b = _load_reviewer_submission(reviewer_b_path, source)
     if reviewer_a_id == reviewer_b_id:
         raise ValueError("Independent submissions must have distinct reviewer IDs")
 
@@ -231,6 +244,9 @@ def finalize_annotations(
 
     unresolved = disagreements - set(adjudications)
     if unresolved:
+        # Prevent an earlier successful adjudication file from being mistaken
+        # for the result of this incomplete run.
+        Path(output_path).unlink(missing_ok=True)
         template = []
         for case_id in sorted(unresolved):
             template.append({
