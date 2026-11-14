@@ -61,7 +61,7 @@ def _dot_svg_group(engine: str, color: str, icon: str, engine_label: str, items:
         )
         circles.append(
             f'              <circle cx="{x:.1f}" cy="{y:.1f}" r="4.5" fill="{color}" stroke="#ffffff" stroke-width="1.5"\n'
-            f'                class="scatter-dot dot-{engine} dot-p{idx:02d}" data-prompt="{idx}" data-engine="{engine}" data-branded="{str(bool(item.get('branded_query'))).lower()}"\n'
+            f'                class="scatter-dot dot-{engine} dot-p{idx:02d}" data-prompt="{idx}" data-engine="{engine}" data-branded="{str(bool(item.get("branded_query"))).lower()}"\n'
             f'                data-hover-title="{title}"\n'
             f'                data-hover-body="{body}"\n'
             f'                data-hover-meta-left="Category: {cat_label}" data-hover-meta-right="Formula: {score:.1f} pts"></circle>'
