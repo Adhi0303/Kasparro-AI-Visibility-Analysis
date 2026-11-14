@@ -20,12 +20,29 @@
   },
   "commands": {
     "regression": "python -m evaluation.run_eval --mode replay --split regression",
-    "held_out": "python -m evaluation.run_eval --mode replay --split held_out"
+    "held_out": "python -m evaluation.run_eval --mode replay --split held_out",
+    "annotation_export": "python -m evaluation.annotation_workflow export --reviewer-a reviewer_a --reviewer-b reviewer_b",
+    "annotation_finalize": "python -m evaluation.annotation_workflow finalize --reviewer-a evaluation/annotations/reviewer_a.jsonl --reviewer-b evaluation/annotations/reviewer_b.jsonl",
+    "coverage_aware_held_out": "python -m evaluation.run_eval --mode replay --split held_out --cases-path evaluation/held_out_adjudicated_cases.jsonl"
   },
   "policy": [
     "Never merge held-out cases into regression cases for tuning.",
     "Do not modify held-out expected labels after inspecting model predictions; log adjudicated corrections separately.",
     "Report sample counts and per-label support with every score.",
-    "A synthetic, single-annotator holdout is a leakage-control measure, not evidence of independent ground truth."
-  ]
+    "A synthetic, single-annotator holdout is a leakage-control measure, not evidence of independent ground truth.",
+    "Failed classifier calls are excluded from matched-subset classification metrics but remain in execution coverage and coverage-adjusted exact-match agreement over the full cohort.",
+    "Do not describe held-out labels as independently validated until the blinded double-annotation and disagreement-adjudication workflow has completed."
+  ],
+  "annotation_workflow": {
+    "module": "evaluation/annotation_workflow.py",
+    "current_state": "not_yet_independently_annotated",
+    "export_command": "python -m evaluation.annotation_workflow export --reviewer-a reviewer_a --reviewer-b reviewer_b",
+    "finalize_command": "python -m evaluation.annotation_workflow finalize --reviewer-a evaluation/annotations/reviewer_a.jsonl --reviewer-b evaluation/annotations/reviewer_b.jsonl",
+    "adjudicated_output": "evaluation/held_out_adjudicated_cases.jsonl",
+    "requirements": [
+      "Two distinct reviewers label all cases from separately shuffled packets with no expected labels, source notes or model predictions.",
+      "A third independent reviewer must resolve every label disagreement with a rationale.",
+      "The provisional source labels are preserved and never silently overwritten."
+    ]
+  }
 }

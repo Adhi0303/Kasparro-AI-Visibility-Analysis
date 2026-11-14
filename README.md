@@ -146,7 +146,19 @@ Run the separate held-out candidate set:
 python -m evaluation.run_eval --mode replay --split held_out
 ```
 
-The repository includes 20 regression cases and 30 additional held-out synthetic scenarios with disjoint prompt-family IDs. The held-out labels are provisional single-annotator labels, not independently adjudicated ground truth. Do not tune rules against the held-out set. See [the split manifest](evaluation/split_manifest.json) and [evaluation methodology](docs/EVALUATION_AND_BENCHMARKS.md).
+The repository includes 20 regression cases and 30 additional held-out synthetic scenarios with disjoint prompt-family IDs. The held-out labels currently remain provisional single-annotator labels, not independently adjudicated ground truth. Do not tune rules against the held-out set.
+
+To create two blinded reviewer packets:
+```powershell
+python -m evaluation.annotation_workflow export --reviewer-a reviewer_a --reviewer-b reviewer_b
+```
+Two distinct reviewers must complete their own packet. Reconcile them with:
+```powershell
+python -m evaluation.annotation_workflow finalize --reviewer-a evaluation/annotations/reviewer_a.jsonl --reviewer-b evaluation/annotations/reviewer_b.jsonl
+```
+Any disagreement produces an adjudication template and blocks finalization until a third reviewer records the decision and rationale. The tool preserves provisional labels and reviewer decisions in a separate adjudicated file.
+
+Evaluation reports now distinguish successful-call quality from execution reliability: failed calls remain in the full-cohort coverage-adjusted agreement denominator. See [the split manifest](evaluation/split_manifest.json) and [evaluation methodology](docs/EVALUATION_AND_BENCHMARKS.md).
 
 *Replay outputs are written separately as `eval_results.json` and `eval_held_out_results.json`, with matching Markdown reports.*
 

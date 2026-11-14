@@ -6,7 +6,35 @@ The project keeps a development/regression set separate from a frozen held-out c
 
 - **Regression split:** `evaluation/cases.jsonl` contains the 20 existing supplied and synthetic cases. It may be used during implementation and rule development.
 - **Held-out candidate split:** `evaluation/held_out_cases.jsonl` contains 30 additional synthetic scenarios with prompt-family IDs disjoint from the regression set. Do not tune classifier rules against this set.
-- **Annotation limitation:** The 30 held-out labels are provisional single-annotator labels. They are not independently double-annotated or adjudicated. They provide a separate leakage-control check, but must not be presented as an independently validated benchmark until a human reviewer independently labels them and disagreements are resolved.
+- **Annotation limitation:** The 30 held-out labels in the repository are still provisional single-annotator labels. They are not independently double-annotated or adjudicated and must not be presented as independently validated ground truth.
+- **Execution reliability:** Classifier quality metrics are reported on successful calls, while execution coverage and coverage-adjusted exact-match agreement use the full cohort so failed calls cannot disappear from the operational result.
+
+### Independent annotation workflow
+
+Create two separately shuffled reviewer packets. The packets include the case context but omit provisional labels, source notes and model predictions:
+
+```bash
+python -m evaluation.annotation_workflow export --reviewer-a reviewer_a --reviewer-b reviewer_b
+```
+
+Have two distinct reviewers label every case independently by filling the `labels` booleans and, where useful, the rationale in their respective JSONL files under `evaluation/annotations/`. Do not show reviewers classifier output or the provisional `expected` field.
+
+Reconcile the two submissions:
+
+```bash
+python -m evaluation.annotation_workflow finalize \
+  --reviewer-a evaluation/annotations/reviewer_a.jsonl \
+  --reviewer-b evaluation/annotations/reviewer_b.jsonl
+```
+
+If any labels disagree, finalization writes `evaluation/annotations/adjudication_required.jsonl` and stops without creating a finalized benchmark file. A third reviewer must fill the adjudicator ID, final booleans and a rationale for every disputed case. Then rerun the command with `--adjudication evaluation/annotations/adjudication_required.jsonl`. The output `evaluation/held_out_adjudicated_cases.jsonl` preserves the original provisional labels, both reviewer decisions and any adjudication record.
+
+Run evaluation with the adjudicated labels only after that process succeeds:
+
+```bash
+python -m evaluation.run_eval --mode replay --split held_out \
+  --cases-path evaluation/held_out_adjudicated_cases.jsonl
+```
 
 Run regression evaluation:
 
@@ -41,16 +69,17 @@ The grader reports, per label:
 - Precision, recall, specificity, accuracy, balanced accuracy and F1
 - Exact-match agreement across mention, recommendation and negative labels
 
-Metrics are calculated only for successful classifier responses. Failed provider cases are reported separately and must not silently count as correct predictions.
+Per-label precision, recall, F1 and matched-subset exact-match agreement are calculated only for successful classifier responses. The report separately shows the all-case baseline, classifier execution coverage, and coverage-adjusted exact-match agreement. The coverage-adjusted rate divides successful exact matches by the full case count, so every failed classifier call remains visible in the operational denominator.
 
 ## 4. Leakage and annotation policy
 
 - Keep the regression and held-out files separate.
 - The test suite checks that their prompt-family IDs do not overlap and that held-out case IDs are unique.
 - Do not inspect held-out errors and then modify classifier rules before reporting the same held-out score as final. If the held-out set is used for development, retire it and create a new unseen test set.
-- Independently annotate the held-out cases (preferably two reviewers), record disagreements and adjudicate labels before describing the set as independent ground truth.
-- Preserve the original labels and record any adjudicated correction with a rationale; do not silently overwrite labels based on model output.
-- Report each split's sample count and per-label support alongside all metrics.
+- Independently annotate the held-out cases with two distinct reviewers, record raw agreement and per-label Cohen's kappa, and require a third reviewer to adjudicate every disagreement before describing the set as independent ground truth.
+- Use `evaluation.annotation_workflow` to generate blinded packets and validate complete reviewer coverage. The tool refuses duplicate reviewer identities, missing/extra case IDs, invalid label types, and unresolved disagreements.
+- Preserve the provisional labels and both independent submissions in the adjudicated output; record every adjudication with a third reviewer ID and rationale. Never alter labels in response to model predictions.
+- Report each split's sample count, per-label support, execution coverage and coverage-adjusted exact-match agreement alongside quality metrics.
 
 ## 5. Evidence and source traceability
 
