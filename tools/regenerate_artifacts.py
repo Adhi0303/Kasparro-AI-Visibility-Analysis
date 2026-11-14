@@ -504,6 +504,10 @@ footer{{text-align:center;color:var(--muted);font-size:12px;padding:30px 0 12px}
     leaked = [value for value in forbidden if value in html_document]
     if leaked:
         raise RuntimeError(f"Stale dashboard content detected: {leaked}")
+
+    # Triple-quoted templates can preserve indentation on visually blank lines.
+    # Normalize generated output so git diff --check and downstream tooling agree.
+    html_document = "\\n".join(line.rstrip() for line in html_document.splitlines()) + "\\n"
     return html_document
 
 
