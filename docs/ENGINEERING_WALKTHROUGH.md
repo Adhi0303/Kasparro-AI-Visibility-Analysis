@@ -8,7 +8,16 @@ The assignment asks for a runnable backend that accounts for 50 prompts, 150 arc
 
 The implementation uses Python, FastAPI, Pydantic and SQLite. Dashboard rendering and additional hardening support reviewability, but the core acceptance criteria remain the backend, evidence, evaluation and review lifecycle.
 
-## 2. System walkthrough
+## 2. Module acceptance map
+
+| Module | Review objective | Evidence in the repository |
+|---|---|---|
+| **P1 — Actual LLM execution** | Demonstrate a real provider call, not replay-only output | `app/llm/provider.py`, provider smoke test, `eval_provider_results.json` and the Gemini report (18/20 calls succeeded) |
+| **P2 — Evaluation methodology** | Compare against a baseline, separate development and held-out cases, report metrics and failures | `evaluation/cases.jsonl`, split manifest, grader, repeatability runner, regression and held-out reports |
+| **P3 — Evidence integrity** | Reject unsupported or altered quotations and preserve source traceability | Central evidence audit in `app/evidence.py` / classification pipeline, adversarial tests and the P3 evidence-integrity audit |
+| **P4 — Final analysis and reporting** | Reconcile all 150 records, produce three evidence-backed diagnostics and three prioritised remedies | `final_report.json`, `report.html`, P4 reconciliation tests and `docs/P4_FINAL_ANALYSIS_AUDIT.md` |
+
+## 3. System walkthrough
 
 1. **Input integrity:** `python tools/check_pack.py` validates the supplied pack manifest, checksums and relationships.
 2. **Persistence:** `app/ingestion.py` validates and imports prompt, response and citation records into the SQLite schema. Re-import handling is covered by ingestion tests.
@@ -18,7 +27,7 @@ The implementation uses Python, FastAPI, Pydantic and SQLite. Dashboard renderin
 6. **Scoring and reporting:** Deterministic application code computes scores and aggregates. Diagnostics and remedies link back to response IDs and excerpts; JSON and HTML artifacts are generated from the report data.
 7. **Human review:** Analyst and reviewer permissions are enforced server-side. Draft submission freezes a version; approval/rejection is recorded; export is gated on the approved immutable version. Editing after approval creates a new draft requiring review.
 
-## 3. Commands for a reviewer walkthrough
+## 4. Commands for a reviewer walkthrough
 
 From the repository root, after installing dependencies and creating a local `.env` from `.env.example`:
 
@@ -41,7 +50,7 @@ python -m evaluation.repeatability --split regression --repeats 3
 
 Replay commands and the held-out replay command are documented in the README and `docs/EVALUATION_AND_BENCHMARKS.md`. The held-out result currently in the repository is deterministic replay, not a live Gemini held-out evaluation.
 
-## 4. Evaluation results and their boundaries
+## 5. Evaluation results and their boundaries
 
 ### Live Gemini regression run
 
@@ -63,13 +72,13 @@ The three-repeat study contains 60 calls: 54 successful and 6 failed (90.0% call
 
 The held-out artifact contains 30 synthetic cases executed with `deterministic_replay` / `contextual-rules-v1`. Its 63.3% agreement is a replay-rule result; it must not be presented as Gemini live-model accuracy. The held-out labels are provisional single-annotator labels.
 
-## 5. Failure, diagnosis and verified correction
+## 6. Failure, diagnosis and verified correction
 
 During development, diagnostic evidence included paraphrased text rather than exact excerpts from archived answers. The fix centralised source-text matching and offset validation, rejected unsupported or altered evidence, and added regression coverage including `test_all_diagnostic_evidence_verbatim_integrity` and adversarial evidence tests. The P3 audit records 6/6 final diagnostic evidence excerpts as exact matches, with no invalid response IDs or offset mismatches.
 
 The live Gemini run also exposed quota failures (HTTP 429) and a prompt-echo false positive on `synthetic-001`. The quota failures are reported as execution failures; the synthetic false positive remains a model-quality limitation rather than being hidden or relabelled as a successful match.
 
-## 6. Fit to the AI Software Engineer - 1 role
+## 7. Fit to the AI Software Engineer - 1 role
 
 | Role expectation | Demonstrated in this project |
 |---|---|
@@ -85,7 +94,7 @@ The live Gemini run also exposed quota failures (HTTP 429) and a prompt-echo fal
 
 **Scope boundary:** This assignment implements a bounded LLM-backed classification and evidence-validation workflow, not a free-running autonomous agent with external tool orchestration. Google ADK, LangGraph, Langfuse, Docker and cloud deployment were not required by the assignment and are not claimed as implemented here.
 
-## 7. Final verification record
+## 8. Final verification record
 
 The final local verification report for commit `121544c` records:
 
