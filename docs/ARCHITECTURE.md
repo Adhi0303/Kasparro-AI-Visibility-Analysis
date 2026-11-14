@@ -14,7 +14,7 @@ flowchart TD
     subgraph Processing ["2. Analysis & Classification"]
         DB_INGEST --> ROUTER{"Execution Mode"}
         ROUTER -->|"Replay"| REPLAY["Deterministic Replay Classifier\n(Keyless Heuristics & Failure Stubs)"]
-        ROUTER -->|"Provider"| ADAPTER["Real-Model Adapter\n(OpenAI / Google API + Retries)"]
+        ROUTER -->|"Provider"| ADAPTER["Real-Model Adapter\n(OpenAI-compatible chat completions)"]
         REPLAY --> RESULTS["Response Results\n(Mention, Rec, Neg, Position, Citations)"]
         ADAPTER --> RESULTS
         RESULTS --> SCORER["Deterministic Scoring Engine\n(Formula v1 + Aggregate Rollups)"]
@@ -147,20 +147,20 @@ Kasparro_AI_Engineer_Fresher/
 │   └── llm/
 │       ├── base.py         # Abstract Base Class defining classifier interface
 │       ├── replay.py       # Deterministic keyless replay classifier with failure simulation
-│       └── provider.py     # Live API client with exponential backoff and schema validation
+│       └── provider.py     # Configurable OpenAI-compatible adapter with schema validation and bounded retries
 ├── data/                   # AUTHORITATIVE HISTORICAL INPUT DATA (read-only)
 │   ├── prompts.jsonl       # 50 exact queries (25 branded, 25 unbranded category)
 │   ├── responses.jsonl     # 150 captured AI answers (50 ChatGPT, 50 Gemini, 50 AI Mode)
 │   ├── citations.jsonl     # 2,439 source citations returned across responses
 │   ├── run.json            # Capture metadata (July 31, 2026, DataForSEO, India, English)
 │   └── READ_ME.txt         # Dataset documentation
-├── evaluation/             # Independent evaluation suite
+├── evaluation/             # Regression and provisional held-out evaluation suite
 │   ├── cases.jsonl         # 20 labeled gold cases (8 supplied + 12 synthetic edge cases)
 │   ├── grader.py           # Multi-label precision, recall, and agreement metrics calculator
 │   ├── run_eval.py         # Comparative benchmark script (Baseline vs Proposed)
 │   └── results/            # Benchmark outputs, final_report.json, and report.html
 ├── fixtures/               # Test fixtures and simulated failure conditions
-├── tests/                  # 76 unit and integration pytest test cases
+├── tests/                  # Unit, integration, security, provider and artifact-generation tests
 ├── tools/                  # Pack integrity verification and artifact regeneration scripts
 ├── demo.py                 # One-click end-to-end demonstration script
 ├── README.md               # Quick-start manual and API usage guide
