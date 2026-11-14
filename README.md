@@ -145,6 +145,16 @@ The repository includes 20 regression cases and 30 additional held-out synthetic
 
 *Replay outputs are written separately as `eval_results.json` and `eval_held_out_results.json`, with matching Markdown reports.*
 
+
+Regenerate all report outputs after changing code or source data, then validate that the HTML dashboard, JSON report, Markdown reports and source evidence agree:
+
+```powershell
+python tools/regenerate_artifacts.py
+python tools/validate_artifacts.py
+```
+
+The generated artifacts are built from the current analysis run and evaluation outputs. The held-out dataset is synthetic with provisional single-annotator labels; it should not be described as independently adjudicated ground truth.
+
 ---
 
 ## 6. Execution Modes (Replay vs. Real-Model)
