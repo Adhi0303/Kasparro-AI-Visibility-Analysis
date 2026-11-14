@@ -75,6 +75,12 @@ Run the entire workflow (pack validation → SQLite setup → ingestion → dete
 python demo.py
 ```
 
+To regenerate the final JSON and HTML report artifacts from the current validated analysis pipeline:
+```powershell
+python tools/regenerate_artifacts.py
+```
+The dashboard is rebuilt from the current analysis and evaluation outputs; it does not reuse an old generated HTML file or substitute default metric values.
+
 ---
 
 ### 🛠️ Option B: Manual Step-by-Step Setup
