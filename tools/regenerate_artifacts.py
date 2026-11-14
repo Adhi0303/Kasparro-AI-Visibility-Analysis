@@ -483,89 +483,124 @@ def main() -> None:
         # Update SCORE constant & datasetMatrix JS object
         html_text = re.sub(r"const SCORE = [0-9.]+;", f"const SCORE = {overall_score:.2f};", html_text)
 
-        scope_all = _scope_stats(prompt_scores, 1, 50)
-        scope_branded = _scope_stats(prompt_scores, 1, 25)
-        scope_unbranded = _scope_stats(prompt_scores, 26, 50)
+        scope_all = _scope_stats(prompt_scores)
+        scope_branded = _scope_stats(prompt_scores, branded_query=True)
+        scope_unbranded = _scope_stats(prompt_scores, branded_query=False)
 
-        branded_inc_pct = round(scope_branded["all"]["inc"], 1)
-        branded_rec_pct = round(scope_branded["all"]["rec"], 1)
-        branded_mentions = sum(1 for r in prompt_scores["gemini"] + prompt_scores["chatgpt"] + prompt_scores["aimode"] if r["prompt_index"] <= 25 and r["mentioned"])
-        gpt_branded_neg_count = sum(1 for r in prompt_scores["chatgpt"] if r["prompt_index"] <= 25 and r["negative"])
-        gpt_branded_neg_pct = round(gpt_branded_neg_count * 100 / 25, 1)
+        branded_prompt_count = len({
+            item["prompt_id"] for rows in prompt_scores.values()
+            for item in rows if item["branded_query"]
+        })
+        unbranded_prompt_count = len({
+            item["prompt_id"] for rows in prompt_scores.values()
+            for item in rows if not item["branded_query"]
+        })
+        branded_response_count = scope_branded["all"]["count"]
+        unbranded_response_count = scope_unbranded["all"]["count"]
+        branded_mentions = scope_branded["all"]["mentioned_count"]
+        unbranded_mentions = scope_unbranded["all"]["mentioned_count"]
+        branded_inc_pct = scope_branded["all"]["inc"]
+        branded_rec_pct = scope_branded["all"]["rec"]
+        gpt_branded_neg_count = scope_branded["chatgpt"]["negative_count"]
+        gpt_branded_count = scope_branded["chatgpt"]["count"]
+        gpt_branded_neg_pct = _pct_int(gpt_branded_neg_count / gpt_branded_count)
 
-        new_matrix = f"""    const datasetMatrix = {{
-      all: {{
-        gemini: {{ score: {gem_s}, inc: {gem_inc}, rec: {gem_rec}, neg: {gem_neg}, count: 50 }},
-        chatgpt: {{ score: {gpt_s}, inc: {gpt_inc}, rec: {gpt_rec}, neg: {gpt_neg}, count: 50 }},
-        aimode: {{ score: {aim_s}, inc: {aim_inc}, rec: {aim_rec}, neg: {aim_neg}, count: 50 }},
-        all: {{ score: {all_s}, inc: {all_inc}, rec: {all_rec}, neg: {all_neg}, count: 150 }},
-        alert: {{
-          type: 'default',
-          icon: '⚠️',
-          title: 'Critical Finding: Zero Unbranded Category Recall',
-          desc: 'Across all <strong>25 unbranded category prompts</strong> (026–050), Kasparro was included in <strong>0 out of 75 responses</strong>. Competitors Profound, Peec AI, and Otterly dominated generic buyer queries.'
-        }}
-      }},
-      branded: {{
-        gemini: {{ score: {scope_branded['gemini']['score']}, inc: {scope_branded['gemini']['inc']}, rec: {scope_branded['gemini']['rec']}, neg: {scope_branded['gemini']['neg']}, count: 25 }},
-        chatgpt: {{ score: {scope_branded['chatgpt']['score']}, inc: {scope_branded['chatgpt']['inc']}, rec: {scope_branded['chatgpt']['rec']}, neg: {scope_branded['chatgpt']['neg']}, count: 25 }},
-        aimode: {{ score: {scope_branded['aimode']['score']}, inc: {scope_branded['aimode']['inc']}, rec: {scope_branded['aimode']['rec']}, neg: {scope_branded['aimode']['neg']}, count: 25 }},
-        all: {{ score: {scope_branded['all']['score']}, inc: {scope_branded['all']['inc']}, rec: {scope_branded['all']['rec']}, neg: {scope_branded['all']['neg']}, count: 75 }},
-        alert: {{
-          type: 'warning',
-          icon: '🎯',
-          title: 'Branded Prompts: High Inclusion With Thin-Validation Caution',
-          desc: 'When buyers name Kasparro explicitly, inclusion reaches <strong>{branded_mentions}/75 ({branded_inc_pct:.1f}%)</strong>. However, ChatGPT surfaces skepticism in <strong>{gpt_branded_neg_count}/25 ({gpt_branded_neg_pct:.1f}%)</strong> branded answers due to missing third-party proof.'
-        }}
-      }},
-      unbranded: {{
-        gemini: {{ score: {scope_unbranded['gemini']['score']}, inc: {scope_unbranded['gemini']['inc']}, rec: {scope_unbranded['gemini']['rec']}, neg: {scope_unbranded['gemini']['neg']}, count: 25 }},
-        chatgpt: {{ score: {scope_unbranded['chatgpt']['score']}, inc: {scope_unbranded['chatgpt']['inc']}, rec: {scope_unbranded['chatgpt']['rec']}, neg: {scope_unbranded['chatgpt']['neg']}, count: 25 }},
-        aimode: {{ score: {scope_unbranded['aimode']['score']}, inc: {scope_unbranded['aimode']['inc']}, rec: {scope_unbranded['aimode']['rec']}, neg: {scope_unbranded['aimode']['neg']}, count: 25 }},
-        all: {{ score: {scope_unbranded['all']['score']}, inc: {scope_unbranded['all']['inc']}, rec: {scope_unbranded['all']['rec']}, neg: {scope_unbranded['all']['neg']}, count: 75 }},
-        alert: {{
-          type: 'danger',
-          icon: '🚨',
-          title: 'Complete Unbranded Category Void (0.0% Recall)',
-          desc: 'Kasparro is <strong>100% absent (0 mentions out of 75 responses)</strong> across all generic AI shortlisting searches. LLMs recommend Profound, Peec AI, and Otterly instead.'
-        }}
-      }}
-    }};"""
-        html_text = re.sub(
-            r"    const datasetMatrix = \{.*?    \};",
+        def matrix_group(stats: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+            group = {}
+            for engine_key in ("gemini", "chatgpt", "aimode", "all"):
+                item = stats[engine_key]
+                group[engine_key] = {
+                    "score": item["score"],
+                    "inc": item["inc"],
+                    "rec": item["rec"],
+                    "neg": item["neg"],
+                    "count": item["count"],
+                }
+            return group
+
+        if unbranded_mentions == 0:
+            unbranded_alert = {
+                "type": "danger",
+                "icon": "🚨",
+                "title": "No Kasparro Mentions in Unbranded Responses",
+                "desc": (
+                    f"Kasparro appeared in <strong>{unbranded_mentions} of {unbranded_response_count}</strong> "
+                    f"unbranded responses ({scope_unbranded['all']['inc']}% inclusion)."
+                ),
+            }
+        else:
+            unbranded_alert = {
+                "type": "warning",
+                "icon": "📊",
+                "title": "Kasparro Appears in Unbranded Responses",
+                "desc": (
+                    f"Kasparro appeared in <strong>{unbranded_mentions} of {unbranded_response_count}</strong> "
+                    f"unbranded responses ({scope_unbranded['all']['inc']}% inclusion)."
+                ),
+            }
+
+        matrix = {
+            "all": {
+                **matrix_group(scope_all),
+                "alert": unbranded_alert,
+            },
+            "branded": {
+                **matrix_group(scope_branded),
+                "alert": {
+                    "type": "warning",
+                    "icon": "🎯",
+                    "title": "Branded Prompt Visibility",
+                    "desc": (
+                        f"When the prompt names Kasparro, it appears in "
+                        f"<strong>{branded_mentions} of {branded_response_count}</strong> responses "
+                        f"({branded_inc_pct}% inclusion). ChatGPT negative/caution rate: "
+                        f"<strong>{gpt_branded_neg_count}/{gpt_branded_count} ({gpt_branded_neg_pct}%)</strong>."
+                    ),
+                },
+            },
+            "unbranded": {
+                **matrix_group(scope_unbranded),
+                "alert": unbranded_alert,
+            },
+        }
+        new_matrix = "    const datasetMatrix = " + _safe_script_json(matrix) + ";"
+        html_text, matrix_substitutions = re.subn(
+            r"    const datasetMatrix = \\{.*?    \\};",
             new_matrix,
             html_text,
             count=1,
             flags=re.DOTALL,
         )
+        if matrix_substitutions != 1:
+            raise ValueError("Dashboard template must contain exactly one datasetMatrix declaration.")
 
         # Regenerate scatter polylines & dot groups
         new_scatter_body = (
             f'            <!-- Polylines (Trendlines) -->\n'
             f'            <polyline id="line-gemini"\n'
-            f'              points="{_polyline_points(prompt_scores["gemini"])}"\n'
+            f'              points="{_polyline_points(prompt_scores["gemini"], max_prompt_index)}"\n'
             f'              fill="none" stroke="#7c5cdb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"\n'
             f'              class="scatter-line line-gemini" />\n'
             f'            <polyline id="line-chatgpt"\n'
-            f'              points="{_polyline_points(prompt_scores["chatgpt"])}"\n'
+            f'              points="{_polyline_points(prompt_scores["chatgpt"], max_prompt_index)}"\n'
             f'              fill="none" stroke="#0ea472" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"\n'
             f'              class="scatter-line line-chatgpt" />\n'
             f'            <polyline id="line-aimode"\n'
-            f'              points="{_polyline_points(prompt_scores["aimode"])}"\n'
+            f'              points="{_polyline_points(prompt_scores["aimode"], max_prompt_index)}"\n'
             f'              fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"\n'
             f'              class="scatter-line line-aimode" />\n\n'
             f'            <!-- Scatter Dots -->\n'
             f'            <!-- Gemini Dots -->\n'
             f'            <g id="dots-gemini" class="dot-group dot-group-gemini">\n'
-            f'{_dot_svg_group("gemini", "#7c5cdb", "🔮", "Gemini", prompt_scores["gemini"])}\n'
+            f'{_dot_svg_group("gemini", "#7c5cdb", "🔮", "Gemini", prompt_scores["gemini"], max_prompt_index)}\n'
             f'            </g>\n\n'
             f'            <!-- ChatGPT Dots -->\n'
             f'            <g id="dots-chatgpt" class="dot-group dot-group-chatgpt">\n'
-            f'{_dot_svg_group("chatgpt", "#0ea472", "🤖", "ChatGPT", prompt_scores["chatgpt"])}\n'
+            f'{_dot_svg_group("chatgpt", "#0ea472", "🤖", "ChatGPT", prompt_scores["chatgpt"], max_prompt_index)}\n'
             f'            </g>\n\n'
             f'            <!-- AI Mode Dots -->\n'
             f'            <g id="dots-aimode" class="dot-group dot-group-aimode">\n'
-            f'{_dot_svg_group("aimode", "#3b82f6", "🔍", "AI Mode", prompt_scores["aimode"])}\n'
+            f'{_dot_svg_group("aimode", "#3b82f6", "🔍", "AI Mode", prompt_scores["aimode"], max_prompt_index)}\n'
             f'            </g>'
         )
         html_text = re.sub(
