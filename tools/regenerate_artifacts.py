@@ -10,7 +10,7 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -139,8 +139,8 @@ def _safe_script_json(value: Dict[str, Any]) -> str:
     return (
         json.dumps(value, ensure_ascii=False, separators=(",", ":"))
         .replace("</", "<\\/")
-        .replace("\\u2028", "\\\\u2028")
-        .replace("\\u2029", "\\\\u2029")
+        .replace("\u2028", "\\\\u2028")
+        .replace("\u2029", "\\\\u2029")
     )
 
 
@@ -153,8 +153,8 @@ def _required(mapping: Dict[str, Any], key: str, label: str) -> Any:
 def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
     """Embed the same canonical report/evaluation payload used to generate the dashboard."""
     html_text = re.sub(
-        r'\\s*<script id="kasparro-report-data" type="application/json">.*?</script>\\s*'
-        r'<script id="kasparro-report-hydration">.*?</script>\\s*',
+        r'\s*<script id="kasparro-report-data" type="application/json">.*?</script>\s*'
+        r'<script id="kasparro-report-hydration">.*?</script>\s*',
         "\\n",
         html_text,
         flags=re.DOTALL,
