@@ -176,6 +176,7 @@ def test_dashboard_restores_interactive_engine_and_cohort_filters():
     assert 'addEventListener("change", applyFilters)' in html
     assert 'data-engine="gemini"' in html
     assert 'data-cohort="branded"' in html
+    assert 'point.style.display' in html
 
 
 
