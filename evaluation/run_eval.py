@@ -77,13 +77,22 @@ def run_evaluation(
         else:
             raise ValueError("The all split requires an explicit combined cases_path; do not concatenate development and held-out sets for model selection.")
     cases = load_cases(cases_path)
-    if split == "held_out" and using_default_split_path:
+    if split == "held_out":
         regression_cases = load_cases("evaluation/cases.jsonl")
         regression_prompts = {case.get("prompt_id") for case in regression_cases}
         held_out_prompts = {case.get("prompt_id") for case in cases}
         overlap = regression_prompts.intersection(held_out_prompts)
         if overlap:
             raise ValueError(f"Held-out prompt families overlap regression split: {sorted(overlap)[:5]}")
+        non_held_out = [
+            case.get("case_id") for case in cases
+            if case.get("source_type") != "held_out_synthetic"
+        ]
+        if non_held_out:
+            raise ValueError(
+                "The held_out split may contain only held_out_synthetic cases; "
+                f"invalid cases: {non_held_out[:5]}"
+            )
     case_ids = [case.get("case_id") for case in cases]
     if any(not isinstance(case_id, str) or not case_id for case_id in case_ids) or len(case_ids) != len(set(case_ids)):
         raise ValueError("Evaluation case IDs must be non-empty and unique")
@@ -110,6 +119,8 @@ def run_evaluation(
             "classifier_version": classifier.classifier_version,
         }
 
+    expected_all_cases: List[Dict[str, bool]] = []
+    baseline_all_cases: List[Dict[str, bool]] = []
     expected_completed: List[Dict[str, bool]] = []
     baseline_completed: List[Dict[str, bool]] = []
     proposed_completed: List[Dict[str, bool]] = []
@@ -132,6 +143,8 @@ def run_evaluation(
         expected = c["expected"]
 
         b_pred = baseline_classify(text)
+        expected_all_cases.append(expected)
+        baseline_all_cases.append(b_pred)
         classify_kwargs = {
             "response_id": resp_id or c_id,
             "engine": c.get("engine", "unknown"),
@@ -203,8 +216,34 @@ def run_evaluation(
             "notes": c.get("notes", ""),
         })
 
+    # Keep the baseline/proposed comparison on the same successful subset.
+    # Also retain a full-cohort baseline and penalize failed classifier calls in
+    # the operational, coverage-adjusted exact-match measure.
     baseline_metrics = grade_predictions(expected_completed, baseline_completed)
+    baseline_all_metrics = grade_predictions(expected_all_cases, baseline_all_cases)
     proposed_metrics = grade_predictions(expected_completed, proposed_completed)
+    total_case_count = len(cases)
+    successful_case_count = len(expected_completed)
+    coverage_rate = successful_case_count / total_case_count if total_case_count else 0.0
+    coverage_adjusted_agreement = (
+        proposed_metrics["exact_matches"] / total_case_count if total_case_count else 0.0
+    )
+
+    if split == "held_out":
+        annotation_statuses = {case.get("annotation_status") for case in cases}
+        annotation_status = (
+            "independently_double_annotated_and_adjudicated"
+            if annotation_statuses == {"independently_double_annotated_and_adjudicated"}
+            else "provisional_single_annotator"
+        )
+        annotation_note = (
+            "Held-out labels were independently double-annotated and disagreements were adjudicated."
+            if annotation_status == "independently_double_annotated_and_adjudicated"
+            else "Held-out labels are provisional single-annotator labels and are not independently adjudicated."
+        )
+    else:
+        annotation_status = "regression_reference_labels"
+        annotation_note = "Regression labels are development references, not an independent held-out benchmark."
 
     os.makedirs(output_dir, exist_ok=True)
     timestamp = datetime.now(timezone.utc).isoformat()
@@ -238,12 +277,23 @@ def run_evaluation(
 - **Successful Evaluations:** {len(expected_completed)}
 - **Failed/Skipped Evaluations:** {len(failed_cases)}
 - **Execution Mode:** {mode_desc}
+- **Annotation Status:** {annotation_status}
 
 ---
 
 ## 1. Executive Summary
 
-This evaluation benchmarks the **{execution_mode}** classifier (`{exec_meta['model']}`) against a **Naive Rule-Based Baseline** across {len(expected_completed)} successfully evaluated gold-standard cases.
+This evaluation compares the **{execution_mode}** classifier (`{exec_meta['model']}`) with a **Naive Rule-Based Baseline** on the {len(expected_completed)} cases where classifier execution succeeded. It does not describe provisional labels as independently validated ground truth.
+
+## 2. Execution Coverage
+
+- **Total cases:** {total_case_count}
+- **Successful classifier calls:** {successful_case_count}
+- **Failed/skipped classifier calls:** {len(failed_cases)}
+- **Execution coverage:** {coverage_rate * 100:.1f}%
+- **Coverage-adjusted exact-match agreement:** {coverage_adjusted_agreement * 100:.1f}% ({proposed_metrics['exact_matches']}/{total_case_count})
+
+Classification metrics and the baseline comparison below use the matched successful subset. Coverage-adjusted agreement uses the full cohort, treating failed classifier calls as unmatched rather than silently excluding them.
 
 | Metric | Rule-Based Baseline | Evaluated Classifier | Delta |
 |---|---|---|---|
@@ -297,12 +347,22 @@ As required by Section 16 of the assignment brief, actual failures observed duri
             "synthetic_cases": synthetic_count,
             "held_out_cases": held_out_count,
             "split": split,
-            "annotation_note": "Held-out synthetic labels are provisional single-annotator labels and require independent human review before being treated as an independent benchmark.",
+            "annotation_status": annotation_status,
+            "annotation_note": annotation_note,
             "evaluated_cases": len(expected_completed),
             "failed_cases": len(failed_cases),
         },
         "baseline_metrics": baseline_metrics,
+        "baseline_metrics_all_cases": baseline_all_metrics,
         "proposed_metrics": proposed_metrics,
+        "coverage_metrics": {
+            "total_cases": total_case_count,
+            "successful_classifier_calls": successful_case_count,
+            "failed_classifier_calls": len(failed_cases),
+            "coverage_rate": round(coverage_rate, 4),
+            "coverage_adjusted_exact_match_rate": round(coverage_adjusted_agreement, 4),
+            "exact_matches_on_successful_calls": proposed_metrics["exact_matches"],
+        },
         "failures": failed_cases,
         "cases": case_details,
     }
@@ -313,9 +373,13 @@ As required by Section 16 of the assignment brief, actual failures observed duri
 
     print(f"Evaluation completed ({execution_mode})! Report written to {md_path}")
     print(
-        f"Agreement rate ({len(expected_completed)}/{len(cases)} evaluated) - "
+        f"Matched-subset agreement ({successful_case_count}/{total_case_count} successful) - "
         f"Baseline: {baseline_metrics['agreement_rate'] * 100:.1f}%, "
         f"Evaluated: {proposed_metrics['agreement_rate'] * 100:.1f}%"
+    )
+    print(
+        f"Execution coverage: {coverage_rate * 100:.1f}%; "
+        f"coverage-adjusted exact-match agreement: {coverage_adjusted_agreement * 100:.1f}%"
     )
     if failed_cases:
         print(f"Explicit failures recorded: {len(failed_cases)} (first reason: {failed_cases[0]['failure_reason']})")
@@ -331,5 +395,9 @@ if __name__ == "__main__":
         default="replay",
         help="Execution mode: deterministic 'replay' (default) or live/configured 'real_model'.",
     )
+    parser.add_argument(
+        "--cases-path",
+        help="Optional alternate JSONL cases file (for example, independently adjudicated held-out labels).",
+    )
     args = parser.parse_args()
-    run_evaluation(execution_mode=args.mode, split=args.split)
+    run_evaluation(execution_mode=args.mode, split=args.split, cases_path=args.cases_path)
