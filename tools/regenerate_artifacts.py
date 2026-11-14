@@ -305,35 +305,104 @@ def main() -> None:
         )
         exported = export_approved_report(db, report.id)
 
+        if analysis.status != "completed":
+            raise RuntimeError(f"Analysis did not complete successfully: {analysis.status}")
         dataset_row = db.query(Dataset).filter(Dataset.id == ds_res.dataset_id).first()
-        analysis_cfg = json.loads(analysis.configuration_json)
+        if dataset_row is None:
+            raise RuntimeError("Imported dataset record is missing after ingestion.")
+        try:
+            analysis_cfg = json.loads(analysis.configuration_json or "")
+        except (TypeError, json.JSONDecodeError) as exc:
+            raise RuntimeError("Analysis produced missing or invalid configuration JSON.") from exc
+        overall_cfg = _required(analysis_cfg, "overall", "analysis configuration")
+        engine_cfg = _required(analysis_cfg, "engine_aggregates", "analysis configuration")
+        for required_engine in ("gemini", "chatgpt", "aimode"):
+            _required(engine_cfg, required_engine, "engine aggregates")
 
-        # Build prompt_scores.json ordered P01..P50 per engine
+        prompts_by_id: Dict[str, str] = {}
+        with (ROOT / "data" / "prompts.jsonl").open("r", encoding="utf-8") as prompt_file:
+            for line in prompt_file:
+                if not line.strip():
+                    continue
+                prompt_record = json.loads(line)
+                prompt_id = prompt_record.get("prompt_id")
+                prompt_text = prompt_record.get("text")
+                if isinstance(prompt_id, str) and isinstance(prompt_text, str) and prompt_text.strip():
+                    prompts_by_id[prompt_id] = prompt_text
+
+        # Build per-response chart data from successful DB results and the original prompt source.
         db_responses = db.query(DBResponse).filter(DBResponse.dataset_id == ds_res.dataset_id).all()
         resp_by_pk = {r.id: r for r in db_responses}
         res_rows = db.query(ResponseResult).filter(ResponseResult.analysis_id == analysis.id).all()
-
         prompt_scores: Dict[str, List[Dict[str, Any]]] = {"gemini": [], "chatgpt": [], "aimode": []}
         for row in res_rows:
+            if row.status != "success" or row.score is None:
+                continue
             db_r = resp_by_pk[row.response_id]
-            payload = json.loads(db_r.raw_payload)
+            payload = json.loads(db_r.raw_payload or "{}")
             labels = json.loads(row.labels_json or "{}")
-            p_idx = _prompt_num(db_r.prompt_id)
+            prompt_text = payload.get("prompt_text") or payload.get("text") or prompts_by_id.get(db_r.prompt_id)
+            if not isinstance(prompt_text, str) or not prompt_text.strip():
+                raise ValueError(f"Missing original prompt text for prompt_id={db_r.prompt_id!r}.")
+            if db_r.engine not in prompt_scores:
+                raise ValueError(f"Unsupported engine in dashboard data: {db_r.engine!r}")
+            if not isinstance(labels, dict):
+                raise ValueError(f"Invalid classification labels for response {db_r.source_response_id!r}.")
+            if not isinstance(row.score, (int, float)):
+                raise ValueError(f"Successful response {db_r.source_response_id!r} has no numeric score.")
             prompt_scores[db_r.engine].append({
-                "prompt_index": p_idx,
-                "prompt_text": payload.get("prompt_text", ""),
-                "score": round(float(row.score or 0.0), 1),
+                "prompt_index": _prompt_num(db_r.prompt_id),
+                "prompt_id": db_r.prompt_id,
+                "response_id": db_r.source_response_id,
+                "prompt_text": prompt_text,
+                "branded_query": bool(re.search(r"\\bkasparro\\b", prompt_text, re.IGNORECASE)),
+                "score": round(float(row.score), 1),
                 "mentioned": bool(labels.get("kasparro_mentioned")),
                 "recommended": bool(labels.get("kasparro_recommended")),
                 "negative": bool(labels.get("kasparro_negative")),
             })
-        for eng in prompt_scores:
-            prompt_scores[eng].sort(key=lambda item: item["prompt_index"])
+        for engine_key in prompt_scores:
+            prompt_scores[engine_key].sort(key=lambda item: item["prompt_index"])
+            if not prompt_scores[engine_key]:
+                raise ValueError(f"No successful dashboard responses for engine {engine_key!r}.")
 
-        with open(RESULTS_DIR / "prompt_scores.json", "w", encoding="utf-8") as f:
-            json.dump(prompt_scores, f, indent=2)
+        prompt_count = len({item["prompt_id"] for rows in prompt_scores.values() for item in rows})
+        response_count = sum(len(rows) for rows in prompt_scores.values())
+        max_prompt_index = max(item["prompt_index"] for rows in prompt_scores.values() for item in rows)
+        if prompt_count == 0 or response_count == 0 or max_prompt_index <= 0:
+            raise ValueError("Dashboard source data contains no usable prompt/response rows.")
 
-        # Save final_report.json using real DB export content
+        with (RESULTS_DIR / "prompt_scores.json").open("w", encoding="utf-8") as output_file:
+            json.dump(prompt_scores, output_file, indent=2, ensure_ascii=False)
+
+        # Preserve evaluation outputs and methodology metadata alongside the analysis report.
+        def evaluation_summary(result: Dict[str, Any], split_name: str) -> Dict[str, Any]:
+            counts = _required(result, "counts", f"{split_name} evaluation")
+            baseline = _required(result, "baseline_metrics", f"{split_name} evaluation")
+            proposed = _required(result, "proposed_metrics", f"{split_name} evaluation")
+            return {
+                "split": split_name,
+                "counts": counts,
+                "execution_metadata": result.get("execution_metadata", {}),
+                "baseline_metrics": baseline,
+                "proposed_metrics": proposed,
+                "description": (
+                    f"{counts.get('evaluated_cases', 0)} of {counts.get('total_cases', 0)} "
+                    f"{split_name} cases evaluated; {counts.get('failed_cases', 0)} failed. "
+                    + (
+                        "Held-out labels are provisional synthetic, single-annotator labels."
+                        if split_name == "held_out"
+                        else "Regression cases are intended for development and regression checks."
+                    )
+                ),
+            }
+
+        evaluation_payload = {
+            "regression": evaluation_summary(eval_res, "regression"),
+            "held_out": evaluation_summary(held_out_eval_res, "held_out"),
+        }
+
+        # Save final_report.json using the approved DB export and the same evaluation outputs.
         now_iso = datetime.now(timezone.utc).isoformat()
         final_report = {
             "title": "Kasparro AI Visibility Analysis & Human Review Final Report",
@@ -359,9 +428,9 @@ def main() -> None:
                 "skipped_responses": analysis_cfg["overall"]["total_skipped"],
             },
             "scoring": {
-                "scoring_version": "v1",
-                "classifier_version": "v1",
-                "execution_mode": "replay",
+                "scoring_version": analysis.scoring_version,
+                "classifier_version": analysis.classifier_version,
+                "execution_mode": analysis.execution_mode,
                 "overall_mean_score": analysis_cfg["overall"]["mean_score"],
                 "overall_distribution": analysis_cfg["overall"]["distribution"],
                 "engine_aggregates": analysis_cfg["engine_aggregates"],
@@ -370,6 +439,7 @@ def main() -> None:
             "diagnostics": exported["content"]["diagnostics"],
             "remedies": exported["content"]["remedies"],
             "evidence_validation": exported["content"]["evidence_validation"],
+            "evaluation": evaluation_payload,
         }
         with open(RESULTS_DIR / "final_report.json", "w", encoding="utf-8") as f:
             json.dump(final_report, f, indent=2)
