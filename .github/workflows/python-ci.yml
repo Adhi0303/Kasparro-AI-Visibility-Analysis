@@ -44,5 +44,26 @@ jobs:
       - name: Run held-out candidate evaluation
         run: python -m evaluation.run_eval --mode replay --split held_out
 
+      - name: Regenerate canonical report and dashboard artifacts
+        run: python tools/regenerate_artifacts.py
+
+      - name: Validate generated report consistency and source evidence
+        run: python tools/validate_artifacts.py
+
+      - name: Upload generated report bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: kasparro-generated-report
+          path: |
+            evaluation/results/final_report.json
+            evaluation/results/prompt_scores.json
+            evaluation/results/report.html
+            evaluation/results/eval_results.json
+            evaluation/results/eval_held_out_results.json
+            evaluation/results/eval_comparison_report.md
+            evaluation/results/eval_comparison_report_held_out.md
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Check whitespace errors
         run: git diff --check
