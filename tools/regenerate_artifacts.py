@@ -228,7 +228,8 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
     setAttribute("bar-" + prefix + "-rec", "data-hover-body", "Kasparro was recommended in " + Math.round(rec * successfulCount / 100) + " of " + successfulCount + " successful responses.");
     setAttribute("bar-" + prefix + "-neg", "data-hover-title", engineLabel + " · Negative Characterization Rate: " + neg.toFixed(1) + "%");
     setAttribute("bar-" + prefix + "-neg", "data-hover-body", "Kasparro was negatively characterized in " + Math.round(neg * successfulCount / 100) + " of " + successfulCount + " successful responses.");
-    const engineCard = document.querySelector(".engine-card." + prefix + "-card");
+    const cardSuffix = key === "gemini" ? "gemini-card" : (key === "chatgpt" ? "chatgpt-card" : "aimode-card");
+    const engineCard = document.querySelector(".engine-card." + cardSuffix);
     if (engineCard) {
       const badge = engineCard.querySelector(".engine-header .pill");
       if (badge) badge.textContent = "Run summary";
