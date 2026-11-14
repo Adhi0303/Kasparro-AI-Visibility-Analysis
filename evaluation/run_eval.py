@@ -68,7 +68,6 @@ def run_evaluation(
 
     if split not in ("regression", "held_out", "all"):
         raise ValueError("split must be one of: regression, held_out, all")
-    using_default_split_path = cases_path is None
     if cases_path is None:
         if split == "regression":
             cases_path = "evaluation/cases.jsonl"
@@ -305,7 +304,7 @@ Classification metrics and the baseline comparison below use the matched success
 
 ---
 
-## 2. Per-Label Breakdown
+## 3. Per-Label Breakdown
 
 ### Mention Detection (`kasparro_mentioned`)
 - **Baseline:** Precision: {baseline_metrics['per_label']['kasparro_mentioned']['precision']}, Recall: {baseline_metrics['per_label']['kasparro_mentioned']['recall']}
@@ -321,13 +320,13 @@ Classification metrics and the baseline comparison below use the matched success
 
 ---
 
-## 3. Failure, Diagnosis, Fix, and Regression
+## 4. Failure, Diagnosis, Fix, and Regression
 
 As required by Section 16 of the assignment brief, actual failures observed during implementation are documented in `DECISION_NOTE.md` and verified via regression tests in `tests/test_analysis.py` (`test_all_diagnostic_evidence_verbatim_integrity` and contextual target-attribution tests).
 
 ---
 
-## 4. Evaluation Cases Detail
+## 5. Evaluation Cases Detail
 
 ```json
 {json.dumps(case_details, indent=2)}
