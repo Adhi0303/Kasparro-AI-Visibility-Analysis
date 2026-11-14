@@ -326,6 +326,85 @@ def _render_evaluation(eval_result: Dict[str, Any]) -> str:
     """
 
 
+def _render_interactive_scatter(prompt_scores: Dict[str, List[Dict[str, Any]]]) -> str:
+    """Render prompt-level scores with engine and prompt-cohort filters."""
+    colors = {"gemini": "#7c5cdb", "chatgpt": "#0ea472", "aimode": "#3b82f6"}
+    offsets = {"gemini": -4.0, "chatgpt": 0.0, "aimode": 4.0}
+    points: List[str] = []
+
+    for engine, rows in prompt_scores.items():
+        color = colors.get(engine, "#64748b")
+        for index, item in enumerate(rows, start=1):
+            if item.get("status") != "success" or item.get("score") is None:
+                continue
+            score = _require_number(
+                item.get("score"),
+                f"prompt_scores.{engine}[{index}].score",
+                minimum=0,
+                maximum=100,
+            )
+            x = 54.0 + (index - 1) * (892.0 / 49.0) + offsets.get(engine, 0.0)
+            y = 292.0 - (score / 100.0) * 242.0
+            cohort = "branded" if item.get("is_branded_prompt") else "unbranded"
+            prompt_id = html.escape(str(item.get("prompt_id") or f"prompt-{index:02d}"), quote=True)
+            tooltip_text = html.escape(
+                f"{ENGINE_LABELS.get(engine, engine)} · {prompt_id} · Score {score:.1f}/100 · {item.get('prompt_text', '')}",
+                quote=True,
+            )
+            points.append(
+                f'<circle class="chart-point" data-engine="{html.escape(engine, quote=True)}" '
+                f'data-cohort="{cohort}" cx="{x:.1f}" cy="{y:.1f}" r="4.2" '
+                f'fill="{color}" stroke="#ffffff" stroke-width="1.2">'
+                f'<title>{tooltip_text}</title></circle>'
+            )
+
+    grid = "".join(
+        f'<line x1="54" y1="{292 - (value / 100) * 242:.1f}" x2="946" y2="{292 - (value / 100) * 242:.1f}" stroke="#e3e8f0"/>'
+        f'<text x="40" y="{297 - (value / 100) * 242:.1f}" text-anchor="end" font-size="11" fill="#66758b">{value}</text>'
+        for value in (0, 25, 50, 75, 100)
+    )
+    return f"""
+    <section class="panel" id="prompt-chart">
+      <div class="section-heading">
+        <div><p class="eyebrow">Prompt-level results</p><h2>Visibility score distribution</h2></div>
+        <span class="tag" style="color:var(--muted);border-color:var(--line);background:#f8f9fc">One point per scored response</span>
+      </div>
+      <p class="muted">Hover over a point to inspect its source prompt, engine and score. Filter by engine or prompt cohort.</p>
+      <div class="chart-filters">
+        <label>Engine
+          <select id="chart-engine-filter">
+            <option value="all">All engines</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="chatgpt">OpenAI ChatGPT</option>
+            <option value="aimode">Google AI Mode</option>
+          </select>
+        </label>
+        <label>Prompt cohort
+          <select id="chart-cohort-filter">
+            <option value="all">All prompts</option>
+            <option value="branded">Brand-containing prompts</option>
+            <option value="unbranded">Prompts without the brand</option>
+          </select>
+        </label>
+      </div>
+      <div class="chart-wrap">
+        <svg viewBox="0 0 1000 335" role="img" aria-label="Scatter plot of prompt-level visibility scores">
+          {grid}
+          <line x1="54" y1="50" x2="54" y2="292" stroke="#9aa7b8"/>
+          <line x1="54" y1="292" x2="946" y2="292" stroke="#9aa7b8"/>
+          <text x="500" y="328" text-anchor="middle" font-size="12" fill="#66758b">Prompt order within each engine</text>
+          {''.join(points)}
+        </svg>
+      </div>
+      <div class="chart-legend">
+        <span><i style="background:#7c5cdb"></i>Google Gemini</span>
+        <span><i style="background:#0ea472"></i>OpenAI ChatGPT</span>
+        <span><i style="background:#3b82f6"></i>Google AI Mode</span>
+      </div>
+    </section>
+    """
+
+
 def render_dashboard_html(
     final_report: Dict[str, Any],
     eval_result: Dict[str, Any],
@@ -417,6 +496,7 @@ def render_dashboard_html(
     execution_mode = html.escape(str(scoring.get("execution_mode") or "unknown"))
     engine_rows = _render_engine_rows(engine_aggregates, prompt_scores)
     scope_rows = _render_scope_rows(scope_summaries)
+    chart_html = _render_interactive_scatter(prompt_scores)
     evaluation_html = _render_evaluation(eval_result)
 
     html_document = f"""<!doctype html>
@@ -442,6 +522,7 @@ main{{max-width:1180px;margin:28px auto 60px;padding:0 22px}}.section{{margin:28
 .diagnostic,.remedy{{border-top:1px solid var(--line);padding:18px 0}}.diagnostic:first-child,.remedy:first-child{{border-top:0;padding-top:0}}
 blockquote{{margin:12px 0;padding:12px 15px;background:#f7f9fc;border-left:3px solid var(--blue);border-radius:0 10px 10px 0}}blockquote p{{margin:0 0 6px}}blockquote small{{font-size:11px;color:var(--muted);overflow-wrap:anywhere}}
 .provenance{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}.provenance div{{background:#f8f9fc;border:1px solid var(--line);border-radius:10px;padding:12px;overflow-wrap:anywhere}}.provenance small{{display:block;color:var(--muted)}}
+.chart-filters{{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0}}.chart-filters label{{font-size:12px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:8px}}.chart-filters select{{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;color:var(--ink)}}.chart-wrap{{overflow-x:auto}}.chart-wrap svg{{width:100%;min-width:620px;height:auto}}.chart-point{{cursor:crosshair;opacity:.88}}.chart-point[hidden]{{display:none}}.chart-legend{{display:flex;flex-wrap:wrap;gap:18px;margin-top:10px;font-size:12px;color:var(--muted)}}.chart-legend i{{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}}
 .notice{{border:1px solid #f0dcae;background:#fff9ea;color:#6e4b16;padding:14px 16px;border-radius:12px;font-size:13px}}
 footer{{text-align:center;color:var(--muted);font-size:12px;padding:30px 0 12px}}
 @media(max-width:850px){{.metric-grid,.evaluation-summary{{grid-template-columns:repeat(2,minmax(0,1fr))}}}}
@@ -468,6 +549,7 @@ footer{{text-align:center;color:var(--muted);font-size:12px;padding:30px 0 12px}
     <div class="section-heading"><div><p class="eyebrow">Engine comparison</p><h2>Visibility by answer engine</h2></div><span class="tag" style="color:var(--muted);border-color:var(--line);background:#f8f9fc">Successful scored responses</span></div>
     <div class="table-wrap"><table><thead><tr><th>Engine</th><th>Responses</th><th>Mean score</th><th>Inclusion</th><th>Recommendation</th><th>Negative</th></tr></thead><tbody>{engine_rows}</tbody></table></div>
   </section>
+  {chart_html}
   <section class="panel">
     <div class="section-heading"><div><p class="eyebrow">Prompt cohorts</p><h2>Brand-led vs category discovery prompts</h2></div></div>
     <p class="muted">Cohorts are derived from whether the source prompt text contains the brand name; no fixed prompt-number range is assumed.</p>
@@ -496,6 +578,25 @@ footer{{text-align:center;color:var(--muted);font-size:12px;padding:30px 0 12px}
   <div class="notice">Limitations: this report describes one historical capture, not current live model rankings. The classifier evaluation shown above uses the checked-in regression set; it is not an independent real-world accuracy estimate. A live provider evaluation must be reported separately from replay.</div>
   <footer>Generated from validated source data and the current analysis run · {generated_at}</footer>
 </main>
+<script>
+(() => {
+  const engineSelect = document.getElementById("chart-engine-filter");
+  const cohortSelect = document.getElementById("chart-cohort-filter");
+  const points = Array.from(document.querySelectorAll(".chart-point"));
+  if (!engineSelect || !cohortSelect || points.length === 0) return;
+  const applyFilters = () => {
+    const engine = engineSelect.value;
+    const cohort = cohortSelect.value;
+    points.forEach((point) => {
+      const engineMatch = engine === "all" || point.dataset.engine === engine;
+      const cohortMatch = cohort === "all" || point.dataset.cohort === cohort;
+      point.hidden = !(engineMatch && cohortMatch);
+    });
+  };
+  engineSelect.addEventListener("change", applyFilters);
+  cohortSelect.addEventListener("change", applyFilters);
+})();
+</script>
 </body>
 </html>
 """
