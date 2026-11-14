@@ -4,9 +4,10 @@
 
 The project keeps a development/regression set separate from a frozen held-out candidate set. Split definitions and limitations are recorded in `evaluation/split_manifest.json`.
 
-- **Regression split:** `evaluation/cases.jsonl` contains the 20 existing supplied and synthetic cases. It may be used during implementation and rule development.
-- **Held-out candidate split:** `evaluation/held_out_cases.jsonl` contains 30 additional synthetic scenarios with prompt-family IDs disjoint from the regression set. Do not tune classifier rules against this set.
-- **Annotation limitation:** The 30 held-out labels in the repository are still provisional single-annotator labels. They are not independently double-annotated or adjudicated and must not be presented as independently validated ground truth.
+- **Development/tuning split:** `evaluation/cases.jsonl` contains 8 supplied archived responses manually labelled by the project author plus 12 explicitly synthetic regression scenarios. The supplied subset spans ChatGPT, Google AI Mode and Gemini and covers vendor shortlisting, unbranded discovery, growth tools, measurement, pricing and capability/limitations. All 20 development cases may be inspected during implementation; never report them as a final unseen benchmark.
+- **Required synthetic edge cases:** `synthetic-001` tests prompt-echo-only brand occurrence; `synthetic-002` tests explicit negative characterization and caution language. Additional synthetic cases exercise target attribution, competitor sentiment, negation and coexisting recommendation/negative signals.
+- **Final-check candidate split:** `evaluation/held_out_cases.jsonl` contains 30 additional synthetic scenarios with prompt-family IDs disjoint from development. Do not tune classifier rules against this set. Its labels remain provisional single-annotator labels; they are not independent ground truth until the blinded double-annotation and adjudication workflow completes.
+- **Important limitation:** the current final-check candidate set is synthetic, not a second supplied-response sample. A stronger external-validity benchmark still requires a newly selected, manually labelled supplied-response holdout that is not used for tuning. Do not claim that the current 8 supplied development labels independently validate generalization.
 - **Execution reliability:** Classifier quality metrics are reported on successful calls, while execution coverage and coverage-adjusted exact-match agreement use the full cohort so failed calls cannot disappear from the operational result.
 
 ### Independent annotation workflow
@@ -36,7 +37,7 @@ python -m evaluation.run_eval --mode replay --split held_out \
   --cases-path evaluation/held_out_adjudicated_cases.jsonl
 ```
 
-Run regression evaluation:
+Run development/regression evaluation (this is a tuning set, not the final quality claim):
 
 ```bash
 python -m evaluation.run_eval --mode replay --split regression
@@ -91,7 +92,7 @@ python -m evaluation.run_eval --mode real_model --split held_out
 
 ## 3. Metrics
 
-The grader reports, per label:
+The grader reports, per label, for both the baseline and classifier on the exact same successful-call subset:
 - Support, positive support and negative support
 - True positives, false positives, true negatives and false negatives
 - Precision, recall, specificity, accuracy, balanced accuracy and F1
@@ -99,7 +100,11 @@ The grader reports, per label:
 
 Per-label precision, recall, F1 and matched-subset exact-match agreement are calculated only for successful classifier responses. The report separately shows the all-case baseline, classifier execution coverage, and coverage-adjusted exact-match agreement. The coverage-adjusted rate divides successful exact matches by the full case count, so every failed classifier call remains visible in the operational denominator.
 
-## 4. Leakage and annotation policy
+## 4. Supplied-response annotation record
+
+The eight supplied cases in `evaluation/cases.jsonl` carry an `annotation` object with method, annotator role, label-set version, prompt category, rationale and evidence-review policy. `expected_evidence` stores verbatim source excerpts for affirmative Kasparro discussion/characterization; empty arrays are intentional for cases where the archived answer does not discuss Kasparro. The labels are single-annotator development references, not adjudicated truth. The selection is documented in `evaluation/SUPPLIED_CASE_ANNOTATIONS.md`. The archived source IDs remain unchanged and the runner loads the original answer text from `data/responses.jsonl`.
+
+## 5. Leakage and annotation policy
 
 - Keep the regression and held-out files separate.
 - The test suite checks that their prompt-family IDs do not overlap and that held-out case IDs are unique.
@@ -109,15 +114,15 @@ Per-label precision, recall, F1 and matched-subset exact-match agreement are cal
 - Preserve the provisional labels and both independent submissions in the adjudicated output; record every adjudication with a third reviewer ID and rationale. Never alter labels in response to model predictions.
 - Report each split's sample count, per-label support, execution coverage and coverage-adjusted exact-match agreement alongside quality metrics.
 
-## 5. Evidence and source traceability
+## 6. Evidence and source traceability
 
 Classifier-proposed evidence is untrusted input. The analysis coordinator verifies candidates against original answer text and records accepted and rejected evidence, including source offsets and rejection reasons. Report creation, editing and export repeat source validation before rendering diagnostics.
 
-## 6. Historical dataset findings
+## 7. Historical dataset findings
 
 The archived dataset contains 50 prompts, 150 captured responses and 2,439 citation records from the 31 July 2026 snapshot. Findings in historical reports describe that capture only; they are not live model rankings or current brand visibility.
 
-## 7. Limitations
+## 8. Limitations
 
 - The held-out candidate set is synthetic and its labels are provisional single-annotator labels; independent human annotation is still required.
 - Replay is deterministic rule-based logic and cannot guarantee semantic understanding beyond implemented rules.
