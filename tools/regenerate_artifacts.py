@@ -293,8 +293,7 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
   }
   setText("chartSubtitle", "Showing " + (report.counts.supplied_prompts || 0) + " prompts across " +
     engineNames.length + " engines");
-  setText("gapPill", percent((report.evaluation && report.evaluation.regression && report.evaluation.regression.proposed_metrics)
-    ? (report.evaluation.regression.proposed_metrics.agreement_rate || 0) : 0) + " Regression agreement");
+  setText("gapPill", Number((dashboardScopes.unbranded || {}).all?.inc || 0).toFixed(1) + "% Unbranded Inclusion");
   const dashboardScopes = report.dashboard_scopes || {};
   const brandedOverall = (dashboardScopes.branded || {}).all || {};
   const unbrandedOverall = (dashboardScopes.unbranded || {}).all || {};
@@ -413,6 +412,7 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
 
   renderDiagnostics();
   renderRemedies();
+  if (typeof updateBenchmarkView === "function") updateBenchmarkView();
 })();
 </script>
 """
