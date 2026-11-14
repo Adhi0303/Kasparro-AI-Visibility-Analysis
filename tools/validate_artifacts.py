@@ -255,6 +255,9 @@ def validate_artifact_directory(results_dir: Path, data_dir: Path) -> List[str]:
     except (ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
         errors.append(f"Unable to verify dashboard scope metrics: {exc}")
 
+    if 'id="report-not-generated"' in html_text:
+        errors.append("Dashboard is still an ungenerated template; report-not-generated notice remains.")
+
     required_markers = (
         'id="kasparro-report-data"',
         'id="kasparro-report-hydration"',
