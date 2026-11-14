@@ -157,7 +157,7 @@ def _inject_report_payload(html_text: str, payload: Dict[str, Any]) -> str:
     html_text = re.sub(
         r'\s*<script id="kasparro-report-data" type="application/json">.*?</script>\s*'
         r'<script id="kasparro-report-hydration">.*?</script>\s*',
-        "\\n",
+        "\n",
         html_text,
         flags=re.DOTALL,
     )
