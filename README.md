@@ -12,7 +12,7 @@
 > [!TIP]
 > ### 📊 Generated Executive HTML Report
 > * **Direct Repository File:** [`evaluation/results/report.html`](evaluation/results/report.html)
-> > * **Open in Browser (PowerShell):**
+> * **Open in Browser (PowerShell):**
 >   ```powershell
 >   Start-Process evaluation/results/report.html
 >   ```
@@ -75,14 +75,6 @@ python demo.py
 ```
 
 To regenerate the final JSON and HTML report artifacts from the current validated analysis pipeline:
-```powershell
-python tools/regenerate_artifacts.py
-```
-The dashboard is rebuilt from the current analysis and evaluation outputs; it does not reuse an old generated HTML file or substitute default metric values.
-
----
-
-To regenerate the final JSON and HTML report artifacts from the current validated pipeline:
 ```powershell
 python tools/regenerate_artifacts.py
 ```
