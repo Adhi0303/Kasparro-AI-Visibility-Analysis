@@ -122,7 +122,17 @@ Classifier-proposed evidence is untrusted input. The analysis coordinator verifi
 
 The archived dataset contains 50 prompts, 150 captured responses and 2,439 citation records from the 31 July 2026 snapshot. Findings in historical reports describe that capture only; they are not live model rankings or current brand visibility.
 
-## 8. Limitations
+## 8. Repeatability study
+
+After a successful one-response provider smoke test, run a bounded repeated-call study (default three calls per case, configurable from two to ten):
+
+```bash
+python -m evaluation.repeatability --split regression --repeats 3
+```
+
+The script writes `evaluation/results/repeatability_regression.json` and records per-case successful/failed calls, exact prediction stability among successful repeats, call coverage, latency summaries and per-repeat baseline/provider metrics paired on identical successful cases. Use `--split held_out` only after the held-out labels have been independently annotated/adjudicated; do not tune from those outputs. Repeated runs can consume provider quota/cost. Latency is client-observed and is not a billing measurement.
+
+## 9. Limitations
 
 - The held-out candidate set is synthetic and its labels are provisional single-annotator labels; independent human annotation is still required.
 - Replay is deterministic rule-based logic and cannot guarantee semantic understanding beyond implemented rules.
