@@ -16,6 +16,7 @@ import time
 import math
 import subprocess
 from pathlib import Path
+from fastapi import HTTPException
 
 # Ensure UTF-8 output on Windows terminals
 if sys.platform == "win32":
@@ -141,7 +142,7 @@ def main():
     # 4. AI Visibility Classification & Scoring
     # -------------------------------------------------------------
     print_header("STEP 4: Executing Deterministic AI Visibility Analysis")
-    print(" [*] Running replay classifier across 150 responses...")
+    print(f" [*] Running replay classifier across {import_res.imported_responses} responses...")
     analysis = execute_analysis(db, dataset_id=import_res.dataset_id, execution_mode="replay")
     
     # Load and validate the analysis summary; never substitute plausible defaults.
@@ -206,10 +207,12 @@ def main():
     # B. Test Export Gate on Draft (Expected to Fail)
     try:
         export_approved_report(db, report_id=report.id)
-        print(" [!] ERROR: Export gate failed to block DRAFT report!")
-    except Exception as e:
-        print(f" [PASS] Gate Enforcement Check 1: Export blocked on DRAFT.")
-        print(f"        └─ HTTP 400 Response: \"{e.detail if hasattr(e, 'detail') else e}\"")
+    except HTTPException as exc:
+        if exc.status_code != 400:
+            raise
+        print(" [PASS] Gate Enforcement Check 1: Export blocked on DRAFT (HTTP 400).")
+    else:
+        raise RuntimeError("Export gate incorrectly allowed a DRAFT report to be exported.")
 
     # C. Submit for Review
     submitted_version = submit_report_for_review(db, report_id=report.id)
@@ -218,16 +221,18 @@ def main():
     # D. Test Export Gate on Submitted (Expected to Fail)
     try:
         export_approved_report(db, report_id=report.id)
-        print(" [!] ERROR: Export gate failed to block SUBMITTED report!")
-    except Exception as e:
-        print(f" [PASS] Gate Enforcement Check 2: Export blocked on SUBMITTED.")
-        print(f"        └─ HTTP 400 Response: \"{e.detail if hasattr(e, 'detail') else e}\"")
+    except HTTPException as exc:
+        if exc.status_code != 400:
+            raise
+        print(" [PASS] Gate Enforcement Check 2: Export blocked on SUBMITTED (HTTP 400).")
+    else:
+        raise RuntimeError("Export gate incorrectly allowed a SUBMITTED report to be exported.")
 
     # E. Reviewer Approves
     decision_req = ReviewDecisionRequest(
         version_id=submitted_version.id,
         decision="approve",
-        comment="Verified 150 responses. Diagnostics match verbatim excerpts."
+        comment=f"Verified {import_res.imported_responses} responses. Diagnostics match verbatim excerpts."
     )
     approved_version = process_review_decision(
         db, report_id=report.id, decision_req=decision_req, reviewer_id="reviewer-lead"
@@ -257,7 +262,7 @@ def main():
     print("""
 Key Deliverables to Explore:
   1. Interactive HTML Report : evaluation/results/report.html
-     (Open in Brave or Chrome for the 50-prompt scatter chart & filters)
+     (Open in Brave or Chrome for the generated prompt scatter chart and filters)
   2. Automated Test Suite    : Run separately with pytest -v; counts come from the test runner
   3. Classifier Evaluation   : python -m evaluation.run_eval --mode replay --split regression
   4. Final Export JSON       : evaluation/results/final_report.json
