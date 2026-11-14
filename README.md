@@ -11,13 +11,13 @@
 
 > [!TIP]
 > ### 📊 Interactive Executive HTML Report
-> * **Direct Repository File:** [`evaluation/results/report.html`](evaluation/results/report.html)
-> * **Email Attachment:** A standalone copy of `report.html` is attached directly to the submission email for instant browser viewing.
-> * **Open in Browser (PowerShell):**
->   ```powershell
->   Start-Process evaluation/results/report.html
->   ```
->   *(Opens the complete dashboard in your default browser — features the 50-prompt scatter trajectory, metric filters, and verbatim diagnostic evidence).*
+> The checked-in `evaluation/results/report.html` is a **template**, not a current report snapshot. Regenerate the report from the current source data and analysis before sharing it:
+> ```powershell
+> python tools/regenerate_artifacts.py
+> python tools/validate_artifacts.py
+> Start-Process evaluation/results/report.html
+> ```
+> The generator creates the canonical JSON report, per-response prompt scores, regression and held-out evaluation outputs, and the interactive HTML dashboard. The validator checks report parity, metric consistency and verbatim evidence offsets. CI also uploads the generated bundle as a workflow artifact.
 
 ---
 
