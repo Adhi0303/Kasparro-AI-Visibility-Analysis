@@ -164,3 +164,27 @@ def test_dashboard_handles_empty_prompt_cohort_as_unavailable():
 
     assert "N/A" in html
     assert "0</td>" in html
+
+
+
+def test_committed_dashboard_matches_report_and_evaluation_json():
+    import json
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    report = json.loads((root / "evaluation" / "results" / "final_report.json").read_text(encoding="utf-8"))
+    evaluation = json.loads((root / "evaluation" / "results" / "eval_results.json").read_text(encoding="utf-8"))
+    dashboard = (root / "evaluation" / "results" / "report.html").read_text(encoding="utf-8")
+
+    score = float(report["scoring"]["overall_mean_score"])
+    baseline = float(evaluation["baseline_metrics"]["agreement_rate"]) * 100
+    proposed = float(evaluation["proposed_metrics"]["agreement_rate"]) * 100
+
+    assert f"{score:.2f} / 100" in dashboard
+    assert f"{baseline:.1f}%" in dashboard
+    assert f"{proposed:.1f}%" in dashboard
+    assert str(report["counts"]["supplied_prompts"]) in dashboard
+    assert str(report["counts"]["supplied_responses"]) in dashboard
+    assert "76 Tests Collected" not in dashboard
+    assert "21/21 Tests Pass" not in dashboard
+    assert "37.57" not in dashboard
