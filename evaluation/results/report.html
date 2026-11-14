@@ -3511,7 +3511,11 @@
       const data = datasetMatrix[currentScope];
 
       // Update Subtitles & Labels
-      const scopeNames = { all: 'All Prompts (50)', branded: 'Branded Queries (25)', unbranded: 'Unbranded Category (25)' };
+      const scopeNames = {
+        all: `All Prompts (${datasetMatrix.all.all.prompts_count})`,
+        branded: `Branded Queries (${datasetMatrix.branded.all.prompts_count})`,
+        unbranded: `Unbranded Category (${datasetMatrix.unbranded.all.prompts_count})`
+      };
       document.getElementById('chartSubtitle').textContent = `Showing ${scopeNames[currentScope]} across 3 engines`;
       document.getElementById('tableScopeIndicator').textContent = `SCOPE: ${scopeNames[currentScope].toUpperCase()}`;
       const scatterSub = document.getElementById('scatterSubtitle');
@@ -3526,14 +3530,14 @@
           zoneU.style.opacity = '0.15';
           document.querySelectorAll('.scatter-dot').forEach(d => {
             const p = parseInt(d.dataset.prompt);
-            d.style.opacity = p <= 25 ? '1' : '0.15';
+            d.style.opacity = d.dataset.branded === 'true' ? '1' : '0.15';
           });
         } else if (currentScope === 'unbranded') {
           zoneB.style.opacity = '0.15';
           zoneU.style.opacity = '1';
           document.querySelectorAll('.scatter-dot').forEach(d => {
             const p = parseInt(d.dataset.prompt);
-            d.style.opacity = p > 25 ? '1' : '0.15';
+            d.style.opacity = d.dataset.branded === 'false' ? '1' : '0.15';
           });
         } else {
           zoneB.style.opacity = '1';
