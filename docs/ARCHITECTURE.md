@@ -2,7 +2,7 @@
 
 ## 1. High-Level Architecture Overview
 
-The Kasparro AI Visibility Analysis & Human Review service is a production-grade FastAPI backend designed for reproducible, evidence-backed evaluation of brand visibility across Generative AI answer engines (OpenAI ChatGPT, Google Gemini, and Google AI Mode).
+The Kasparro AI Visibility Analysis & Human Review service is an assignment-scale FastAPI backend designed for reproducible, evidence-backed evaluation of brand visibility across Generative AI answer engines (OpenAI ChatGPT, Google Gemini, and Google AI Mode).
 
 ```mermaid
 flowchart TD
